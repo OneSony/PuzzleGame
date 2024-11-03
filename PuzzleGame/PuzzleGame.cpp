@@ -1,6 +1,6 @@
 ﻿// PuzzleGame.cpp : 定义应用程序的入口点。
 //
-
+#define _CRT_SECURE_NO_WARNINGS
 #include "PuzzleGame.h"
 using namespace std;
 #include <string.h>
@@ -386,6 +386,50 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	//刷新显示
 	InvalidateRect(hWnd, NULL, FALSE);
 }
+
+
+bool CanMove(int x_before, int y_before, int x_after, int y_after) { //player's x y
+
+
+	//block
+	//0空地 1草 2红花 3+7树 4/5/6/8/9/10/12/13/14土地 11蓝花 15路牌
+	if (map[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 3 || map[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 7) {
+		return false;
+	}
+	
+
+	//移动速度考虑了吗
+	/*
+	//npcs
+	char buff[256];
+	sprintf(buff, "xy: %d %d %d %d\n", x_before, y_before, x_after, y_after);
+	OutputDebugStringA(buff);
+
+	int x_limit_left = min(x_before, x_after) - 0.5 * HUMAN_SIZE_X - 0.5 * HUMAN_SIZE_X;
+	int x_limit_right = max(x_before, x_after) + 0.5 * HUMAN_SIZE_X + 0.5 * HUMAN_SIZE_X;
+	int y_limit_up = min(y_before, y_after) - 0.5 * HUMAN_SIZE_Y - 0.5 * HUMAN_SIZE_Y;
+	int y_limit_down = max(y_before, y_after) + 0.5 * HUMAN_SIZE_Y + 0.5 * HUMAN_SIZE_Y;
+
+	sprintf(buff, "%d %d %d %d\n", x_limit_left, x_limit_right, y_limit_up, y_limit_down);
+	OutputDebugStringA(buff);
+
+	for (int i = 0; i < npcs.size(); i++)
+	{
+		sprintf(buff, "i: %d %d %d\n", i, npcs[i]->x, npcs[i]->y);
+		OutputDebugStringA(buff);
+		if (npcs[i]->x < x_limit_left || npcs[i]->x > x_limit_right || npcs[i]->y < y_limit_up || npcs[i]->y > y_limit_down) {
+			//sprintf(buff, "%d %d\n",npcs[i]->x, npcs[i]->y);
+			//OutputDebugStringA(buff);
+			continue;
+		}
+
+		return false;
+	}
+	*/
+
+	return true;
+}
+
 //更新玩家状态
 void UpdatePlayer(HWND hWnd) {
 	//如果键盘按下，设置状态为WALK
@@ -416,16 +460,24 @@ void UpdatePlayer(HWND hWnd) {
 	if (player->state == UNIT_STATE_WALK) {
 		switch (player->direction) {
 		case UNIT_DIRECT_LEFT:
-			player->x -= player->vx;
+			if (CanMove(player->x, player->y, player->x - player->vx, player->y)) {
+				player->x -= player->vx;
+			}
 			break;
 		case UNIT_DIRECT_UP:
-			player->y -= player->vy;
+			if (CanMove(player->x, player->y, player->x, player->y - player->vy)) {
+				player->y -= player->vy;
+			}
 			break;
 		case UNIT_DIRECT_RIGHT:
-			player->x += player->vx;
+			if (CanMove(player->x, player->y, player->x + player->vx, player->y)) {
+				player->x += player->vx;
+			}
 			break;
 		case UNIT_DIRECT_DOWN:
-			player->y += player->vy;
+			if (CanMove(player->x, player->y, player->x, player->y + player->vy)) {
+				player->y += player->vy;
+			}
 			break;
 		default:
 			break;
@@ -461,8 +513,10 @@ void UpdateMonsters(HWND hWnd)
 void UpdateMaps(HWND hWnd)
 {
 	//走到地图边界，切换到map2
-	if (currentStage->stageID == STAGE_1 && player->y <= 0 && map[player->y / BLOCK_SIZE_Y][player->x / BLOCK_SIZE_Y] == 0)
-	{
+	//TODO逻辑有问题，可能是负数
+	if (currentStage->stageID == STAGE_1 && player->y <= 0)
+	{	
+		player->y += WINDOW_HEIGHT;
 		InitStage(hWnd, STAGE_2);
 	}
 }
@@ -762,6 +816,7 @@ void Paint(HWND hWnd)
 		}
 
 		// 绘制玩家
+		// 图像坐标是中心
 		SelectObject(hdc_loadBmp, player->img);
 		TransparentBlt(
 			hdc_memBuffer,
@@ -802,6 +857,8 @@ void Paint(HWND hWnd)
 				);
 			}
 		}
+
+
 		//如果正处在对话状态：绘制对话框
 		if (in_conversation) {
 			SelectObject(hdc_loadBmp, bmp_dialog);
