@@ -63,5 +63,17 @@
     <Image Include="resources\monster1.bmp">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="..\..\..\..\..\Desktop\美术资源_PS源文件\btn_bg.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bitmap4.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\星露谷物语素材\Stardew valley\Characters\Monsters\Crow..png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\Crow..bmp">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

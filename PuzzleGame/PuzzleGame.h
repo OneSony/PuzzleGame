@@ -10,6 +10,8 @@
 #include <time.h>
 #include <vector>
 #include <math.h>
+#include <string>
+#include <random>
 #include "resource.h"
 #pragma comment(lib, "Msimg32.lib")			//图象处理的函数接口，例如：透明色的位图的绘制TransparentBlt函数
 using namespace std;
@@ -24,6 +26,7 @@ using namespace std;
 #define STAGE_STARTMENU			0		//开始画面的ID
 #define STAGE_1					1		//第一个游戏场景的ID
 #define STAGE_2					2
+
 
 //尺寸
 #define BG_BITMAP_WIDTH			240		//背景图片的位图宽度
@@ -46,6 +49,10 @@ using namespace std;
 #define MOSTER_SIZE_Y			30
 #define MOSTER_BITMAP_SIZE_X	14
 #define MOSTER_BITMAP_SIZE_Y	15
+#define NEW_MOSTER_BITMAP_SIZE_X	64
+#define NEW_MOSTER_BITMAP_SIZE_Y	64
+#define NEW_MOSTER_SIZE_X			30		//怪物
+#define NEW_MOSTER_SIZE_Y			30
 
 
 //单位状态定义
@@ -61,8 +68,14 @@ using namespace std;
 
 //其它定义
 #define BUTTON_STARTGAME			1001	//开始游戏按钮ID
-#define BUTTON_STARTGAME_WIDTH		212		//开始游戏按钮宽度
-#define BUTTON_STARTGAME_HEIGHT		76		//开始游戏按钮高度
+#define BUTTON_WIDTH		212		//开始游戏按钮宽度
+#define BUTTON_HEIGHT		76		//开始游戏按钮高度
+
+
+#define BUTTON_HELP			1002	//开始游戏按钮ID
+#define BUTTON_STOP_CONTINUE 1003
+#define BUTTON_STOP_HELP	1004
+#define BUTTON_STOP_HOME	1005
 
 #define TIMER_GAMETIMER				1		//游戏的默认计时器ID
 #define TIMER_GAMETIMER_ELAPSE		30		//默认计时器刷新间隔的毫秒数
@@ -72,6 +85,7 @@ using namespace std;
 #define NPC_WOMAN1_ID			2002
 
 #define MONSTER_CAT_ID			3001
+#define MONSTER_CROW_ID			3002
 
 ///
 
@@ -101,6 +115,7 @@ struct Button
 	int y;			//坐标y
 	int width;		//宽度
 	int height;		//高度
+	wstring text;          // 用于显示按钮上的文字
 };
 
 // NPC结构体
@@ -160,6 +175,7 @@ struct Monster
 	HBITMAP img;			//图片
 	bool visible;			//是否可见
 	bool task_complete;		//任务是否完成
+	bool move;				//是否可以移动
 
 	int frame_row;			//当前显示的是图像的第几行
 	int frame_column;		//当前显示的是图像的第几列
@@ -177,11 +193,40 @@ struct Monster
 	double vy;		//速度y
 	int health;		//生命值
 
+
 	vector<const wchar_t*> conversations_before;	//任务完成前的台词
 	vector<const wchar_t*> conversations_after;		//任务完成后的台词
 	int next_conversation_id;						//下一次要说第几句台词
 };
 
+
+// 怪物结构体
+struct NewMonster
+{
+	int monsterID;			//怪物编号
+	HBITMAP img;			//图片
+	bool visible;			//是否可见
+	bool move;				//是否可以移动
+
+	int frame_row;			//当前显示的是图像的第几行
+	int frame_column;		//当前显示的是图像的第几列
+
+	int* frame_sequence;	//当前的帧序列
+	int frame_count;		//帧序列的长度
+	int frame_id;			//当前显示的是帧序列的第几帧
+
+	int state;		//单位状态
+	int direction;	//单位方向
+
+	int x;			//坐标x
+	int y;			//坐标y
+	double vx;		//速度x
+	double vy;		//速度y
+	int health;		//生命值
+
+	int time_count;
+
+};
 
 
 
@@ -222,7 +267,7 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam);
 #pragma region 其它游戏状态处理函数声明
 
 // 添加按钮函数
-Button* CreateButton(int buttonID, HBITMAP img, int width, int height, int x, int y);
+Button* CreateButton(int buttonID, HBITMAP img, int width, int height, int x, int y, wstring text);
 
 // 添加单位函数
 Player* CreatePlayer(int x, int y);
@@ -241,6 +286,9 @@ void UpdateMonsters(HWND hWnd);
 void UpdateMaps(HWND hWnd);
 
 void HandleConversationEvents(HWND hWnd);
+void HandleStopEvents(HWND hWnd);
+
+void HandleHelpEvents(HWND hWnd);
 
 //TODO: 添加游戏需要的更多函数
 
