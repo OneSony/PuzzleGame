@@ -18,12 +18,20 @@ HBITMAP bmp_Background;		//生成的背景图像
 HBITMAP bmp_map;			//地图砖块图像
 HBITMAP bmp_dialog;			//对话框背景图像
 HBITMAP bmp_monster1;		//怪物1图像
-HBITMAP bmp_monster2;		//怪物1图像
+HBITMAP bmp_crow;		//怪物1图像
+HBITMAP bmp_duck;		//怪物1图像
+HBITMAP bmp_chiken;		//怪物1图像
+HBITMAP bmp_weapon;		//怪物1图像
 
 Stage* currentStage = NULL; //当前场景状态
 vector<NPC*> npcs;			//NPC列表
 vector<Monster*> monsters;	//怪物列表
-vector<NewMonster*> new_monsters;	//怪物列表
+//vector<NewMonster*> new_monsters;	//怪物列表
+
+vector<NewMonster*> new_monsters_stage1;
+vector<NewMonster*> new_monsters_stage2;
+vector<NewMonster*>* current_new_monsters;
+
 Player* player = NULL;		//玩家
 vector<Button*> game_buttons;	//按钮	
 vector<Button*> menu_buttons;	//按钮	
@@ -275,7 +283,10 @@ void InitGame(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	bmp_map = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_MAP));
 	bmp_dialog = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_DIALOG));
 	bmp_monster1 = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_MONSTER1));
-	bmp_monster2 = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_CROW));
+	bmp_crow = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_CROW));
+	bmp_duck = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_DUCK));
+	bmp_chiken = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_CHIKEN));
+	bmp_weapon = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_WEAPON));
 	
 	//添加按钮
 	Button* startButton = CreateButton(BUTTON_STARTGAME, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
@@ -372,6 +383,7 @@ void MouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	mouseY = HIWORD(lParam);
 }
 
+
 // 鼠标左键按下事件处理函数
 void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
@@ -444,6 +456,35 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 					}
 				}
 			}
+		}
+	}
+	else {
+		if (player->weapon != NULL) {
+			player->weapon->move = true;
+			char buff[256];
+			sprintf(buff, "weapon move %d\n", player->weapon->move);
+			OutputDebugStringA(buff);
+		}
+
+		for (int i = 0; i < current_new_monsters->size(); i++) {
+			NewMonster* monster = current_new_monsters->at(i);
+
+			if (monster->visible) {
+				//TODO 碰撞了
+				if (mouseX >= monster->x-monster->size_x && mouseX <= monster->x + monster->size_x &&
+					mouseY >= monster->y - monster->size_y && mouseY <= monster->y + monster->size_y)
+				{
+					monster->hurt = true;
+					monster->hp -= player->weapon->damage;
+					monster->hp_visible = true;
+					monster->particles.push_back(CreateParticle(L"-" + to_wstring(player->weapon->damage) + L"HP"));
+
+					char buff[256];
+					sprintf(buff, "monster hp: %d\n", monster->hp);
+					OutputDebugStringA(buff);
+				}
+			}
+
 		}
 	}
 
@@ -605,102 +646,109 @@ void UpdateMonsters(HWND hWnd)
 
 	
 	//顺次更新每个怪物
-	for (int i = 0; i < new_monsters.size(); i++) {
+	for (int i = 0; i < current_new_monsters->size(); i++) {
 
-		new_monsters[i]->time_count++;
-		char buff[256];
-		sprintf(buff, "new_monster time: %d\n", new_monsters[i]->time_count);
-		OutputDebugStringA(buff);
+		NewMonster* monster = (*current_new_monsters)[i];
 
-		if (new_monsters[i]->time_count == 1) {//选方向，开始移动
+		monster->time_count++;
 
-			new_monsters[i]->frame_sequence = FRAMES_WALK;
-			new_monsters[i]->frame_count = FRAMES_WALK_COUNT;
+		//每一次都刷新帧
+		monster->frame_id++;
+		monster->frame_id = monster->frame_id % monster->frame_count;
+		monster->frame_column = monster->frame_sequence[monster->frame_id];
 
-			new_monsters[i]->direction = RandomInt(0, 3);
-			sprintf(buff, "new_monster dir: %d\n", new_monsters[i]->direction);
+		if (monster->time_count < monster->time_stop) {//开始移动
+
+			switch (monster->direction) {
+			case UNIT_DIRECT_LEFT:
+				monster->frame_row = UNIT_DIRECT_LEFT;
+				if (CanMove(monster->x, monster->y, monster->x - monster->vx, monster->y)) {
+					monster->x -= monster->vx;
+				}
+				else {
+					monster->time_count = monster->time_stop - 1; //跳过本回合
+				}
+				break;
+			case UNIT_DIRECT_UP:
+				monster->frame_row = UNIT_DIRECT_UP;
+				if (CanMove(monster->x, monster->y, monster->x, monster->y - monster->vy)) {
+					monster->y -= monster->vy;
+				}
+				else {
+					monster->time_count = monster->time_stop - 1; //跳过本回合
+				}
+				break;
+			case UNIT_DIRECT_RIGHT:
+				monster->frame_row = UNIT_DIRECT_RIGHT;
+				if (CanMove(monster->x, monster->y, monster->x + monster->vx, monster->y)) {
+					monster->x += monster->vx;
+				}
+				else {
+					monster->time_count = monster->time_stop - 1; //跳过本回合
+				}
+				break;
+			case UNIT_DIRECT_DOWN:
+				monster->frame_row = UNIT_DIRECT_DOWN;
+				if (CanMove(monster->x, monster->y, monster->x, monster->y + monster->vy)) {
+					monster->y += monster->vy;
+				}
+				else {
+					monster->time_count = monster->time_stop - 1; //跳过本回合
+				}
+				break;
+			default:
+				break;
+			};
+		}
+		else if (monster->time_count == monster->time_stop) {
+			//更新动画
+
+			monster->frame_sequence = FRAMES_HOLD;
+			monster->frame_count = FRAMES_HOLD_COUNT;
+
+		}
+		else if (monster->time_count >= monster->time_max) {
+			
+			//下一次循环
+			monster->time_count = 0;
+			monster->direction = RandomInt(0, 3);
+			monster->time_stop = RandomInt(30, 100);
+			monster->time_max = RandomInt(120, 500);
+
+			//更新动画
+			monster->frame_sequence = FRAMES_WALK;
+			monster->frame_count = FRAMES_WALK_COUNT;
+		}
+
+
+		for (auto it = monster->particles.begin(); it != monster->particles.end(); ) {
+
+			(*it)->life_count++;
+			(*it)->offset_y -= (*it)->vy;
+
+			char buff[256];
+			sprintf(buff, "life: %d  max: %d", (*it)->life_count, (*it)->life_max);
 			OutputDebugStringA(buff);
 
-			switch (new_monsters[i]->direction) {
-			case UNIT_DIRECT_LEFT:
-				new_monsters[i]->frame_row = UNIT_DIRECT_LEFT;
-				if (CanMove(new_monsters[i]->x, new_monsters[i]->y, new_monsters[i]->x - new_monsters[i]->vx, new_monsters[i]->y)) {
-					new_monsters[i]->x -= new_monsters[i]->vx;
-				}
-				break;
-			case UNIT_DIRECT_UP:
-				new_monsters[i]->frame_row = UNIT_DIRECT_UP;
-				if (CanMove(new_monsters[i]->x, new_monsters[i]->y, new_monsters[i]->x, new_monsters[i]->y - new_monsters[i]->vy)) {
-					new_monsters[i]->y -= new_monsters[i]->vy;
-				}
-				break;
-			case UNIT_DIRECT_RIGHT:
-				new_monsters[i]->frame_row = UNIT_DIRECT_RIGHT;
-				if (CanMove(new_monsters[i]->x, new_monsters[i]->y, new_monsters[i]->x + new_monsters[i]->vx, new_monsters[i]->y)) {
-					new_monsters[i]->x += new_monsters[i]->vx;
-				}
-				break;
-			case UNIT_DIRECT_DOWN:
-				new_monsters[i]->frame_row = UNIT_DIRECT_DOWN;
-				if (CanMove(new_monsters[i]->x, new_monsters[i]->y, new_monsters[i]->x, new_monsters[i]->y + new_monsters[i]->vy)) {
-					new_monsters[i]->y += new_monsters[i]->vy;
-				}
-				break;
-			default:
-				break;
-			};
-		}
-		else if (new_monsters[i]->time_count < 20) { //继续移动
+			if ((*it)->life_count >= (*it)->life_max) {
+				// 如果生命值达到最大值，则删除当前粒子
+				delete* it; // 释放内存
+				it = monster->particles.erase(it); // 删除粒子并更新迭代器
 
-			new_monsters[i]->frame_id++;
-			new_monsters[i]->frame_id = new_monsters[i]->frame_id % new_monsters[i]->frame_count;
-			new_monsters[i]->frame_column = new_monsters[i]->frame_sequence[new_monsters[i]->frame_id];
+				sprintf(buff, "delete\n");
+				OutputDebugStringA(buff);
+			}
+			else {
+				it++; // 如果没有删除，移动到下一个粒子
+			}
+		}
 
-			switch (new_monsters[i]->direction) {
-			case UNIT_DIRECT_LEFT:
-				new_monsters[i]->frame_row = UNIT_DIRECT_LEFT;
-				if (CanMove(new_monsters[i]->x, new_monsters[i]->y, new_monsters[i]->x - new_monsters[i]->vx, new_monsters[i]->y)) {
-					new_monsters[i]->x -= new_monsters[i]->vx;
-				}
-				break;
-			case UNIT_DIRECT_UP:
-				new_monsters[i]->frame_row = UNIT_DIRECT_UP;
-				if (CanMove(new_monsters[i]->x, new_monsters[i]->y, new_monsters[i]->x, new_monsters[i]->y - new_monsters[i]->vy)) {
-					new_monsters[i]->y -= new_monsters[i]->vy;
-				}
-				break;
-			case UNIT_DIRECT_RIGHT:
-				new_monsters[i]->frame_row = UNIT_DIRECT_RIGHT;
-				if (CanMove(new_monsters[i]->x, new_monsters[i]->y, new_monsters[i]->x + new_monsters[i]->vx, new_monsters[i]->y)) {
-					new_monsters[i]->x += new_monsters[i]->vx;
-				}
-				break;
-			case UNIT_DIRECT_DOWN:
-				new_monsters[i]->frame_row = UNIT_DIRECT_DOWN;
-				if (CanMove(new_monsters[i]->x, new_monsters[i]->y, new_monsters[i]->x, new_monsters[i]->y + new_monsters[i]->vy)) {
-					new_monsters[i]->y += new_monsters[i]->vy;
-				}
-				break;
-			default:
-				break;
-			};
-			
+		//检查死亡
+		if (monster->hp <= 0) {
+			monster->visible = false;
 		}
-		else if (new_monsters[i]->time_count == 20) {//静息
-
-			new_monsters[i]->frame_sequence = FRAMES_HOLD;
-			new_monsters[i]->frame_count = FRAMES_HOLD_COUNT;
-		}
-		else if (new_monsters[i]->time_count < 100) {//静息
-			new_monsters[i]->frame_id++;
-			new_monsters[i]->frame_id = new_monsters[i]->frame_id % new_monsters[i]->frame_count;
-			new_monsters[i]->frame_column = new_monsters[i]->frame_sequence[new_monsters[i]->frame_id];
-		}
-		else {
-			new_monsters[i]->time_count = 0;
-		}
-		
 	}
+
 }
 // 地图切换逻辑
 void UpdateMaps(HWND hWnd)
@@ -800,6 +848,19 @@ Button* CreateButton(int buttonID, HBITMAP img, int width, int height, int x, in
 	return button;
 }
 
+Particle* CreateParticle(wstring text) {
+	Particle* particle = new Particle();
+	particle->text = text;
+	particle->offset_x=0;
+	particle->offset_y=0;
+	particle->vx=0;
+	particle->vy=2;
+	particle->life_max=15;
+	particle->life_count=0;
+
+	return particle;
+}
+
 // 添加主角函数
 Player* CreatePlayer(int x, int y)
 {
@@ -818,8 +879,39 @@ Player* CreatePlayer(int x, int y)
 	player->frame_count = PLAYER_FRAMES_HOLD_COUNT;
 	player->frame_id = 0;
 
+	player->weapon = CreateWeapon(WEAPON_SWORD_ID);
+
 	return player;
 }
+
+
+Weapon* CreateWeapon(int weapon_id)
+{
+	Weapon* weapon = new Weapon();
+	weapon->weaponID = weapon_id;
+	weapon->img = bmp_weapon;
+	weapon->move = false;
+
+	switch (weapon_id)
+	{
+	case WEAPON_SWORD_ID:
+	{
+		weapon->size_x=30;
+		weapon->size_y=30;
+		weapon->bmp_size_x=16;
+		weapon->bmp_size_y=16;
+		weapon->bmp_col = 1;
+		weapon->bmp_row = 0;
+		weapon->damage = 10;
+		break;
+	}
+	default:
+		break;
+	}
+
+	return weapon;
+}
+
 // 添加NPC函数
 NPC* CreateNPC(int x, int y, int npc_id)
 {
@@ -902,15 +994,17 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 	monster->x = x;
 	monster->y = y;
 	monster->direction = UNIT_DIRECT_DOWN;
-	monster->vx = 2;
-	monster->vy = 2;
+	monster->vx = 1;
+	monster->vy = 1;
 	monster->state = UNIT_STATE_HOLD;
 	monster->frame_row = monster->direction;
 	monster->frame_column = 0;
-	monster->frame_sequence = MONSTER_FRAMES;
-	monster->frame_count = MONSTER_FRAMES_COUNT;
+	monster->frame_sequence = FRAMES_WALK;
+	monster->frame_count = FRAMES_WALK_COUNT;
 	monster->frame_id = 0;
-	monster->time_count = 0;
+	monster->time_count = 100;
+	monster->time_max = 10; //强制初始化
+	monster->hp_visible = false;
 
 	switch (monster_id)
 	{
@@ -921,7 +1015,41 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 	}
 	case MONSTER_CROW_ID:
 	{
-		monster->img = bmp_monster2;
+		monster->img = bmp_crow;
+		monster->bmp_size_x = 64;
+		monster->bmp_size_y = 64;
+		monster->size_x = 30;
+		monster->size_y = 30;
+		monster->time_stop = 50;
+		monster->time_max = 100;
+		monster->hp = 20;
+		monster->hp_max = 20;
+		break;
+	}
+	case MONSTER_DUCK_ID:
+	{
+		monster->img = bmp_duck;
+		monster->bmp_size_x = 16;
+		monster->bmp_size_y = 16;
+		monster->size_x = 30;
+		monster->size_y = 30;
+		monster->time_stop = 50;
+		monster->time_max = 100;
+		monster->hp = 20;
+		monster->hp_max = 20;
+		break;
+	}
+	case MONSTER_CHIKEN_ID:
+	{
+		monster->img = bmp_chiken;
+		monster->bmp_size_x = 16;
+		monster->bmp_size_y = 16;
+		monster->size_x = 30;
+		monster->size_y = 30;
+		monster->time_stop = 50;
+		monster->time_max = 100;
+		monster->hp = 50;
+		monster->hp_max = 50;
 		break;
 	}
 	default:
@@ -958,6 +1086,7 @@ void InitStage(HWND hWnd, int stageID)
 	//TODO：添加多个游戏场景
 	else if (stageID == STAGE_1)
 	{
+		current_new_monsters = &new_monsters_stage1;
 		currentStage->bg = bmp_Background;
 		currentStage->timerOn = true;
 		memcpy(map, map_stage1, sizeof(map));	//初始化地图
@@ -995,6 +1124,8 @@ void InitStage(HWND hWnd, int stageID)
 	}
 	else if (stageID == STAGE_2)
 	{
+
+		current_new_monsters = &new_monsters_stage2;
 		currentStage->bg = bmp_Background;
 		currentStage->timerOn = true;
 		memcpy(map, map_stage2, sizeof(map));
@@ -1012,7 +1143,11 @@ void InitStage(HWND hWnd, int stageID)
 			//monsters.push_back(CreateMonster(495, 205, MONSTER_CAT_ID));//初始化Monster
 		}
 
-		new_monsters.push_back(NewCreateMonster(495, 205, MONSTER_CROW_ID));
+		if (current_new_monsters->size() == 0) {
+			current_new_monsters->push_back(NewCreateMonster(495, 205, MONSTER_CROW_ID));
+			current_new_monsters->push_back(NewCreateMonster(200, 200, MONSTER_DUCK_ID));
+			current_new_monsters->push_back(NewCreateMonster(300, 300, MONSTER_CHIKEN_ID));
+		}
 
 		//NPC的可见性
 		for (int i = 0; i < npcs.size(); i++)
@@ -1032,14 +1167,14 @@ void InitStage(HWND hWnd, int stageID)
 			else
 				monster->visible = false;
 		}
-		for (int i = 0; i < new_monsters.size(); i++)
+		/*for (int i = 0; i < current_new_monsters->size(); i++)
 		{
-			NewMonster* monster = new_monsters[i];
+			NewMonster* monster = (*current_new_monsters)[i];
 			if (true) //TODO：加载游戏界面需要的按钮
 				monster->visible = true;
 			else
 				monster->visible = false;
-		}
+		}*/
 	}
 
 	//刷新显示
@@ -1122,6 +1257,308 @@ void Paint(HWND hWnd)
 	} else {
 		if (currentStage->stageID >= STAGE_1 && currentStage->stageID <= STAGE_2) //TODO：添加多个游戏场景
 		{
+
+
+			unordered_set<int> landValues = { 4, 5, 6, 8, 9, 10, 12, 13, 14 };
+
+			//绘制地图
+			SelectObject(hdc_loadBmp, bmp_map);
+			for (int i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
+				for (int j = 0; j < sizeof(map[0]) / sizeof(map[0][0]); j++) {
+
+					int bmp_x = (0 % 4) * BLOCK_BITMAP_SIZE_X;
+					int bmp_y = (0 / 4) * BLOCK_BITMAP_SIZE_Y;
+
+					if (landValues.count(map[i][j]) == 0) { //不是沙子默认画0
+						bmp_x = (0 % 4) * BLOCK_BITMAP_SIZE_X;
+						bmp_y = (0 / 4) * BLOCK_BITMAP_SIZE_Y;
+					}
+					else
+					{
+						bmp_x = (map[i][j] % 4) * BLOCK_BITMAP_SIZE_X;
+						bmp_y = (map[i][j] / 4) * BLOCK_BITMAP_SIZE_Y;
+					}
+
+					TransparentBlt(
+						hdc_memBuffer,
+						j * BLOCK_SIZE_X, i * BLOCK_SIZE_Y,							// 界面上起始绘制点
+						BLOCK_SIZE_X, BLOCK_SIZE_Y,									// 界面上绘制宽度高度
+						hdc_loadBmp,
+						bmp_x,						// 位图上起始绘制点
+						bmp_y,
+						BLOCK_BITMAP_SIZE_X, BLOCK_BITMAP_SIZE_Y,					// 位图上绘制宽度高度
+						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
+				}
+			}
+
+			vector<Drawable*> drawables;
+
+			
+			for (int i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
+				for (int j = 0; j < sizeof(map[0]) / sizeof(map[0][0]); j++) {
+
+					if (landValues.count(map[i][j]) != 0) {
+						continue;
+					}else{
+
+						Drawable* tile = new Drawable();
+						tile->img = bmp_map;
+						tile->x = j * BLOCK_SIZE_X;
+						tile->y = i * BLOCK_SIZE_Y;
+						tile->size_x = BLOCK_SIZE_X;
+						tile->size_y = BLOCK_SIZE_Y;
+						tile->bmp_x = (map[i][j] % 4) * BLOCK_BITMAP_SIZE_X;
+						tile->bmp_y = (map[i][j] / 4) * BLOCK_BITMAP_SIZE_Y;
+						tile->bmp_size_x = BLOCK_BITMAP_SIZE_X;
+						tile->bmp_size_y = BLOCK_BITMAP_SIZE_Y;
+						tile->transparentColor = RGB(91, 179, 142);
+						drawables.push_back(tile);
+					}
+				}
+			}
+			
+
+
+			// 绘制玩家
+
+			Drawable* p = new Drawable();
+			p->img = player->img;
+			p->x = player->x - 0.5 * HUMAN_SIZE_X;
+			p->y = player->y - 0.5 * HUMAN_SIZE_Y;
+			p->size_x = HUMAN_SIZE_X;
+			p->size_y = HUMAN_SIZE_Y;
+			p->bmp_x = HUMAN_BITMAP_SIZE_X * player->frame_column;
+			p->bmp_y = HUMAN_BITMAP_SIZE_Y * player->frame_row;
+			p->bmp_size_x = HUMAN_BITMAP_SIZE_X;
+			p->bmp_size_y = HUMAN_BITMAP_SIZE_Y;
+			p->transparentColor = RGB(255, 255, 255);
+
+			if (player->weapon != NULL) {
+
+				Weapon* weapon = player->weapon;
+				Drawable* w = new Drawable();
+				w->img = weapon->img;
+				w->x = player->x - 0.5 * weapon->size_x;
+				w->y = player->y - 0.5 * HUMAN_SIZE_Y - 0.5 * weapon->size_y;
+				w->size_x = weapon->size_x;
+				w->size_y = weapon->size_y;
+				w->bmp_x = weapon->bmp_size_x * weapon->bmp_col;
+				w->bmp_y = weapon->bmp_size_y * weapon->bmp_row;
+				w->bmp_size_x = weapon->bmp_size_x;
+				w->bmp_size_y = weapon->bmp_size_y;
+				w->transparentColor = RGB(255, 255, 255);
+
+				p->subdrawables.push_back(w);
+
+			}
+			drawables.push_back(p);
+
+
+			for (int i = 0; i < npcs.size(); i++) {
+				if (npcs[i]->visible) {
+
+
+					Drawable* n = new Drawable();
+					n->img = npcs[i]->img;
+					n->x = npcs[i]->x - 0.5 * HUMAN_SIZE_X;
+					n->y = npcs[i]->y - 0.5 * HUMAN_SIZE_Y;
+					n->size_x = HUMAN_SIZE_X;
+					n->size_y = HUMAN_SIZE_Y;
+					n->bmp_x = HUMAN_BITMAP_SIZE_X * npcs[i]->frame_column;
+					n->bmp_y = HUMAN_BITMAP_SIZE_Y * npcs[i]->frame_row;
+					n->bmp_size_x = HUMAN_BITMAP_SIZE_X;
+					n->bmp_size_y = HUMAN_BITMAP_SIZE_Y;
+					n->transparentColor = RGB(255, 255, 255);
+					
+					drawables.push_back(n);
+				}
+			}
+
+
+
+			for (int i = 0; i < current_new_monsters->size(); i++) {
+				if ((*current_new_monsters)[i]->visible) {
+
+					NewMonster* monster = (*current_new_monsters)[i];
+
+					Drawable* m = new Drawable();
+
+					m->img = monster->img;
+					m->x = monster->x - 0.5 * monster->size_x;
+					m->y = monster->y - 0.5 * monster->size_y;
+					m->size_x = monster->size_x;
+					m->size_y = monster->size_y;
+					m->bmp_x = monster->bmp_size_x * monster->frame_column;
+					m->bmp_y = monster->bmp_size_y * monster->frame_row;
+					m->bmp_size_x = monster->bmp_size_x;
+					m->bmp_size_y = monster->bmp_size_y;
+					m->transparentColor = RGB(255, 255, 255);
+					//受伤动画 粒子效果 血条在外面画？
+
+					drawables.push_back(m);
+				}
+			}
+
+
+			//绘制drawable
+			std::sort(drawables.begin(), drawables.end(), [](const Drawable* a, const Drawable* b) {
+				return (a->y + (a->size_y * 0.5)) < (b->y + (b->size_y * 0.5));
+			});
+
+			for (const auto drawable : drawables) {
+				SelectObject(hdc_loadBmp, drawable->img);
+				TransparentBlt(
+					hdc_memBuffer,
+					drawable->x, drawable->y, // 界面上起始绘制点
+					drawable->size_x, drawable->size_y,                                    // 绘制宽度高度
+					hdc_loadBmp,
+					drawable->bmp_x, drawable->bmp_y, // 位图起始点
+					drawable->bmp_size_x, drawable->bmp_size_y,                                    // 位图宽度高度
+					drawable->transparentColor                                            // 透明色
+				);
+
+				for (const auto subdrawable : drawable->subdrawables) { //只能一层
+					SelectObject(hdc_loadBmp, subdrawable->img);
+					TransparentBlt(
+						hdc_memBuffer,
+						subdrawable->x, subdrawable->y, // 界面上起始绘制点
+						subdrawable->size_x, subdrawable->size_y,                                    // 绘制宽度高度
+						hdc_loadBmp,
+						subdrawable->bmp_x, subdrawable->bmp_y, // 位图起始点
+						subdrawable->bmp_size_x, subdrawable->bmp_size_y,                                    // 位图宽度高度
+						subdrawable->transparentColor                                            // 透明色
+					);
+
+					delete subdrawable;
+				}
+
+				delete drawable;
+			}
+
+
+
+
+
+			//上层动画
+
+			for (int i = 0; i < current_new_monsters->size(); i++) {
+				if ((*current_new_monsters)[i]->visible) {
+
+					NewMonster* monster = (*current_new_monsters)[i];
+
+					//受伤动画
+					if (current_new_monsters->at(i)->hurt) {
+
+						SelectObject(hdc_loadBmp, monster->img);
+
+						char buff[256];
+						sprintf(buff, "hurt %d\n", i);
+						OutputDebugStringA(buff);
+
+						// 创建怪物图像的副本
+						HDC hdc_monsterCopy = CreateCompatibleDC(hdc_memBuffer);
+						HBITMAP hbm_monsterCopy = CreateCompatibleBitmap(hdc_memBuffer, monster->bmp_size_x, monster->bmp_size_y);
+						SelectObject(hdc_monsterCopy, hbm_monsterCopy);
+
+						// 将原始怪物图像拷贝到副本
+						BitBlt(hdc_monsterCopy, 0, 0, monster->bmp_size_x, monster->bmp_size_y, hdc_loadBmp,
+							monster->bmp_size_x * monster->frame_column, monster->bmp_size_y * monster->frame_row, SRCCOPY);
+
+
+						// 将所有非透明像素替换为红色
+						for (int y = 0; y < monster->bmp_size_y; y++) {
+							for (int x = 0; x < monster->bmp_size_x; x++) {
+								COLORREF pixelColor = GetPixel(hdc_monsterCopy, x, y);
+								if (pixelColor != RGB(255, 255, 255)) { // 忽略透明背景
+									SetPixel(hdc_monsterCopy, x, y, RGB(255, 0, 0)); // 将像素设置为红色
+								}
+							}
+						}
+
+
+						// 绘制纯红色的怪物图像
+						TransparentBlt(
+							hdc_memBuffer,
+							monster->x - 0.5 * monster->size_x, monster->y - 0.5 * monster->size_y,
+							monster->size_x, monster->size_y,
+							hdc_monsterCopy,
+							0, 0,
+							monster->bmp_size_x, monster->bmp_size_y,
+							RGB(255, 255, 255)
+						);
+
+						// 清理资源
+						DeleteObject(hbm_monsterCopy);
+						DeleteDC(hdc_monsterCopy);
+
+						current_new_monsters->at(i)->hurt = false;
+					}
+
+
+					//粒子动画
+					//NewMonster* monster = (*current_new_monsters)[i];
+					for (int j = 0; j < monster->particles.size(); j++) {
+						char buff[256];
+						sprintf(buff, "text: %d\n", j);
+						OutputDebugStringA(buff);
+						Particle* particle = monster->particles[j];
+
+						RECT textRect;
+						textRect.left = monster->x - monster->size_x * 2;
+						textRect.top = monster->y - monster->size_y - 16 + particle->offset_y; //?
+						textRect.right = monster->x + monster->size_x * 2;
+						textRect.bottom = monster->y - monster->size_y * 0.5 + particle->offset_y;
+
+						// 绘制文本在按钮的中心
+						SetBkMode(hdc_memBuffer, TRANSPARENT);
+						SetTextColor(hdc_memBuffer, RGB(255, 0, 0));
+						DrawText(hdc_memBuffer, particle->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+						SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+						//DrawCenteredText(hdc_loadBmp, particle->text, monster->x, monster->y - monster->size_y, 16, RGB(255, 0, 0));
+					}
+
+					if (monster->hp_visible) {
+						RECT hpRect_bg;
+						hpRect_bg.left = monster->x - HP_WIDTH * 0.5;
+						hpRect_bg.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
+						hpRect_bg.right = monster->x + HP_WIDTH * 0.5;
+						hpRect_bg.bottom = monster->y - monster->size_y * 0.5;
+
+						if (monster->hp <= 0) {
+							monster->hp = 0;
+						}
+
+						RECT hpRect_hp;
+						hpRect_hp.left = monster->x - HP_WIDTH * 0.5;
+						hpRect_hp.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
+						hpRect_hp.right = monster->x - HP_WIDTH * 0.5 + (monster->hp / monster->hp_max) * HP_WIDTH;
+						hpRect_hp.bottom = monster->y - monster->size_y * 0.5;
+
+
+						// 黑色背景矩形
+						HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));  // 创建黑色画刷
+						FillRect(hdc_memBuffer, &hpRect_bg, blackBrush);               // 填充背景矩形
+						DeleteObject(blackBrush);                            // 释放黑色画刷
+
+						// 红色血量矩形
+						HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));  // 创建红色画刷
+						FillRect(hdc_memBuffer, &hpRect_hp, redBrush);                 // 填充血量矩形
+						DeleteObject(redBrush);                              // 释放红色画刷
+
+					}
+				}
+			}
+
+
+
+
+
+
+
+
+			/*
+
 			//绘制地图
 			SelectObject(hdc_loadBmp, bmp_map);
 			for (int i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
@@ -1150,6 +1587,31 @@ void Paint(HWND hWnd)
 				HUMAN_BITMAP_SIZE_X, HUMAN_BITMAP_SIZE_Y,											// 位图上绘制宽度高度
 				RGB(255, 255, 255)
 			);
+
+			if (player->weapon != NULL) {
+
+				Weapon* weapon = player->weapon;
+				SelectObject(hdc_loadBmp, weapon->img);*/
+
+				//TODO
+
+				/*
+				TransparentBlt(
+					hdc_memBuffer,
+					player->x - 0.5 * weapon->size_x, player->y - 0.5 * HUMAN_SIZE_Y - 0.5* weapon->size_y,			// 界面上起始绘制点
+					weapon->size_x, weapon->size_y,											// 界面上绘制宽度高度
+					hdc_loadBmp,
+					weapon->bmp_size_x * weapon->bmp_col, weapon->bmp_size_y * weapon->bmp_row,	// 位图上起始绘制点
+					weapon->bmp_size_x, weapon->bmp_size_y,											// 位图上绘制宽度高度
+					RGB(255, 255, 255)
+				);
+				*/
+
+			/*
+
+			}
+
+
 			//绘制npc
 			for (int i = 0; i < npcs.size(); i++) {
 				if (npcs[i]->visible) {
@@ -1178,23 +1640,128 @@ void Paint(HWND hWnd)
 						MOSTER_BITMAP_SIZE_X, MOSTER_BITMAP_SIZE_Y,											// 位图上绘制宽度高度
 						RGB(255, 255, 255)
 					);
+
 				}
 			}
 
-			for (int i = 0; i < new_monsters.size(); i++) {
-				if (new_monsters[i]->visible) {
-					SelectObject(hdc_loadBmp, new_monsters[i]->img);
+			for (int i = 0; i < current_new_monsters->size(); i++) {
+				if ((*current_new_monsters)[i]->visible) {
+
+					NewMonster* monster = (*current_new_monsters)[i];
+					SelectObject(hdc_loadBmp, monster->img);
 					TransparentBlt(
 						hdc_memBuffer,
-						new_monsters[i]->x - 0.5 * NEW_MOSTER_SIZE_X, new_monsters[i]->y - 0.5 * NEW_MOSTER_SIZE_Y,		// 界面上起始绘制点
-						NEW_MOSTER_SIZE_X, NEW_MOSTER_SIZE_Y,											// 界面上绘制宽度高度
+						monster->x - 0.5 * monster->size_x, monster->y - 0.5 * monster->size_y,		// 界面上起始绘制点
+						monster->size_x, monster->size_y,											// 界面上绘制宽度高度
 						hdc_loadBmp,
-						NEW_MOSTER_BITMAP_SIZE_X * new_monsters[i]->frame_column, NEW_MOSTER_BITMAP_SIZE_Y * new_monsters[i]->frame_row,	// 位图上起始绘制点
-						NEW_MOSTER_BITMAP_SIZE_X, NEW_MOSTER_BITMAP_SIZE_Y,											// 位图上绘制宽度高度
+						monster->bmp_size_x* monster->frame_column, monster->bmp_size_y* monster->frame_row,	// 位图上起始绘制点
+						monster->bmp_size_x, monster->bmp_size_y,											// 位图上绘制宽度高度
 						RGB(255, 255, 255)
 					);
+
+					//受伤动画
+					if (current_new_monsters->at(i)->hurt) {
+
+						char buff[256];
+						sprintf(buff, "hurt %d\n",i);
+						OutputDebugStringA(buff);
+
+						// 创建怪物图像的副本
+						HDC hdc_monsterCopy = CreateCompatibleDC(hdc_memBuffer);
+						HBITMAP hbm_monsterCopy = CreateCompatibleBitmap(hdc_memBuffer, monster->bmp_size_x, monster->bmp_size_y);
+						SelectObject(hdc_monsterCopy, hbm_monsterCopy);
+
+						// 将原始怪物图像拷贝到副本
+						BitBlt(hdc_monsterCopy, 0, 0, monster->bmp_size_x, monster->bmp_size_y, hdc_loadBmp,
+							monster->bmp_size_x* monster->frame_column, monster->bmp_size_y* monster->frame_row, SRCCOPY);
+
+						
+						// 将所有非透明像素替换为红色
+						for (int y = 0; y < monster->bmp_size_y; y++) {
+							for (int x = 0; x < monster->bmp_size_x; x++) {
+								COLORREF pixelColor = GetPixel(hdc_monsterCopy, x, y);
+								if (pixelColor != RGB(255, 255, 255)) { // 忽略透明背景
+									SetPixel(hdc_monsterCopy, x, y, RGB(255, 0, 0)); // 将像素设置为红色
+								}
+							}
+						}
+						
+
+						// 绘制纯红色的怪物图像
+						TransparentBlt(
+							hdc_memBuffer,
+							monster->x - 0.5 * monster->size_x, monster->y - 0.5 * monster->size_y,
+							monster->size_x, monster->size_y,
+							hdc_monsterCopy,
+							0, 0,
+							monster->bmp_size_x, monster->bmp_size_y,
+							RGB(255, 255, 255)
+						);
+
+						// 清理资源
+						DeleteObject(hbm_monsterCopy);
+						DeleteDC(hdc_monsterCopy);
+
+						current_new_monsters->at(i)->hurt = false;
+					}
+
+
+					//粒子动画
+					//NewMonster* monster = (*current_new_monsters)[i];
+					for (int j = 0; j < monster->particles.size(); j++) {
+						char buff[256];
+						sprintf(buff, "text: %d\n", j);
+						OutputDebugStringA(buff);
+						Particle* particle = monster->particles[j];
+
+						RECT textRect;
+						textRect.left = monster->x - monster->size_x * 2;
+						textRect.top = monster->y - monster->size_y - 16 + particle->offset_y; //?
+						textRect.right = monster->x + monster->size_x * 2;
+						textRect.bottom = monster->y - monster->size_y*0.5 + particle->offset_y;
+
+						// 绘制文本在按钮的中心
+						SetBkMode(hdc_memBuffer, TRANSPARENT);
+						SetTextColor(hdc_memBuffer, RGB(255, 0, 0));
+						DrawText(hdc_memBuffer, particle->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+						SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+						//DrawCenteredText(hdc_loadBmp, particle->text, monster->x, monster->y - monster->size_y, 16, RGB(255, 0, 0));
+					}
+
+					if (monster->hp_visible) {
+						RECT hpRect_bg;
+						hpRect_bg.left = monster->x - HP_WIDTH * 0.5;
+						hpRect_bg.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
+						hpRect_bg.right = monster->x + HP_WIDTH * 0.5;
+						hpRect_bg.bottom = monster->y - monster->size_y * 0.5;
+
+						if (monster->hp <= 0) {
+							monster->hp = 0;
+						}
+
+						RECT hpRect_hp;
+						hpRect_hp.left = monster->x - HP_WIDTH * 0.5;
+						hpRect_hp.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
+						hpRect_hp.right = monster->x - HP_WIDTH * 0.5 + (monster->hp / monster->hp_max) * HP_WIDTH;
+						hpRect_hp.bottom = monster->y - monster->size_y * 0.5;
+
+
+						// 黑色背景矩形
+						HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));  // 创建黑色画刷
+						FillRect(hdc_memBuffer, &hpRect_bg, blackBrush);               // 填充背景矩形
+						DeleteObject(blackBrush);                            // 释放黑色画刷
+
+						// 红色血量矩形
+						HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));  // 创建红色画刷
+						FillRect(hdc_memBuffer, &hpRect_hp, redBrush);                 // 填充血量矩形
+						DeleteObject(redBrush);                              // 释放红色画刷
+
+					}
 				}
 			}
+
+			*/
 
 
 			//如果正处在对话状态：绘制对话框

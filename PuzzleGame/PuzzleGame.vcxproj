@@ -150,7 +150,11 @@
     <ResourceCompile Include="PuzzleGame.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\..\..\Desktop\Blue Chicken..bmp" />
     <Image Include="..\..\..\..\..\Desktop\Crow..bmp" />
+    <Image Include="..\..\..\..\..\Desktop\Duck..bmp" />
+    <Image Include="..\..\..\..\..\Desktop\Goat..bmp" />
+    <Image Include="..\..\..\..\..\Desktop\weapons..bmp" />
     <Image Include="..\..\..\..\..\Desktop\星露谷物语素材\Stardew valley\Characters\Monsters\Crow..png" />
     <Image Include="..\..\..\..\..\Desktop\美术资源_PS源文件\btn_bg.bmp" />
     <Image Include="PuzzleGame.ico" />

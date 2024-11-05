@@ -12,12 +12,15 @@
 #include <math.h>
 #include <string>
 #include <random>
+#include <unordered_set>
 #include "resource.h"
 #pragma comment(lib, "Msimg32.lib")			//图象处理的函数接口，例如：透明色的位图的绘制TransparentBlt函数
 using namespace std;
 #pragma endregion
 
 #pragma region 宏定义
+
+const double PI = 3.14159265358979323846;
 
 #define WINDOW_TITLEBARHEIGHT	32			//标题栏高度
 #define WINDOW_WIDTH			896+16		//游戏窗口宽度
@@ -53,6 +56,8 @@ using namespace std;
 #define NEW_MOSTER_BITMAP_SIZE_Y	64
 #define NEW_MOSTER_SIZE_X			30		//怪物
 #define NEW_MOSTER_SIZE_Y			30
+#define HP_WIDTH					30		//背景行数
+#define HP_HEIGHT					5		//背景行数
 
 
 //单位状态定义
@@ -86,6 +91,11 @@ using namespace std;
 
 #define MONSTER_CAT_ID			3001
 #define MONSTER_CROW_ID			3002
+#define MONSTER_DUCK_ID			3003
+#define MONSTER_CHIKEN_ID			3004
+
+
+#define WEAPON_SWORD_ID			4001
 
 ///
 
@@ -116,6 +126,37 @@ struct Button
 	int width;		//宽度
 	int height;		//高度
 	wstring text;          // 用于显示按钮上的文字
+};
+
+struct Particle
+{
+
+	int offset_x;
+	int offset_y;
+	int vx;
+	int vy;
+	int life_max;
+	int life_count;
+
+	wstring text;
+};
+
+struct Weapon
+{
+	int weaponID;	//武器编号
+	HBITMAP img;	//图片
+	bool move;
+
+	int bmp_size_x;
+	int bmp_size_y;
+
+	int size_x;
+	int size_y;
+
+	int bmp_row;
+	int bmp_col;
+
+	int damage;		//伤害值
 };
 
 // NPC结构体
@@ -167,6 +208,8 @@ struct Player
 	double vx;		//速度x
 	double vy;		//速度y
 	int health;		//生命值
+
+	Weapon* weapon;	//武器
 };
 // 怪物结构体
 struct Monster
@@ -207,6 +250,7 @@ struct NewMonster
 	HBITMAP img;			//图片
 	bool visible;			//是否可见
 	bool move;				//是否可以移动
+	bool hurt;
 
 	int frame_row;			//当前显示的是图像的第几行
 	int frame_column;		//当前显示的是图像的第几列
@@ -214,6 +258,10 @@ struct NewMonster
 	int* frame_sequence;	//当前的帧序列
 	int frame_count;		//帧序列的长度
 	int frame_id;			//当前显示的是帧序列的第几帧
+
+	double hp;
+	double hp_max;
+	bool hp_visible;
 
 	int state;		//单位状态
 	int direction;	//单位方向
@@ -224,10 +272,31 @@ struct NewMonster
 	double vy;		//速度y
 	int health;		//生命值
 
+	int bmp_size_x;
+	int bmp_size_y;
+
+	int size_x;
+	int size_y;
+
+	//动画相关
 	int time_count;
+	int time_stop;
+	int time_max;
+
+	vector<Particle*> particles;
 
 };
 
+
+struct Drawable {
+	HBITMAP img;      // 图像句柄
+	int x, y;       // 图像绘制左上角
+	int size_x, size_y; // 绘制尺寸
+	int bmp_x, bmp_y; // 位图上起始绘制点
+	int bmp_size_x, bmp_size_y; // 位图上起始绘制点
+	COLORREF transparentColor; // 透明色
+	vector<Drawable*> subdrawables; // 下一个图像
+};
 
 
 
@@ -269,8 +338,11 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam);
 // 添加按钮函数
 Button* CreateButton(int buttonID, HBITMAP img, int width, int height, int x, int y, wstring text);
 
+Particle* CreateParticle(wstring text);
+
 // 添加单位函数
 Player* CreatePlayer(int x, int y);
+Weapon* CreateWeapon(int weapon_id);
 NPC* CreateNPC(int x, int y, int npc_id);
 Monster* CreateMonster(int x, int y, int monster_id);
 
@@ -302,4 +374,3 @@ void HandleHelpEvents(HWND hWnd);
 void Paint(HWND hWnd);
 
 #pragma endregion
-

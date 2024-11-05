@@ -75,5 +75,17 @@
     <Image Include="..\..\..\..\..\Desktop\Crow..bmp">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="..\..\..\..\..\Desktop\Duck..bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\Goat..bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\Blue Chicken..bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\weapons..bmp">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

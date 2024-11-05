@@ -24,8 +24,11 @@
 #define IDB_BITMAP3                     139
 #define IDB_MONSTER1                    139
 #define IDB_BTN_BG                      141
-#define IDB_BITMAP4                     145
 #define IDB_CROW                        145
+#define IDB_DUCK                        146
+#define IDB_CHIKEN                      150
+#define IDB_BITMAP4                     152
+#define IDB_WEAPON                      152
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -33,7 +36,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        146
+#define _APS_NEXT_RESOURCE_VALUE        153
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           110
