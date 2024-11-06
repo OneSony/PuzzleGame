@@ -22,6 +22,7 @@ HBITMAP bmp_crow;		//怪物1图像
 HBITMAP bmp_duck;		//怪物1图像
 HBITMAP bmp_chiken;		//怪物1图像
 HBITMAP bmp_weapon;		//怪物1图像
+HBITMAP bmp_summer_land;
 
 Stage* currentStage = NULL; //当前场景状态
 vector<NPC*> npcs;			//NPC列表
@@ -66,6 +67,9 @@ int MONSTER_FRAMES_COUNT = sizeof(MONSTER_FRAMES) / sizeof(int);
 
 //地图
 //0空地 1草 2红花 3+7树 4/5/6/8/9/10/12/13/14土地 11蓝花 15路牌
+
+Land* new_map_stage1[20][28];	//地图砖块
+
 int map_stage1[20][28] = {
 	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
 	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
@@ -88,6 +92,48 @@ int map_stage1[20][28] = {
 	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
 	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
 };
+
+
+void init_map_stage1() {
+	int map_stage1[20][28] = {
+	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
+	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
+	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
+	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
+	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 5, 5, 6, 0, 0, 0, 0, 0, 3,},
+	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9,10, 0, 0, 0, 0, 0, 7,},
+	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9,10, 0, 0, 0, 0, 0, 3,},
+	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9,10, 0, 0, 0, 0, 0, 7,},
+	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,12,13,13,13,14, 0, 0, 0, 0, 0, 3,},
+	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
+	{ 3, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
+	{ 7, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
+	{ 3, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
+	{ 7, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
+	{ 3, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
+	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
+	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
+	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
+	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
+	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
+	};
+
+	for (int i = 0; i < 20; i++) {
+		for (int j = 0; j < 28; j++) {
+			
+			switch (map_stage1[i][j]) {
+			case 0:
+				new_map_stage1[i][j] = CreateLand(LAND_GRASS_ID);
+				break;
+			default:
+				new_map_stage1[i][j] = CreateLand(LAND_DIRT_ID);
+				break;
+			}
+
+		}
+	}
+
+}
 //第二个关卡地图
 int map_stage2[20][28] = {
 	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
@@ -112,7 +158,7 @@ int map_stage2[20][28] = {
 	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
 };
 int map[20][28] = { 0 };	//存储当前关卡的地图
-
+Land* new_map[20][28] = { 0 };	//存储当前关卡的地图
 
 // TODO: 在此添加其它全局变量
 
@@ -287,6 +333,7 @@ void InitGame(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	bmp_duck = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_DUCK));
 	bmp_chiken = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_CHIKEN));
 	bmp_weapon = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_WEAPON));
+	bmp_summer_land = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_SUMMER_LAND));
 	
 	//添加按钮
 	Button* startButton = CreateButton(BUTTON_STARTGAME, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
@@ -307,6 +354,9 @@ void InitGame(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	Button* homeButton_stop = CreateButton(BUTTON_STOP_HOME, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
 		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"HOME");
 	stop_buttons.push_back(homeButton_stop);
+
+
+	init_map_stage1();
 
 
 
@@ -479,6 +529,8 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 					monster->hp_visible = true;
 					monster->particles.push_back(CreateParticle(L"-" + to_wstring(player->weapon->damage) + L"HP"));
 
+					AddEffect(monster, EFFECT_SPEED_UP_ID);
+
 					char buff[256];
 					sprintf(buff, "monster hp: %d\n", monster->hp);
 					OutputDebugStringA(buff);
@@ -488,6 +540,17 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		}
 	}
 
+}
+
+void AddEffect(NewMonster* monster, int effect_id) {
+	for (auto it = monster->effects.begin(); it != monster->effects.end(); it++) {
+		if ((*it)->effectID == effect_id) {
+			(*it)->life_count = 0;
+			return;
+		}
+	}
+
+	monster->effects.push_back(CreateEffect(EFFECT_SPEED_UP_ID));
 }
 
 // 鼠标左键松开事件处理函数
@@ -635,30 +698,107 @@ void UpdateNPCs(HWND hWnd) {
 }
 void UpdateMonsters(HWND hWnd)
 {
-	//顺次更新每个怪物
-	for (int i = 0; i < monsters.size(); i++) {
-		//动画运行到下一帧
-		monsters[i]->frame_id++;
-		monsters[i]->frame_id = monsters[i]->frame_id % monsters[i]->frame_count;
-		monsters[i]->frame_column = monsters[i]->frame_sequence[monsters[i]->frame_id];
-	}
 
-
-	
 	//顺次更新每个怪物
 	for (int i = 0; i < current_new_monsters->size(); i++) {
 
+		if (!(*current_new_monsters)[i]->visible) {
+			continue;
+		}
+
 		NewMonster* monster = (*current_new_monsters)[i];
 
+
+
+		//更新状态
 		monster->time_count++;
+		monster->time_count = monster->time_count % monster->time_max;
+		if (monster->time_count == 0) {
+			//更新移动动画
+			monster->state = MONSTER_STATE_MOVE;
 
-		//每一次都刷新帧
-		monster->frame_id++;
-		monster->frame_id = monster->frame_id % monster->frame_count;
-		monster->frame_column = monster->frame_sequence[monster->frame_id];
+			//更新方向
+			monster->direction = RandomInt(0, 3);
 
-		if (monster->time_count < monster->time_stop) {//开始移动
+			//更新下次时间
+			monster->time_stop = RandomInt(50, 100);
+			monster->time_max = RandomInt(150, 500);
+			//TODO 效果可能没法用
+		}
+		else if (monster->time_count == monster->time_stop) {
+			//更新静止动画
+			monster->state = MONSTER_STATE_STOP;
+		}
 
+
+
+
+		//更新特效
+		for (auto it = monster->effects.begin(); it != monster->effects.end(); ) {
+
+			if ((*it)->life_count == 0) { //初始化
+				switch ((*it)->effectID) {
+				case EFFECT_SPEED_UP_ID:
+					monster->state = MONSTER_STATE_MOVE;
+					monster->vx = 5;
+					monster->vy = 5;
+					monster->time_max = RandomInt(5,20);
+					monster->time_stop = monster->time_max;
+					monster->time_count = 0;
+					break;
+				}
+			}
+
+			if (monster->time_count == 0) { //时间周期开始
+				switch ((*it)->effectID) {
+				case EFFECT_SPEED_UP_ID://每次要修正时间分配
+					monster->state = MONSTER_STATE_MOVE;
+					monster->time_max = RandomInt(5, 20);
+					monster->time_stop = monster->time_max;
+					monster->time_count = 0;
+					break;
+				}
+			}
+
+
+			(*it)->life_count++;
+			char buff[256];
+			sprintf(buff, "effect life: %d\n", (*it)->life_count);
+			OutputDebugStringA(buff);
+
+			if ((*it)->life_count >= (*it)->life_max) {
+
+				switch ((*it)->effectID) {
+				case EFFECT_SPEED_UP_ID:
+					monster->state = MONSTER_STATE_STOP;
+					monster->vx = 2;
+					monster->vy = 2;
+					monster->time_stop = RandomInt(50, 100);
+					monster->time_max = RandomInt(150, 500);
+					monster->time_count = monster->time_stop - 1;
+					break;
+				}
+
+				delete* it; // 释放内存
+				it = monster->effects.erase(it); // 删除粒子并更新迭代器
+
+				sprintf(buff, "delete\n");
+				OutputDebugStringA(buff);
+			}
+			else {
+				it++; // 如果没有删除，移动到下一个粒子
+			}
+
+		}
+
+
+
+
+		//根据状态更新动画
+		switch (monster->state) {
+		case MONSTER_STATE_MOVE:
+			monster->frame_sequence = FRAMES_WALK;
+			monster->frame_count = FRAMES_WALK_COUNT;
 			switch (monster->direction) {
 			case UNIT_DIRECT_LEFT:
 				monster->frame_row = UNIT_DIRECT_LEFT;
@@ -699,28 +839,15 @@ void UpdateMonsters(HWND hWnd)
 			default:
 				break;
 			};
-		}
-		else if (monster->time_count == monster->time_stop) {
-			//更新动画
-
+			break;
+		case MONSTER_STATE_STOP:
 			monster->frame_sequence = FRAMES_HOLD;
 			monster->frame_count = FRAMES_HOLD_COUNT;
-
-		}
-		else if (monster->time_count >= monster->time_max) {
-			
-			//下一次循环
-			monster->time_count = 0;
-			monster->direction = RandomInt(0, 3);
-			monster->time_stop = RandomInt(30, 100);
-			monster->time_max = RandomInt(120, 500);
-
-			//更新动画
-			monster->frame_sequence = FRAMES_WALK;
-			monster->frame_count = FRAMES_WALK_COUNT;
+			break;
 		}
 
-
+		
+		//更新粒子动画
 		for (auto it = monster->particles.begin(); it != monster->particles.end(); ) {
 
 			(*it)->life_count++;
@@ -743,10 +870,67 @@ void UpdateMonsters(HWND hWnd)
 			}
 		}
 
+
 		//检查死亡
 		if (monster->hp <= 0) {
 			monster->visible = false;
 		}
+
+
+
+		//如果和玩家接触
+		int limit_x_left = player->x - HUMAN_SIZE_X * 0.5;
+		int limit_x_right = player->x + HUMAN_SIZE_X * 0.5;
+		int limit_y_up = player->y - HUMAN_SIZE_Y * 0.5;
+		int limit_y_down = player->y + HUMAN_SIZE_Y * 0.5;
+		if (monster->x > limit_x_left && monster->x < limit_x_right && monster->y > limit_y_up && monster->y < limit_y_down) {
+			//??
+			//monster->frame_sequence = FRAMES_WALK;
+			//monster->frame_count = FRAMES_WALK_COUNT;
+
+			switch (player->direction) {
+			case UNIT_DIRECT_RIGHT:
+				if (CanMove(player->x, player->y, player->x - player->vx, player->y)) {
+					player->x -= player->vx;
+				}
+				if (CanMove(monster->x, monster->y, monster->x + player->vx, monster->y)) {
+					monster->x += player->vx;
+				}
+				break;
+			case UNIT_DIRECT_LEFT:
+				if (CanMove(player->x, player->y, player->x + player->vx, player->y)) {
+					player->x += player->vx;
+				}
+				if (CanMove(monster->x, monster->y, monster->x - player->vx, monster->y)) {
+					monster->x -= player->vx;
+				}
+				break;
+			case UNIT_DIRECT_DOWN:
+				if (CanMove(player->x, player->y, player->x, player->y - player->vy)) {
+					player->y -= player->vy;
+				}
+				if (CanMove(monster->x, monster->y, monster->x, monster->y + player->vy)) {
+					monster->y += player->vy;
+				}
+				break;
+			case UNIT_DIRECT_UP:
+				if (CanMove(player->x, player->y, player->x, player->y + player->vy)) {
+					player->y += player->vy;
+				}
+				if (CanMove(monster->x, monster->y, monster->x, monster->y - player->vy)) {
+					monster->y -= player->vy;
+				}
+				break;
+			}
+		}
+
+
+		//更新帧
+		monster->frame_id++;
+		monster->frame_id = monster->frame_id % monster->frame_count;
+		monster->frame_column = monster->frame_sequence[monster->frame_id];
+
+
 	}
 
 }
@@ -860,6 +1044,26 @@ Particle* CreateParticle(wstring text) {
 
 	return particle;
 }
+
+Effect* CreateEffect(int effect_id) {
+	Effect* effect = new Effect();
+	effect->effectID = effect_id;
+	effect->life_count = 0;
+
+	switch (effect_id)
+	{
+	case EFFECT_SPEED_UP_ID:
+	{
+		effect->life_max = 100;
+		break;
+	}
+	default:
+		break;
+	}
+
+	return effect;
+}
+
 
 // 添加主角函数
 Player* CreatePlayer(int x, int y)
@@ -984,6 +1188,48 @@ Monster* CreateMonster(int x, int y, int monster_id)
 	return monster;
 }
 
+Land* CreateLand(int land_id) {
+	Land* land = new Land();
+
+
+	land->landID = land_id;
+
+	land->size_x = BLOCK_BITMAP_SIZE_X;
+	land->size_y = BLOCK_BITMAP_SIZE_Y;
+
+	land->bmp_size_x = 16;
+	land->bmp_size_y = 16;
+
+	land->frame_id = 0;
+
+	switch (land_id)
+	{
+	case LAND_GRASS_ID:
+	{
+		land->passable = true;
+		land->animated = false;
+
+		land->bmp_row = 0;
+		land->bmp_col = 0;
+		break;
+	}
+	case LAND_DIRT_ID:
+	{
+		land->passable = true;
+		land->animated = false;
+
+		land->bmp_row = 1;
+		land->bmp_col = 0;
+		break;
+	}
+	default:
+		break;
+	}
+
+
+	return land;
+
+}
 
 NewMonster* NewCreateMonster(int x, int y, int monster_id)
 {
@@ -996,13 +1242,13 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 	monster->direction = UNIT_DIRECT_DOWN;
 	monster->vx = 1;
 	monster->vy = 1;
-	monster->state = UNIT_STATE_HOLD;
+	monster->state = MONSTER_STATE_MOVE;
 	monster->frame_row = monster->direction;
 	monster->frame_column = 0;
 	monster->frame_sequence = FRAMES_WALK;
 	monster->frame_count = FRAMES_WALK_COUNT;
 	monster->frame_id = 0;
-	monster->time_count = 100;
+	monster->time_count = -1;
 	monster->time_max = 10; //强制初始化
 	monster->hp_visible = false;
 
@@ -1022,8 +1268,8 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 		monster->size_y = 30;
 		monster->time_stop = 50;
 		monster->time_max = 100;
-		monster->hp = 20;
-		monster->hp_max = 20;
+		monster->hp_max = 200;
+		monster->hp = monster->hp_max;
 		break;
 	}
 	case MONSTER_DUCK_ID:
@@ -1035,8 +1281,8 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 		monster->size_y = 30;
 		monster->time_stop = 50;
 		monster->time_max = 100;
-		monster->hp = 20;
-		monster->hp_max = 20;
+		monster->hp_max = 200;
+		monster->hp = monster->hp_max;
 		break;
 	}
 	case MONSTER_CHIKEN_ID:
@@ -1048,8 +1294,8 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 		monster->size_y = 30;
 		monster->time_stop = 50;
 		monster->time_max = 100;
-		monster->hp = 50;
 		monster->hp_max = 50;
+		monster->hp = monster->hp_max;
 		break;
 	}
 	default:
@@ -1090,6 +1336,7 @@ void InitStage(HWND hWnd, int stageID)
 		currentStage->bg = bmp_Background;
 		currentStage->timerOn = true;
 		memcpy(map, map_stage1, sizeof(map));	//初始化地图
+		//memcpy(new_map, new_map_stage1, sizeof(new_map));
 		//显示游戏界面的按钮
 		for (int i = 0; i < game_buttons.size(); i++)
 		{
@@ -1255,12 +1502,34 @@ void Paint(HWND hWnd)
 			}
 		}
 	} else {
-		if (currentStage->stageID >= STAGE_1 && currentStage->stageID <= STAGE_2) //TODO：添加多个游戏场景
+		if (currentStage->stageID >= STAGE_1) //TODO：添加多个游戏场景
 		{
+			/*
+
+			SelectObject(hdc_loadBmp, bmp_summer_land);
+			for (int i = 0; i < sizeof(new_map) / sizeof(new_map[0]); i++) {
+				for (int j = 0; j < sizeof(new_map[0]) / sizeof(new_map[0][0]); j++) {
+					
+					Land* land = new_map[i][j];
+
+					TransparentBlt(
+						hdc_memBuffer,
+						j * BLOCK_SIZE_X, i * BLOCK_SIZE_Y,							// 界面上起始绘制点
+						BLOCK_SIZE_X, BLOCK_SIZE_Y,									// 界面上绘制宽度高度
+						hdc_loadBmp,
+						land->bmp_col * land->bmp_size_x,						// 位图上起始绘制点
+						land->bmp_row * land->bmp_size_y,
+						land->bmp_size_x, land->bmp_size_y,					// 位图上绘制宽度高度
+						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
+				}
+			}
 
 
+			*/
+
+			
 			unordered_set<int> landValues = { 4, 5, 6, 8, 9, 10, 12, 13, 14 };
-
+			
 			//绘制地图
 			SelectObject(hdc_loadBmp, bmp_map);
 			for (int i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
@@ -1290,6 +1559,8 @@ void Paint(HWND hWnd)
 						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
 				}
 			}
+
+			
 
 			vector<Drawable*> drawables;
 

@@ -97,6 +97,15 @@ const double PI = 3.14159265358979323846;
 
 #define WEAPON_SWORD_ID			4001
 
+
+#define LAND_GRASS_ID				5001	
+#define LAND_DIRT_ID			5002
+
+#define EFFECT_SPEED_UP_ID		6001
+
+#define MONSTER_STATE_MOVE		10001
+#define MONSTER_STATE_STOP		10002
+
 ///
 
 #pragma endregion
@@ -128,6 +137,30 @@ struct Button
 	wstring text;          // 用于显示按钮上的文字
 };
 
+struct Land
+{
+	bool passable;
+
+	int landID;
+
+	int x;
+	int y;
+
+	int size_x;
+	int size_y;
+
+	int bmp_size_x;
+	int bmp_size_y;
+
+	int bmp_row;
+	int bmp_col;
+
+	bool animated;
+	int* frame_sequence;
+	int frame_count;
+	int frame_id;
+};
+
 struct Particle
 {
 
@@ -139,6 +172,12 @@ struct Particle
 	int life_count;
 
 	wstring text;
+};
+
+struct Effect {
+	int effectID;
+	int life_count;
+	int life_max;
 };
 
 struct Weapon
@@ -285,6 +324,8 @@ struct NewMonster
 
 	vector<Particle*> particles;
 
+	vector<Effect*> effects;
+
 };
 
 
@@ -324,6 +365,8 @@ void MouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam);
 // 鼠标左键按下事件处理函数
 void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
+void AddEffect(NewMonster* monster, int effect_id);
+
 // 鼠标左键松开事件处理函数
 void LButtonUp(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
@@ -340,11 +383,15 @@ Button* CreateButton(int buttonID, HBITMAP img, int width, int height, int x, in
 
 Particle* CreateParticle(wstring text);
 
+Effect* CreateEffect(int effect_id);
+
 // 添加单位函数
 Player* CreatePlayer(int x, int y);
 Weapon* CreateWeapon(int weapon_id);
 NPC* CreateNPC(int x, int y, int npc_id);
 Monster* CreateMonster(int x, int y, int monster_id);
+
+Land* CreateLand(int land_id);
 
 
 // 初始化场景函数

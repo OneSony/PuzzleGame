@@ -29,6 +29,9 @@
     <ClCompile Include="PuzzleGame.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Create.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PuzzleGame.rc">
@@ -85,6 +88,15 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="..\..\..\..\..\Desktop\weapons..bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\summer_beach.zh-CN..bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\summer_outdoorsTileSheet.pt-BR..bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\未标题-1.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
