@@ -27,6 +27,9 @@
     <ClInclude Include="Maps.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="NPCs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PuzzleGame.cpp">
@@ -36,6 +39,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Maps.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NPCs.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -99,18 +105,6 @@
     <Image Include="..\..\..\..\..\Desktop\summer_beach.zh-CN..bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Desktop\summer_outdoorsTileSheet.pt-BR..bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\Desktop\未标题-1.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\Desktop\d91aa4b4fae0f630956a5ba1ca1308f.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\Desktop\2.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
     <Image Include="..\..\..\..\..\Desktop\Coop_.bmp">
       <Filter>资源文件</Filter>
     </Image>
@@ -145,6 +139,60 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\obj\wall_1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\chair_1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\table_1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\carpet_1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\sofa_1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\tv_1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_left.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_left_top.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_right.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_top.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\未标题-1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_bottom.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_left_bottom_r.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_right_bottom_r.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_right_top_r.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_left_top_r .bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_left_bottom.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_right_bottom.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\barrier_right_top.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

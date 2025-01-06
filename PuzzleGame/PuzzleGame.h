@@ -29,6 +29,7 @@ const double PI = 3.14159265358979323846;
 #define STAGE_STARTMENU			0		//开始画面的ID
 #define STAGE_1					1		//第一个游戏场景的ID
 #define STAGE_HOUSE_1			2
+#define STAGE_MEADOW			3
 
 
 //尺寸
@@ -88,6 +89,8 @@ const double PI = 3.14159265358979323846;
 
 #define NPC_MAN1_ID				2001		//每个NPC的ID号
 #define NPC_WOMAN1_ID			2002
+#define NPC_MAN2_ID				2003
+#define NPC_WEADOW_MAN_ID			2004
 
 #define MONSTER_CAT_ID			3001
 #define MONSTER_CROW_ID			3002
@@ -117,6 +120,11 @@ const double PI = 3.14159265358979323846;
 #define OBJ_BAR_V_HEAD 20008
 #define OBJ_BAR_V_TAIL 20009
 #define OBJ_WALL_1 20010
+#define OBJ_TABLE_1 20011
+#define OBJ_CHAIR_1 20012
+#define OBJ_SOFA_1 20013
+#define OBJ_TV 20014
+#define OBJ_CARPET_1 20015
 
 
 #define MAP_MAIN 30001
@@ -125,6 +133,34 @@ const double PI = 3.14159265358979323846;
 #define BG_GRASS 40001
 #define BG_SAND 40002
 #define BG_FLOOR_1 40003
+#define BG_BARRIER_LEFT 40004
+#define BG_BARRIER_RIGHT 40005
+#define BG_BARRIER_TOP 40006
+#define BG_BARRIER_BOTTOM 40007
+#define BG_BARRIER_LEFT_TOP 40008
+#define BG_BARRIER_LEFT_BOTTOM 40009
+#define BG_BARRIER_RIGHT_TOP 40010	
+#define BG_BARRIER_RIGHT_BOTTOM 40011
+#define BG_BARRIER_LEFT_TOP_R 40012
+#define BG_BARRIER_LEFT_BOTTOM_R 40013
+#define BG_BARRIER_RIGHT_TOP_R 40014
+#define BG_BARRIER_RIGHT_BOTTOM_R 40015
+
+
+//帧
+extern int PLAYER_FRAMES_HOLD[];
+extern int PLAYER_FRAMES_HOLD_COUNT;
+extern int NPC_FRAMES_HOLD[];
+extern int NPC_FRAMES_HOLD_COUNT;
+extern int FRAMES_WALK[];
+extern int FRAMES_HOLD[];
+extern int FRAMES_HOLD_COUNT;
+extern int FRAMES_HOME[];
+extern int FRAMES_HOME_COUNT;
+extern int FRAMES_WALK_COUNT;
+extern int MONSTER_FRAMES[];
+extern int MONSTER_FRAMES_COUNT;
+
 
 ///
 
@@ -216,35 +252,6 @@ struct Weapon
 	int bmp_col;
 
 	int damage;		//伤害值
-};
-
-// NPC结构体
-struct NPC
-{
-	int npcID;				//NPC编号
-	HBITMAP img;			//图片
-	bool visible;			//该NPC是否可见
-	bool task_complete;		//该npc的任务是否完成。决定了与npc对话时他会说什么，以及其它行为
-
-	int frame_row;			//当前显示的是图像的第几行
-	int frame_column;		//当前显示的是图像的第几列
-
-	int* frame_sequence;	//当前的帧序列
-	int frame_count;		//帧序列的长度
-	int frame_id;			//当前显示的是帧序列的第几帧
-
-	int state;		//单位状态
-	int direction;	//单位方向
-
-	int x;			//坐标x
-	int y;			//坐标y
-	double vx;		//速度x
-	double vy;		//速度y
-	int health;		//生命值
-
-	vector<const wchar_t*> conversations_before;	//任务完成前NPC的台词
-	vector<const wchar_t*> conversations_after;		//任务完成后NPC的台词
-	int next_conversation_id;				//NPC下一次要说第几句台词
 };
 
 // 玩家结构体
@@ -355,6 +362,7 @@ struct Drawable {
 	int size_x, size_y; // 绘制尺寸
 	int bmp_x, bmp_y; // 位图上起始绘制点
 	int bmp_size_x, bmp_size_y; // 位图上起始绘制点
+	int weight_x, weight_y; // 比较时用
 	COLORREF transparentColor; // 透明色
 	vector<Drawable*> subdrawables; // 下一个图像
 };
@@ -408,7 +416,6 @@ Effect* CreateEffect(int effect_id);
 // 添加单位函数
 Player* CreatePlayer(int x, int y);
 Weapon* CreateWeapon(int weapon_id);
-NPC* CreateNPC(int x, int y, int npc_id);
 Monster* CreateMonster(int x, int y, int monster_id);
 
 Land* CreateLand(int land_id);
@@ -423,6 +430,7 @@ void UpdatePlayer(HWND hWnd);
 void UpdateNPCs(HWND hWnd);
 void UpdateMonsters(HWND hWnd);
 void UpdateMaps(HWND hWnd);
+void UpdateTasks(HWND hWnd);
 
 void HandleConversationEvents(HWND hWnd);
 void HandleStopEvents(HWND hWnd);
