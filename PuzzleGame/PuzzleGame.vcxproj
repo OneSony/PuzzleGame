@@ -139,22 +139,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Maps.h" />
     <ClInclude Include="PuzzleGame.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Create.cpp" />
+    <ClCompile Include="Maps.cpp" />
     <ClCompile Include="PuzzleGame.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PuzzleGame.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\..\..\Desktop\2.bmp" />
+    <Image Include="..\..\..\..\..\Desktop\bar_h.bmp" />
+    <Image Include="..\..\..\..\..\desktop\bitmap5.bmp" />
     <Image Include="..\..\..\..\..\Desktop\Blue Chicken..bmp" />
+    <Image Include="..\..\..\..\..\Desktop\Coop_.bmp" />
     <Image Include="..\..\..\..\..\Desktop\Crow..bmp" />
+    <Image Include="..\..\..\..\..\Desktop\d91aa4b4fae0f630956a5ba1ca1308f.bmp" />
     <Image Include="..\..\..\..\..\Desktop\Duck..bmp" />
     <Image Include="..\..\..\..\..\Desktop\Goat..bmp" />
+    <Image Include="..\..\..\..\..\Desktop\grass.bmp" />
+    <Image Include="..\..\..\..\..\Desktop\sand.bmp" />
     <Image Include="..\..\..\..\..\Desktop\summer_beach.zh-CN..bmp" />
     <Image Include="..\..\..\..\..\Desktop\summer_outdoorsTileSheet.pt-BR..bmp" />
     <Image Include="..\..\..\..\..\Desktop\weapons..bmp" />
@@ -163,11 +172,18 @@
     <Image Include="..\..\..\..\..\Desktop\美术资源_PS源文件\btn_bg.bmp" />
     <Image Include="PuzzleGame.ico" />
     <Image Include="resources\background.bmp" />
+    <Image Include="resources\bg\floor_1.bmp" />
     <Image Include="resources\bitmap4.bmp" />
     <Image Include="resources\dialog.bmp" />
     <Image Include="resources\map.bmp" />
     <Image Include="resources\monster1.bmp" />
     <Image Include="resources\npc_man1.bmp" />
+    <Image Include="resources\obj\bar_h_left.bmp" />
+    <Image Include="resources\obj\bar_h_mid.bmp" />
+    <Image Include="resources\obj\bar_h_right.bmp" />
+    <Image Include="resources\obj\bar_v_head.bmp" />
+    <Image Include="resources\obj\bar_v_tail.bmp" />
+    <Image Include="resources\obj\wall_1.bmp" />
     <Image Include="resources\player.bmp" />
     <Image Include="resources\startbutton.bmp" />
     <Image Include="small.ico" />

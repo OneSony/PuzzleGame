@@ -2,7 +2,7 @@
 //
 #define _CRT_SECURE_NO_WARNINGS
 #include "PuzzleGame.h"
-using namespace std;
+#include "Maps.h"
 #include <string.h>
 #define MAX_LOADSTRING 100
 
@@ -22,15 +22,14 @@ HBITMAP bmp_crow;		//怪物1图像
 HBITMAP bmp_duck;		//怪物1图像
 HBITMAP bmp_chiken;		//怪物1图像
 HBITMAP bmp_weapon;		//怪物1图像
-HBITMAP bmp_summer_land;
 
 Stage* currentStage = NULL; //当前场景状态
 vector<NPC*> npcs;			//NPC列表
 vector<Monster*> monsters;	//怪物列表
 //vector<NewMonster*> new_monsters;	//怪物列表
 
-vector<NewMonster*> new_monsters_stage1;
-vector<NewMonster*> new_monsters_stage2;
+vector<NewMonster*> new_monsters_main;
+vector<NewMonster*> new_monsters_house_1;
 vector<NewMonster*>* current_new_monsters;
 
 Player* player = NULL;		//玩家
@@ -61,6 +60,8 @@ int NPC_FRAMES_HOLD_COUNT = sizeof(NPC_FRAMES_HOLD) / sizeof(int);
 int FRAMES_WALK[] = {0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,};
 int FRAMES_HOLD[] = { 0,0,0,0,0, };
 int FRAMES_HOLD_COUNT = sizeof(FRAMES_HOLD) / sizeof(int);
+int FRAMES_HOME[] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3 };
+int FRAMES_HOME_COUNT = sizeof(FRAMES_HOME) / sizeof(int);
 int FRAMES_WALK_COUNT = sizeof(FRAMES_WALK) / sizeof(int);
 int MONSTER_FRAMES[] = {0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4};
 int MONSTER_FRAMES_COUNT = sizeof(MONSTER_FRAMES) / sizeof(int);
@@ -68,97 +69,10 @@ int MONSTER_FRAMES_COUNT = sizeof(MONSTER_FRAMES) / sizeof(int);
 //地图
 //0空地 1草 2红花 3+7树 4/5/6/8/9/10/12/13/14土地 11蓝花 15路牌
 
-Land* new_map_stage1[20][28];	//地图砖块
 
-int map_stage1[20][28] = {
-	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
-	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 5, 5, 6, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9,10, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9,10, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9,10, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,12,13,13,13,14, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
-	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
-};
-
-
-void init_map_stage1() {
-	int map_stage1[20][28] = {
-	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
-	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 5, 5, 6, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9,10, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9,10, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 9, 9,10, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,12,13,13,13,14, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 2, 2, 2, 2,11,11,11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
-	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
-	};
-
-	for (int i = 0; i < 20; i++) {
-		for (int j = 0; j < 28; j++) {
-			
-			switch (map_stage1[i][j]) {
-			case 0:
-				new_map_stage1[i][j] = CreateLand(LAND_GRASS_ID);
-				break;
-			default:
-				new_map_stage1[i][j] = CreateLand(LAND_DIRT_ID);
-				break;
-			}
-
-		}
-	}
-
-}
-//第二个关卡地图
-int map_stage2[20][28] = {
-	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
-	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
-	{ 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,},
-	{ 7, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 7,},
-	{ 3, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 3,},
-	{ 7, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 7,},
-	{ 3, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 3,},
-	{ 7, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 7,},
-	{ 3, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 3,},
-	{ 7, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 7,},
-	{ 3, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 3,},
-	{ 7, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 7,},
-	{ 3, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 3,},
-	{ 7, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 7,},
-	{ 3, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 3,},
-	{ 7, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 7,},
-	{ 3, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 3,},
-	{ 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7,},
-	{ 3, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,},
-	{ 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,},
-};
-int map[20][28] = { 0 };	//存储当前关卡的地图
-Land* new_map[20][28] = { 0 };	//存储当前关卡的地图
+int current_reachable[20][28] = { 0 };
+int current_bg[20][28] = { 0 };
+int current_obj[20][28] = { 0 };
 
 // TODO: 在此添加其它全局变量
 
@@ -333,7 +247,6 @@ void InitGame(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	bmp_duck = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_DUCK));
 	bmp_chiken = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_CHIKEN));
 	bmp_weapon = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_WEAPON));
-	bmp_summer_land = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_SUMMER_LAND));
 	
 	//添加按钮
 	Button* startButton = CreateButton(BUTTON_STARTGAME, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
@@ -354,10 +267,6 @@ void InitGame(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	Button* homeButton_stop = CreateButton(BUTTON_STOP_HOME, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
 		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"HOME");
 	stop_buttons.push_back(homeButton_stop);
-
-
-	init_map_stage1();
-
 
 
 	//初始化开始场景
@@ -583,7 +492,11 @@ bool CanMove(int x_before, int y_before, int x_after, int y_after) { //player's 
 
 	//block
 	//0空地 1草 2红花 3+7树 4/5/6/8/9/10/12/13/14土地 11蓝花 15路牌
-	if (map[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 3 || map[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 7) {
+	/*if (current_map[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 3 || current_map[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 7) {
+		return false;
+	}*/
+
+	if (current_reachable[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 1) {
 		return false;
 	}
 	
@@ -709,25 +622,45 @@ void UpdateMonsters(HWND hWnd)
 		NewMonster* monster = (*current_new_monsters)[i];
 
 
+		char buff[256];
+		sprintf(buff, "i: %d, x: %d, y: %d, r: %d\n", i, monster->x / BLOCK_SIZE_X, monster->y / BLOCK_SIZE_Y, current_reachable[monster->y / BLOCK_SIZE_Y][monster->x / BLOCK_SIZE_X]);
+		OutputDebugStringA(buff);
 
-		//更新状态
-		monster->time_count++;
-		monster->time_count = monster->time_count % monster->time_max;
-		if (monster->time_count == 0) {
-			//更新移动动画
+		//判断位置是否归巢
+		if (current_reachable[monster->y / BLOCK_SIZE_Y][monster->x / BLOCK_SIZE_X] == 5) {
+			monster->state = MONSTER_STATE_HOME;
+			char buff[256];
+			sprintf(buff, "homed: %d\n", i);
+			OutputDebugStringA(buff);
+		}else if(monster->state == MONSTER_STATE_HOME){
 			monster->state = MONSTER_STATE_MOVE;
-
-			//更新方向
-			monster->direction = RandomInt(0, 3);
-
-			//更新下次时间
-			monster->time_stop = RandomInt(50, 100);
-			monster->time_max = RandomInt(150, 500);
-			//TODO 效果可能没法用
+			monster->time_count = - 1; //重新加载
 		}
-		else if (monster->time_count == monster->time_stop) {
-			//更新静止动画
-			monster->state = MONSTER_STATE_STOP;
+
+		sprintf(buff, "here: %d state: %d\n", i, monster->state);
+		OutputDebugStringA(buff);
+
+
+		if (monster->state != MONSTER_STATE_HOME) {
+			//更新状态
+			monster->time_count++;
+			monster->time_count = monster->time_count % monster->time_max;
+			if (monster->time_count == 0) {
+				//更新移动动画
+				monster->state = MONSTER_STATE_MOVE;
+
+				//更新方向
+				monster->direction = RandomInt(0, 3);
+
+				//更新下次时间
+				monster->time_stop = RandomInt(50, 100);
+				monster->time_max = RandomInt(150, 500);
+				//TODO 效果可能没法用
+			}
+			else if (monster->time_count == monster->time_stop) {
+				//更新静止动画
+				monster->state = MONSTER_STATE_STOP;
+			}
 		}
 
 
@@ -844,6 +777,12 @@ void UpdateMonsters(HWND hWnd)
 			monster->frame_sequence = FRAMES_HOLD;
 			monster->frame_count = FRAMES_HOLD_COUNT;
 			break;
+		case MONSTER_STATE_HOME:
+			//TODO
+			monster->frame_row = 4;
+			monster->frame_sequence = FRAMES_HOME;
+			monster->frame_count = FRAMES_HOME_COUNT;
+			break;
 		}
 
 		
@@ -939,14 +878,17 @@ void UpdateMaps(HWND hWnd)
 {
 	//走到地图边界，切换到map2
 	//TODO逻辑有问题，可能是负数
-	if (currentStage->stageID == STAGE_1 && player->y <= 0)
+
+	if (currentStage->stageID == STAGE_1 && player->x / BLOCK_SIZE_X == 4  && player->y/BLOCK_SIZE_Y == 9)
 	{	
-		player->y = WINDOW_HEIGHT - HUMAN_SIZE_Y;
-		InitStage(hWnd, STAGE_2);
+		player->y = BLOCK_SIZE_Y * 15;
+		player->x = BLOCK_SIZE_X * 7;
+		InitStage(hWnd, STAGE_HOUSE_1);
 	}
-	else if (currentStage->stageID == STAGE_2 && player->y >= WINDOW_HEIGHT)
+	else if (currentStage->stageID == STAGE_HOUSE_1 && (player->x / BLOCK_SIZE_X == 6 || player->x / BLOCK_SIZE_X == 7 ) && player->y / BLOCK_SIZE_Y == 16)
 	{
-		player->y = 0 + HUMAN_SIZE_Y;
+		player->x = BLOCK_SIZE_X * 4;
+		player->y = BLOCK_SIZE_Y * 10;
 		InitStage(hWnd, STAGE_1);
 	}
 
@@ -1188,49 +1130,6 @@ Monster* CreateMonster(int x, int y, int monster_id)
 	return monster;
 }
 
-Land* CreateLand(int land_id) {
-	Land* land = new Land();
-
-
-	land->landID = land_id;
-
-	land->size_x = BLOCK_BITMAP_SIZE_X;
-	land->size_y = BLOCK_BITMAP_SIZE_Y;
-
-	land->bmp_size_x = 16;
-	land->bmp_size_y = 16;
-
-	land->frame_id = 0;
-
-	switch (land_id)
-	{
-	case LAND_GRASS_ID:
-	{
-		land->passable = true;
-		land->animated = false;
-
-		land->bmp_row = 0;
-		land->bmp_col = 0;
-		break;
-	}
-	case LAND_DIRT_ID:
-	{
-		land->passable = true;
-		land->animated = false;
-
-		land->bmp_row = 1;
-		land->bmp_col = 0;
-		break;
-	}
-	default:
-		break;
-	}
-
-
-	return land;
-
-}
-
 NewMonster* NewCreateMonster(int x, int y, int monster_id)
 {
 	NewMonster* monster = new NewMonster();
@@ -1332,10 +1231,13 @@ void InitStage(HWND hWnd, int stageID)
 	//TODO：添加多个游戏场景
 	else if (stageID == STAGE_1)
 	{
-		current_new_monsters = &new_monsters_stage1;
-		currentStage->bg = bmp_Background;
+		memcpy(current_bg, bg_main, sizeof(current_bg));
+		memcpy(current_reachable, reachable_main, sizeof(current_reachable));
+		memcpy(current_obj, obj_main, sizeof(current_obj));
+
+
+		current_new_monsters = &new_monsters_main;
 		currentStage->timerOn = true;
-		memcpy(map, map_stage1, sizeof(map));	//初始化地图
 		//memcpy(new_map, new_map_stage1, sizeof(new_map));
 		//显示游戏界面的按钮
 		for (int i = 0; i < game_buttons.size(); i++)
@@ -1346,7 +1248,8 @@ void InitStage(HWND hWnd, int stageID)
 				game_buttons[i]->visible = false;
 		}
 		if (player == NULL)
-			player = CreatePlayer(200, 200);					//第一次调用：初始化player
+			player = CreatePlayer(400, 200);					//第一次调用：初始化player
+
 		if (npcs.size() == 0) {
 			npcs.push_back(CreateNPC(625, 200, NPC_MAN1_ID));	//第一次调用：初始化NPC
 		}
@@ -1369,13 +1272,16 @@ void InitStage(HWND hWnd, int stageID)
 				monster->visible = false;
 		}
 	}
-	else if (stageID == STAGE_2)
+	else if (stageID == STAGE_HOUSE_1)
 	{
+		memcpy(current_bg, bg_house_1, sizeof(current_bg));
+		memcpy(current_reachable, reachable_house_1, sizeof(current_reachable));
+		memcpy(current_obj, obj_house_1, sizeof(current_obj));
 
-		current_new_monsters = &new_monsters_stage2;
-		currentStage->bg = bmp_Background;
+
+		current_new_monsters = &new_monsters_house_1;
 		currentStage->timerOn = true;
-		memcpy(map, map_stage2, sizeof(map));
+
 		for (int i = 0; i < game_buttons.size(); i++)
 		{
 			Button* button = game_buttons[i];
@@ -1386,13 +1292,10 @@ void InitStage(HWND hWnd, int stageID)
 		}
 		if (player == NULL)
 			player = CreatePlayer(200, 200);
-		if (monsters.size() == 0) {
-			//monsters.push_back(CreateMonster(495, 205, MONSTER_CAT_ID));//初始化Monster
-		}
 
 		if (current_new_monsters->size() == 0) {
-			current_new_monsters->push_back(NewCreateMonster(495, 205, MONSTER_CROW_ID));
-			current_new_monsters->push_back(NewCreateMonster(200, 200, MONSTER_DUCK_ID));
+			//current_new_monsters->push_back(NewCreateMonster(495, 205, MONSTER_CROW_ID));
+			current_new_monsters->push_back(NewCreateMonster(350, 350, MONSTER_CHIKEN_ID));
 			current_new_monsters->push_back(NewCreateMonster(300, 300, MONSTER_CHIKEN_ID));
 		}
 
@@ -1406,14 +1309,7 @@ void InitStage(HWND hWnd, int stageID)
 				npc->visible = false;
 		}
 		//Monster的可见性
-		for (int i = 0; i < monsters.size(); i++)
-		{
-			Monster* monster = monsters[i];
-			if (true) //TODO：加载游戏界面需要的按钮
-				monster->visible = true;
-			else
-				monster->visible = false;
-		}
+
 		/*for (int i = 0; i < current_new_monsters->size(); i++)
 		{
 			NewMonster* monster = (*current_new_monsters)[i];
@@ -1484,7 +1380,7 @@ void Paint(HWND hWnd)
 					RGB(255, 255, 255)
 				);
 
-				// 设置文本背景透明
+				// 设置文本背景透明	
 				SetBkMode(hdc_memBuffer, TRANSPARENT);
 
 				// 设置字体颜色（例如白色）
@@ -1504,6 +1400,10 @@ void Paint(HWND hWnd)
 	} else {
 		if (currentStage->stageID >= STAGE_1) //TODO：添加多个游戏场景
 		{
+
+
+
+			
 			/*
 
 			SelectObject(hdc_loadBmp, bmp_summer_land);
@@ -1527,25 +1427,45 @@ void Paint(HWND hWnd)
 
 			*/
 
+			//首先绘制背景，背景只有一个块
+			//需要一个ID->draw的映射
+			for (int i = 0; i < sizeof(current_bg) / sizeof(current_bg[0]); i++) {
+				for (int j = 0; j < sizeof(current_bg[0]) / sizeof(current_bg[0][0]); j++) {
+
+					//根据bg的值绘制不同的背景
+					SelectObject(hdc_loadBmp, bg_hitmap[current_bg[i][j]].bitmap);
+
+					TransparentBlt(
+						hdc_memBuffer,
+						j * BLOCK_SIZE_X, i * BLOCK_SIZE_Y,							// 界面上起始绘制点
+						BLOCK_SIZE_X, BLOCK_SIZE_Y,									// 界面上绘制宽度高度
+						hdc_loadBmp,
+						0,						// 位图上起始绘制点
+						0,
+						bg_hitmap[current_bg[i][j]].bitmap_size_x, bg_hitmap[current_bg[i][j]].bitmap_size_y,					// 位图上绘制宽度高度
+						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
+				}
+			}
+
 			
-			unordered_set<int> landValues = { 4, 5, 6, 8, 9, 10, 12, 13, 14 };
+			unordered_set<int> landValues = {4, 5, 6, 8, 9, 10, 12, 13, 14};
 			
 			//绘制地图
-			SelectObject(hdc_loadBmp, bmp_map);
-			for (int i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
-				for (int j = 0; j < sizeof(map[0]) / sizeof(map[0][0]); j++) {
+			/*SelectObject(hdc_loadBmp, bmp_map);
+			for (int i = 0; i < sizeof(current_map) / sizeof(current_map[0]); i++) {
+				for (int j = 0; j < sizeof(current_map[0]) / sizeof(current_map[0][0]); j++) {
 
 					int bmp_x = (0 % 4) * BLOCK_BITMAP_SIZE_X;
 					int bmp_y = (0 / 4) * BLOCK_BITMAP_SIZE_Y;
 
-					if (landValues.count(map[i][j]) == 0) { //不是沙子默认画0
+					if (landValues.count(current_map[i][j]) == 0) { //不是沙子默认画0
 						bmp_x = (0 % 4) * BLOCK_BITMAP_SIZE_X;
 						bmp_y = (0 / 4) * BLOCK_BITMAP_SIZE_Y;
 					}
 					else
 					{
-						bmp_x = (map[i][j] % 4) * BLOCK_BITMAP_SIZE_X;
-						bmp_y = (map[i][j] / 4) * BLOCK_BITMAP_SIZE_Y;
+						bmp_x = (current_map[i][j] % 4) * BLOCK_BITMAP_SIZE_X;
+						bmp_y = (current_map[i][j] / 4) * BLOCK_BITMAP_SIZE_Y;
 					}
 
 					TransparentBlt(
@@ -1558,17 +1478,43 @@ void Paint(HWND hWnd)
 						BLOCK_BITMAP_SIZE_X, BLOCK_BITMAP_SIZE_Y,					// 位图上绘制宽度高度
 						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
 				}
-			}
+			}*/
 
 			
 
 			vector<Drawable*> drawables;
 
-			
-			for (int i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
-				for (int j = 0; j < sizeof(map[0]) / sizeof(map[0][0]); j++) {
 
-					if (landValues.count(map[i][j]) != 0) {
+			for (int i = 0; i < sizeof(current_obj) / sizeof(current_obj[0]); i++) {
+				for (int j = 0; j < sizeof(current_obj[0]) / sizeof(current_obj[0][0]); j++) {
+
+					if (current_obj == 0) {
+						continue;
+					}
+
+					int num_x = obj_hitmap[current_obj[i][j]].num_x;
+					int num_y = obj_hitmap[current_obj[i][j]].num_y;
+
+					Drawable* obj = new Drawable();
+					obj->img = obj_hitmap[current_obj[i][j]].bitmap;
+					obj->x = j * BLOCK_SIZE_X;
+					obj->y = i * BLOCK_SIZE_Y;
+					obj->size_x = BLOCK_SIZE_X * num_x;
+					obj->size_y = BLOCK_SIZE_Y * num_y;
+					obj->bmp_x = 0;
+					obj->bmp_y = 0;
+					obj->bmp_size_x = obj_hitmap[current_obj[i][j]].bitmap_size_x * num_x;
+					obj->bmp_size_y = obj_hitmap[current_obj[i][j]].bitmap_size_y * num_y;
+					obj->transparentColor = RGB(255, 255, 255);
+					drawables.push_back(obj);
+				}
+			}
+
+			
+			/*for (int i = 0; i < sizeof(current_map) / sizeof(current_map[0]); i++) {
+				for (int j = 0; j < sizeof(current_map[0]) / sizeof(current_map[0][0]); j++) {
+
+					if (landValues.count(current_map[i][j]) != 0) {
 						continue;
 					}else{
 
@@ -1578,15 +1524,15 @@ void Paint(HWND hWnd)
 						tile->y = i * BLOCK_SIZE_Y;
 						tile->size_x = BLOCK_SIZE_X;
 						tile->size_y = BLOCK_SIZE_Y;
-						tile->bmp_x = (map[i][j] % 4) * BLOCK_BITMAP_SIZE_X;
-						tile->bmp_y = (map[i][j] / 4) * BLOCK_BITMAP_SIZE_Y;
+						tile->bmp_x = (current_map[i][j] % 4) * BLOCK_BITMAP_SIZE_X;
+						tile->bmp_y = (current_map[i][j] / 4) * BLOCK_BITMAP_SIZE_Y;
 						tile->bmp_size_x = BLOCK_BITMAP_SIZE_X;
 						tile->bmp_size_y = BLOCK_BITMAP_SIZE_Y;
 						tile->transparentColor = RGB(91, 179, 142);
 						drawables.push_back(tile);
 					}
 				}
-			}
+			}*/
 			
 
 
@@ -1673,7 +1619,7 @@ void Paint(HWND hWnd)
 
 			//绘制drawable
 			std::sort(drawables.begin(), drawables.end(), [](const Drawable* a, const Drawable* b) {
-				return (a->y + (a->size_y * 0.5)) < (b->y + (b->size_y * 0.5));
+				return (a->y + (BLOCK_SIZE_Y * 0.5)) < (b->y + (BLOCK_SIZE_Y * 0.5));
 			});
 
 			for (const auto drawable : drawables) {

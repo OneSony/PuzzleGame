@@ -24,12 +24,18 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Maps.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PuzzleGame.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Create.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Maps.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -97,6 +103,48 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="..\..\..\..\..\Desktop\未标题-1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\d91aa4b4fae0f630956a5ba1ca1308f.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\2.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\Coop_.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\grass.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\sand.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\Desktop\bar_h.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\bar_h_left.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\bar_h_mid.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\bar_h_right.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\bar_v_head.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\bar_v_tail.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\floor_1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\..\..\..\desktop\bitmap5.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\wall_1.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

@@ -28,7 +28,7 @@ const double PI = 3.14159265358979323846;
 
 #define STAGE_STARTMENU			0		//开始画面的ID
 #define STAGE_1					1		//第一个游戏场景的ID
-#define STAGE_2					2
+#define STAGE_HOUSE_1			2
 
 
 //尺寸
@@ -105,6 +105,26 @@ const double PI = 3.14159265358979323846;
 
 #define MONSTER_STATE_MOVE		10001
 #define MONSTER_STATE_STOP		10002
+#define MONSTER_STATE_HOME		10003
+
+#define OBJ_TREE 20001
+#define OBJ_HOUSE_1 20002
+#define OBJ_HOUSE_2 20003
+#define OBJ_HOUSE_3 20004
+#define OBJ_BAR_H_LEFT 20005
+#define OBJ_BAR_H_MID 20006
+#define OBJ_BAR_H_RIGHT 20007
+#define OBJ_BAR_V_HEAD 20008
+#define OBJ_BAR_V_TAIL 20009
+#define OBJ_WALL_1 20010
+
+
+#define MAP_MAIN 30001
+
+#define BG_BLACK 40000
+#define BG_GRASS 40001
+#define BG_SAND 40002
+#define BG_FLOOR_1 40003
 
 ///
 
