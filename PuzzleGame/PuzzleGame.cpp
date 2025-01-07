@@ -577,7 +577,7 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 }
 
 
-bool CanMove(int x_before, int y_before, int x_after, int y_after) { //player's x y
+bool CanMove(int x_before, int y_before, int x_after, int y_after, int size_x, int size_y) { //player's x y
 
 
 	//block
@@ -586,40 +586,20 @@ bool CanMove(int x_before, int y_before, int x_after, int y_after) { //player's 
 		return false;
 	}*/
 
-	if (current_reachable[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 1) {
+	if ((current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X] == 1 || current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X] == 1) || (current_reachable[y_after / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X] == 1 || current_reachable[y_after / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X] == 1)) {
 		return false;
 	}
 
+	//monster的碰撞在update中更新，不在这里做，这里当作npcs是墙面。
+	//那直接把npcs的位置做成墙 不方便
 
-	//移动速度考虑了吗
-	/*
-	//npcs
-	char buff[256];
-	sprintf(buff, "xy: %d %d %d %d\n", x_before, y_before, x_after, y_after);
-	OutputDebugStringA(buff);
-
-	int x_limit_left = min(x_before, x_after) - 0.5 * HUMAN_SIZE_X - 0.5 * HUMAN_SIZE_X;
-	int x_limit_right = max(x_before, x_after) + 0.5 * HUMAN_SIZE_X + 0.5 * HUMAN_SIZE_X;
-	int y_limit_up = min(y_before, y_after) - 0.5 * HUMAN_SIZE_Y - 0.5 * HUMAN_SIZE_Y;
-	int y_limit_down = max(y_before, y_after) + 0.5 * HUMAN_SIZE_Y + 0.5 * HUMAN_SIZE_Y;
-
-	sprintf(buff, "%d %d %d %d\n", x_limit_left, x_limit_right, y_limit_up, y_limit_down);
-	OutputDebugStringA(buff);
-
-	for (int i = 0; i < npcs.size(); i++)
-	{
-		sprintf(buff, "i: %d %d %d\n", i, npcs[i]->x, npcs[i]->y);
-		OutputDebugStringA(buff);
-		if (npcs[i]->x < x_limit_left || npcs[i]->x > x_limit_right || npcs[i]->y < y_limit_up || npcs[i]->y > y_limit_down) {
-			//sprintf(buff, "%d %d\n",npcs[i]->x, npcs[i]->y);
-			//OutputDebugStringA(buff);
-			continue;
+	for (int i = 0; i < current_npcs->size(); i++) {
+		if (current_npcs->at(i)->visible) {
+			if (current_npcs->at(i)->x - (0.5 * current_npcs->at(i)->size_x) < x_after + (0.5 * size_x) && current_npcs->at(i)->x + (0.5 * current_npcs->at(i)->size_x) > x_after - (0.5 * size_x) && current_npcs->at(i)->y - (0.5 * current_npcs->at(i)->size_y) < y_after + (0.5 * size_y) && current_npcs->at(i)->y + (0.5 * current_npcs->at(i)->size_y) > y_after - (0.5 * size_y)) {
+				return false;
+			}
 		}
-
-		return false;
 	}
-	*/
-
 	return true;
 }
 
@@ -712,22 +692,22 @@ void UpdatePlayer(HWND hWnd) {
 	if (player->state == UNIT_STATE_WALK) {
 		switch (player->direction) {
 		case UNIT_DIRECT_LEFT:
-			if (CanMove(player->x, player->y, player->x - player->vx, player->y)) {
+			if (CanMove(player->x, player->y, player->x - player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
 				player->x -= player->vx;
 			}
 			break;
 		case UNIT_DIRECT_UP:
-			if (CanMove(player->x, player->y, player->x, player->y - player->vy)) {
+			if (CanMove(player->x, player->y, player->x, player->y - player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
 				player->y -= player->vy;
 			}
 			break;
 		case UNIT_DIRECT_RIGHT:
-			if (CanMove(player->x, player->y, player->x + player->vx, player->y)) {
+			if (CanMove(player->x, player->y, player->x + player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
 				player->x += player->vx;
 			}
 			break;
 		case UNIT_DIRECT_DOWN:
-			if (CanMove(player->x, player->y, player->x, player->y + player->vy)) {
+			if (CanMove(player->x, player->y, player->x, player->y + player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
 				player->y += player->vy;
 			}
 			break;
@@ -877,7 +857,7 @@ void UpdateMonsters(HWND hWnd)
 			switch (monster->direction) {
 			case UNIT_DIRECT_LEFT:
 				monster->frame_row = UNIT_DIRECT_LEFT;
-				if (CanMove(monster->x, monster->y, monster->x - monster->vx, monster->y)) {
+				if (CanMove(monster->x, monster->y, monster->x - monster->vx, monster->y, monster->size_x, monster->size_y)) {
 					monster->x -= monster->vx;
 				}
 				else {
@@ -886,7 +866,7 @@ void UpdateMonsters(HWND hWnd)
 				break;
 			case UNIT_DIRECT_UP:
 				monster->frame_row = UNIT_DIRECT_UP;
-				if (CanMove(monster->x, monster->y, monster->x, monster->y - monster->vy)) {
+				if (CanMove(monster->x, monster->y, monster->x, monster->y - monster->vy, monster->size_x, monster->size_y)) {
 					monster->y -= monster->vy;
 				}
 				else {
@@ -895,7 +875,7 @@ void UpdateMonsters(HWND hWnd)
 				break;
 			case UNIT_DIRECT_RIGHT:
 				monster->frame_row = UNIT_DIRECT_RIGHT;
-				if (CanMove(monster->x, monster->y, monster->x + monster->vx, monster->y)) {
+				if (CanMove(monster->x, monster->y, monster->x + monster->vx, monster->y, monster->size_x, monster->size_y)) {
 					monster->x += monster->vx;
 				}
 				else {
@@ -904,7 +884,7 @@ void UpdateMonsters(HWND hWnd)
 				break;
 			case UNIT_DIRECT_DOWN:
 				monster->frame_row = UNIT_DIRECT_DOWN;
-				if (CanMove(monster->x, monster->y, monster->x, monster->y + monster->vy)) {
+				if (CanMove(monster->x, monster->y, monster->x, monster->y + monster->vy, monster->size_x, monster->size_y)) {
 					monster->y += monster->vy;
 				}
 				else {
@@ -971,34 +951,34 @@ void UpdateMonsters(HWND hWnd)
 
 			switch (player->direction) {
 			case UNIT_DIRECT_RIGHT:
-				if (CanMove(player->x, player->y, player->x - player->vx, player->y)) {
+				if (CanMove(player->x, player->y, player->x - player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
 					player->x -= player->vx;
 				}
-				if (CanMove(monster->x, monster->y, monster->x + player->vx, monster->y)) {
+				if (CanMove(monster->x, monster->y, monster->x + player->vx, monster->y, monster->size_x, monster->size_y)) {
 					monster->x += player->vx;
 				}
 				break;
 			case UNIT_DIRECT_LEFT:
-				if (CanMove(player->x, player->y, player->x + player->vx, player->y)) {
+				if (CanMove(player->x, player->y, player->x + player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
 					player->x += player->vx;
 				}
-				if (CanMove(monster->x, monster->y, monster->x - player->vx, monster->y)) {
+				if (CanMove(monster->x, monster->y, monster->x - player->vx, monster->y, monster->size_x, monster->size_y)) {
 					monster->x -= player->vx;
 				}
 				break;
 			case UNIT_DIRECT_DOWN:
-				if (CanMove(player->x, player->y, player->x, player->y - player->vy)) {
+				if (CanMove(player->x, player->y, player->x, player->y - player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
 					player->y -= player->vy;
 				}
-				if (CanMove(monster->x, monster->y, monster->x, monster->y + player->vy)) {
+				if (CanMove(monster->x, monster->y, monster->x, monster->y + player->vy, monster->size_x, monster->size_y)) {
 					monster->y += player->vy;
 				}
 				break;
 			case UNIT_DIRECT_UP:
-				if (CanMove(player->x, player->y, player->x, player->y + player->vy)) {
+				if (CanMove(player->x, player->y, player->x, player->y + player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
 					player->y += player->vy;
 				}
-				if (CanMove(monster->x, monster->y, monster->x, monster->y - player->vy)) {
+				if (CanMove(monster->x, monster->y, monster->x, monster->y - player->vy, monster->size_x, monster->size_y)) {
 					monster->y -= player->vy;
 				}
 				break;
@@ -1021,7 +1001,7 @@ void UpdateMaps(HWND hWnd)
 	//走到地图边界，切换到map2
 	//TODO逻辑有问题，可能是负数
 
-	if (currentStage->stageID == STAGE_1 && player->x / BLOCK_SIZE_X == 4  && player->y/BLOCK_SIZE_Y == 9)
+	if (currentStage->stageID == STAGE_1 && (player->x / BLOCK_SIZE_X == 4 || player->x / BLOCK_SIZE_X == 5) && player->y/BLOCK_SIZE_Y == 9)
 	{	
 		player->y = BLOCK_SIZE_Y * 15;
 		player->x = BLOCK_SIZE_X * 7;
@@ -1038,7 +1018,7 @@ void UpdateMaps(HWND hWnd)
 	
 	if (currentStage->stageID == STAGE_HOUSE_1 && (player->x / BLOCK_SIZE_X == 6 || player->x / BLOCK_SIZE_X == 7 ) && player->y / BLOCK_SIZE_Y == 16)
 	{
-		player->x = BLOCK_SIZE_X * 4;
+		player->x = BLOCK_SIZE_X * 5;
 		player->y = BLOCK_SIZE_Y * 10;
 		InitStage(hWnd, STAGE_1);
 		return;
@@ -2145,6 +2125,81 @@ void Paint(HWND hWnd)
 
 			*/
 
+			//画物品栏
+
+			//画背景
+			int width = ITEM_BAR_SIZE_X;    // 绘制在画布上的宽度（缩小为 40px）
+			int height = ITEM_BAR_SIZE_Y;   // 绘制在画布上的高度（缩小为 40px）
+			int margin = ITEM_BAR_MARGIN;      // 每个图像之间的间距
+
+			SelectObject(hdc_loadBmp, bmp_item_bg);
+			int startX = (WINDOW_WIDTH - (width * 3 + margin * 2)) / 2; // 水平居中
+			for (int i = 0; i < 3; i++) {
+				int xPos = startX + i * (width + margin);  // 计算水平位置
+				int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
+
+				// 使用 TransparentBlt 绘制图像，透明色为 RGB(255, 255, 255)（白色）
+				TransparentBlt(
+					hdc_memBuffer,         // 目标 HDC
+					xPos, yPos,           // 目标绘制位置
+					width, height,  // 绘制尺寸
+					hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
+					0, 0,                 // 源位置
+					width, height,  // 源尺寸
+					RGB(255, 255, 255)    // 透明色（假设白色为透明）
+				);
+			}
+
+			int item_width = ITEM_SIZE_X;
+			int item_height = ITEM_SIZE_Y;
+
+			//画物品！！TODO
+			for (int i = 0; i < items.size(); i++) {
+				SelectObject(hdc_loadBmp, items[i]->img);
+				int xPos = startX + i * (width + margin);  // 计算水平位置
+				int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
+
+				TransparentBlt(
+					hdc_memBuffer,         // 目标 HDC
+					xPos + 0.5 * (width - item_width), yPos + 0.5 * (height - item_height),           // 目标绘制位置
+					item_width, item_height,  // 绘制尺寸
+					hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
+					0, 0,                 // 源位置
+					items[i]->bitmap_size_x, items[i]->bitmap_size_y,  // 源尺寸
+					RGB(255, 255, 255)    // 透明色（假设白色为透明）
+				);
+
+				if (current_item == items[i] && item_name_fading_time > 0) {
+					SelectObject(hdc_loadBmp, bmp_item_name_bg);
+					TransparentBlt(
+						hdc_memBuffer,
+						xPos - 0.5 * (ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X), yPos - ITEM_NAME_SIZE_Y - 10, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,					// 界面上绘制位置
+						hdc_loadBmp,
+						0, 0, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,	// 位图上绘制位置
+						RGB(255, 255, 255)
+					);
+					//绘制文字
+					HFONT hFont = CreateFontW(
+						20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+						OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+						L"SimSun");		//创建字体
+					SelectObject(hdc_memBuffer, hFont);
+					SetTextColor(hdc_memBuffer, RGB(0, 0, 0));	// 设置颜色:黑色字体白色背景
+					SetBkMode(hdc_memBuffer, TRANSPARENT);
+					RECT rect;
+					rect.left = xPos - 0.5 * (ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X);
+					rect.top = yPos - ITEM_NAME_SIZE_Y + 3;
+					rect.right = rect.left + ITEM_NAME_SIZE_X;
+					rect.bottom = rect.top + ITEM_NAME_SIZE_Y;
+					DrawTextW(hdc_memBuffer, current_item->description.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
+
+					item_name_fading_time--;
+					char buff[256];
+
+				}
+
+			}
+
 
 			//如果正处在对话状态：绘制对话框
 			if (in_conversation) {
@@ -2204,82 +2259,6 @@ void Paint(HWND hWnd)
 				// 绘制文本在按钮的中心
 				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 			}
-		}
-
-
-		//画物品栏
-
-		//画背景
-		int width = ITEM_BAR_SIZE_X;    // 绘制在画布上的宽度（缩小为 40px）
-		int height = ITEM_BAR_SIZE_Y;   // 绘制在画布上的高度（缩小为 40px）
-		int margin = ITEM_BAR_MARGIN;      // 每个图像之间的间距
-
-		SelectObject(hdc_loadBmp, bmp_item_bg);
-		int startX = (WINDOW_WIDTH - (width * 3 + margin * 2)) / 2; // 水平居中
-		for (int i = 0; i < 3; i++) {
-			int xPos = startX + i * (width + margin);  // 计算水平位置
-			int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
-
-			// 使用 TransparentBlt 绘制图像，透明色为 RGB(255, 255, 255)（白色）
-			TransparentBlt(
-				hdc_memBuffer,         // 目标 HDC
-				xPos, yPos,           // 目标绘制位置
-				width, height,  // 绘制尺寸
-				hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
-				0, 0,                 // 源位置
-				width, height,  // 源尺寸
-				RGB(255, 255, 255)    // 透明色（假设白色为透明）
-			);
-		}
-
-		int item_width = ITEM_SIZE_X;
-		int item_height = ITEM_SIZE_Y;
-
-		//画物品！！TODO
-		for (int i = 0; i < items.size(); i++) {
-			SelectObject(hdc_loadBmp, items[i]->img);
-			int xPos = startX + i * (width + margin);  // 计算水平位置
-			int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
-
-			TransparentBlt(
-				hdc_memBuffer,         // 目标 HDC
-				xPos + 0.5 * (width - item_width), yPos + 0.5 * (height - item_height),           // 目标绘制位置
-				item_width, item_height,  // 绘制尺寸
-				hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
-				0, 0,                 // 源位置
-				items[i]->bitmap_size_x, items[i]->bitmap_size_y,  // 源尺寸
-				RGB(255, 255, 255)    // 透明色（假设白色为透明）
-			);
-
-			if (current_item == items[i] && item_name_fading_time > 0) {
-				SelectObject(hdc_loadBmp, bmp_item_name_bg);
-				TransparentBlt(
-					hdc_memBuffer,
-					xPos - 0.5*(ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X), yPos - ITEM_NAME_SIZE_Y - 10, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,					// 界面上绘制位置
-					hdc_loadBmp,
-					0, 0, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,	// 位图上绘制位置
-					RGB(255, 255, 255)
-				);
-				//绘制文字
-				HFONT hFont = CreateFontW(
-					20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-					OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
-					L"SimSun");		//创建字体
-				SelectObject(hdc_memBuffer, hFont);
-				SetTextColor(hdc_memBuffer, RGB(0, 0, 0));	// 设置颜色:黑色字体白色背景
-				SetBkMode(hdc_memBuffer, TRANSPARENT);
-				RECT rect;
-				rect.left = xPos - 0.5 * (ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X);
-				rect.top = yPos - ITEM_NAME_SIZE_Y + 3;
-				rect.right = rect.left + ITEM_NAME_SIZE_X;
-				rect.bottom = rect.top + ITEM_NAME_SIZE_Y;
-				DrawTextW(hdc_memBuffer, current_item->description.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
-
-				item_name_fading_time--;
-				char buff[256];
-
-			}
-
 		}
 
 

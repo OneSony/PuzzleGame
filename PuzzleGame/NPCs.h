@@ -25,6 +25,9 @@ struct NPC
 	double vy;		//速度y
 	int health;		//生命值
 
+	int size_x;
+	int size_y;
+
 	vector<vector<const wchar_t*>> conversations;
 
 	vector<const wchar_t*> conversations_before;	//任务完成前NPC的台词

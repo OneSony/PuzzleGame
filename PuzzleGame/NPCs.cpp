@@ -1,5 +1,6 @@
 #include "PuzzleGame.h"
 #include "NPCs.h"
+#include "Maps.h"
 
 
 NPC* CreateNPC(int x, int y, int npc_id)
@@ -26,6 +27,9 @@ NPC* CreateNPC(int x, int y, int npc_id)
 	case NPC_MAN1_ID: {
 		npc->img = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_NPC_MAN1));
 
+		npc->size_x = 19;
+		npc->size_y = 26;
+
 		vector<const wchar_t*> conversations_1;
 		conversations_1.push_back(L"你是新来的村长吗？");
 		conversations_1.push_back(L"你去探望一下绿色房子里的人吧");
@@ -35,6 +39,9 @@ NPC* CreateNPC(int x, int y, int npc_id)
 	}
 	case NPC_MAN2_ID: {
 		npc->img = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_NPC_MAN1));
+
+		npc->size_x = 19;
+		npc->size_y = 26;
 
 		vector<const wchar_t*> conversations_1;
 		conversations_1.push_back(L"可以帮我把鸡赶回到地毯上吗");
@@ -52,6 +59,9 @@ NPC* CreateNPC(int x, int y, int npc_id)
 	}
 	case NPC_WEADOW_MAN_ID: {
 		npc->img = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_NPC_MAN1));
+
+		npc->size_x = 19;
+		npc->size_y = 26;
 
 		vector<const wchar_t*> conversations_1;
 		conversations_1.push_back(L"你是谁？");
