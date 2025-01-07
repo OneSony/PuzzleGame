@@ -57,7 +57,7 @@ NPC* CreateNPC(int x, int y, int npc_id)
 
 		break;
 	}
-	case NPC_WEADOW_MAN_ID: {
+	case NPC_MAN3_ID: {
 		npc->img = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_NPC_MAN1));
 
 		npc->size_x = 19;
@@ -71,11 +71,32 @@ NPC* CreateNPC(int x, int y, int npc_id)
 		vector<const wchar_t*> conversations_2;
 		conversations_2.push_back(L"原来你是新来的村长");
 		conversations_2.push_back(L"这边是牧场，但是出了点问题");
+		conversations_2.push_back(L"你去看看吧");
 		npc->conversations.push_back(conversations_2);
 
 		vector<const wchar_t*> conversations_3;
-		conversations_3.push_back(L"谢谢你把乌鸦赶走");
+		conversations_3.push_back(L"谢谢你！");
 		npc->conversations.push_back(conversations_3);
+
+		break;
+	}
+	case NPC_MEADOW_MAN_ID: {
+		npc->img = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_NPC_MAN1));
+
+		npc->size_x = 19;
+		npc->size_y = 26;
+
+		vector<const wchar_t*> conversations_1;
+		conversations_1.push_back(L"快来帮帮我吧，鸭圈里面进了乌鸦");
+		conversations_1.push_back(L"帮我把乌鸦赶出来");
+		conversations_1.push_back(L"这个弹弓你试试");
+		conversations_1.push_back(L"帮我把乌鸦赶出来再把鸭子赶回去吧");
+		npc->conversations.push_back(conversations_1);
+
+
+		vector<const wchar_t*> conversations_2;
+		conversations_2.push_back(L"谢谢你把乌鸦赶走");
+		npc->conversations.push_back(conversations_2);
 
 		break;
 	}
@@ -94,10 +115,12 @@ std::vector<NPC*> npcs_meadow;
 
 void InitNPCs()
 {
-	npcs_main.push_back(CreateNPC(BLOCK_SIZE_X * 10, BLOCK_SIZE_Y * 15, NPC_MAN1_ID));
+	npcs_main.push_back(CreateNPC(BLOCK_SIZE_X * 10, BLOCK_SIZE_Y * 18, NPC_MAN1_ID));
 
 	npcs_house_1.push_back(CreateNPC(BLOCK_SIZE_X * 10, BLOCK_SIZE_Y * 15, NPC_MAN2_ID));
 
-	npcs_main.push_back(CreateNPC(BLOCK_SIZE_X * 26, BLOCK_SIZE_Y * 16, NPC_WEADOW_MAN_ID));
+	npcs_main.push_back(CreateNPC(BLOCK_SIZE_X * 26, BLOCK_SIZE_Y * 15, NPC_MAN3_ID));
+
+	npcs_meadow.push_back(CreateNPC(BLOCK_SIZE_X * 5, BLOCK_SIZE_Y * 15, NPC_MEADOW_MAN_ID));
 };
 

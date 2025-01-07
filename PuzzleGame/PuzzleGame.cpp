@@ -6,6 +6,7 @@
 #include "NPCs.h"
 #include "Items.h"
 #include <string.h>
+#include <set>
 #define MAX_LOADSTRING 100
 
 // 全局变量:
@@ -25,6 +26,8 @@ HBITMAP bmp_weapon;		//怪物1图像
 HBITMAP bmp_item_bg;
 HBITMAP bmp_item_name_bg;
 
+std::wstring failed_message;
+
 Stage* currentStage = NULL; //当前场景状态
 vector<Monster*> monsters;	//怪物列表
 //vector<NewMonster*> new_monsters;	//怪物列表
@@ -36,12 +39,14 @@ vector<NewMonster*>* current_new_monsters;
 
 vector<Item*> items;		//物品列表
 Item* current_item = NULL;	//当前物品
+Item* show_name_item = NULL;
 int item_name_fading_time;
 
 Player* player = NULL;		//玩家
 vector<Button*> game_buttons;	//按钮	
 vector<Button*> menu_buttons;	//按钮	
 vector<Button*> stop_buttons;	//按钮	
+vector<Button*> failed_buttons;
 
 int mouseX = 0;
 int mouseY = 0;
@@ -53,6 +58,7 @@ bool keyRightDown = false;
 bool in_conversation = false;	//当前游戏处在对话状态
 bool in_stop = false;
 bool in_help = false;
+bool in_failed = false;
 const wchar_t* converstaion_content = nullptr;	//当前对话的内容
 
 //TODO 更多的全局变量
@@ -273,6 +279,10 @@ void InitGame(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"HOME");
 	stop_buttons.push_back(homeButton_stop);
 
+	Button* restartButton = CreateButton(BUTTON_FAILED_RESTART, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"RESTART");
+	failed_buttons.push_back(restartButton);
+
 
 	//初始化开始场景
 	InitStage(hWnd, STAGE_STARTMENU);
@@ -459,6 +469,7 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				}
 				else {
 					current_item = items[clickedIndex];
+					show_name_item = current_item;
 					item_name_fading_time = ITEM_NAME_FADING;
 				}
 			}
@@ -563,30 +574,45 @@ void LButtonUp(HWND hWnd, WPARAM wParam, LPARAM lParam)
 void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 
-	if (in_stop) {
-		return;
-	}
-
 	UpdatePlayer(hWnd);
 	UpdateNPCs(hWnd);
 	UpdateMonsters(hWnd);
 	UpdateMaps(hWnd);
 	UpdateTasks(hWnd);
+	UpdateFailed(hWnd);
 	//刷新显示
 	InvalidateRect(hWnd, NULL, FALSE);
 }
 
 
-bool CanMove(int x_before, int y_before, int x_after, int y_after, int size_x, int size_y) { //player's x y
+bool CanMove(int x_before, int y_before, int x_after, int y_after, int size_x, int size_y, int player = false) { //player's x y
+
+	//超过边界
+	if (int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y >= 20 || y_after / BLOCK_SIZE_Y >= 20 || int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X >= 28 || int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X >= 28 ||
+		int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y < 0 || y_after / BLOCK_SIZE_Y < 0 || int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X < 0 || int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X < 0) {
+		//允许超过边界，其他逻辑来处理
+		return true;
+	}
 
 
-	//block
-	//0空地 1草 2红花 3+7树 4/5/6/8/9/10/12/13/14土地 11蓝花 15路牌
-	/*if (current_map[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 3 || current_map[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 7) {
+	std::set<int> cannot_move = { 1 };
+
+	if (player == true) {
+		cannot_move.insert(2);
+	}
+	else {
+		cannot_move.insert(3);
+	}
+
+	/*if ((current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X] == 1 || current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X] == 1) || (current_reachable[y_after / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X] == 1 || current_reachable[y_after / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X] == 1)) {
 		return false;
 	}*/
 
-	if ((current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X] == 1 || current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X] == 1) || (current_reachable[y_after / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X] == 1 || current_reachable[y_after / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X] == 1)) {
+	if (cannot_move.count(current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X]) > 0 || 
+		cannot_move.count(current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X]) > 0 ||
+		cannot_move.count(current_reachable[y_after / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X]) > 0 ||
+		cannot_move.count(current_reachable[y_after / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X]) > 0) {
+
 		return false;
 	}
 
@@ -603,7 +629,7 @@ bool CanMove(int x_before, int y_before, int x_after, int y_after, int size_x, i
 	return true;
 }
 
-void UpdateTasks(HWND hWnd) {
+void UpdateTasks(HWND hWnd) {//顺便判断胜利和结束
 	
 	if (currentStage->stageID == STAGE_1) {
 
@@ -613,6 +639,7 @@ void UpdateTasks(HWND hWnd) {
 			if ((*current_new_monsters)[i]->visible == false) {
 				continue;
 			}
+
 			if ((*current_new_monsters)[i]->state != MONSTER_STATE_HOME) {
 				if (npcs_house_1.at(0)->task_state == 1) {
 					npcs_house_1.at(0)->task_state = 2;
@@ -624,8 +651,6 @@ void UpdateTasks(HWND hWnd) {
 		//完成任务
 		npcs_house_1.at(0)->task_state = 1;
 		npcs_house_1.at(0)->next_conversation_id = 0;
-		npcs_main.at(1)->task_state = 1;
-		npcs_main.at(1)->next_conversation_id = 0;
 		
 		//如果没有item certificate再添加
 		bool has_certificate = false;
@@ -637,6 +662,8 @@ void UpdateTasks(HWND hWnd) {
 		}
 		if (!has_certificate) {
 			items.push_back(new Item(ITEM_CERTIFICATE));
+			show_name_item = items.back();
+			item_name_fading_time = ITEM_NAME_FADING;
 		}
 
 
@@ -650,14 +677,15 @@ void UpdateTasks(HWND hWnd) {
 				continue;
 			}
 			if (((*current_new_monsters)[i]->monsterID == MONSTER_DUCK_ID && (*current_new_monsters)[i]->state != MONSTER_STATE_HOME) || ((*current_new_monsters)[i]->monsterID == MONSTER_CROW_ID && (*current_new_monsters)[i]->state == MONSTER_STATE_HOME)) {
-				npcs_main.at(1)->task_state = 0;
-				npcs_main.at(1)->next_conversation_id = 0;
+				//没完成任务
 				return;
 			}
 		}
 
-		npcs_main.at(1)->task_state = 1;
-		npcs_main.at(1)->next_conversation_id = 0;
+		if (npcs_main.at(1)->task_state != 2) {
+			npcs_main.at(1)->task_state = 2;
+			npcs_main.at(1)->next_conversation_id = 0;
+		}
 	}
 	
 };
@@ -692,22 +720,22 @@ void UpdatePlayer(HWND hWnd) {
 	if (player->state == UNIT_STATE_WALK) {
 		switch (player->direction) {
 		case UNIT_DIRECT_LEFT:
-			if (CanMove(player->x, player->y, player->x - player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
+			if (CanMove(player->x, player->y, player->x - player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y, true)) {
 				player->x -= player->vx;
 			}
 			break;
 		case UNIT_DIRECT_UP:
-			if (CanMove(player->x, player->y, player->x, player->y - player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
+			if (CanMove(player->x, player->y, player->x, player->y - player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y, true)) {
 				player->y -= player->vy;
 			}
 			break;
 		case UNIT_DIRECT_RIGHT:
-			if (CanMove(player->x, player->y, player->x + player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
+			if (CanMove(player->x, player->y, player->x + player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y, true)) {
 				player->x += player->vx;
 			}
 			break;
 		case UNIT_DIRECT_DOWN:
-			if (CanMove(player->x, player->y, player->x, player->y + player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
+			if (CanMove(player->x, player->y, player->x, player->y + player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y, true)) {
 				player->y += player->vy;
 			}
 			break;
@@ -751,12 +779,14 @@ void UpdateMonsters(HWND hWnd)
 			continue;
 		}
 
-        if (monster->x / BLOCK_SIZE_X < 0 || monster->x / BLOCK_SIZE_X > 27 || monster->y / BLOCK_SIZE_Y < 0 || monster->y / BLOCK_SIZE_Y > 19) {
-			monster->visible = false;
-        }
+        /*if (monster->x / BLOCK_SIZE_X < 0 || monster->x / BLOCK_SIZE_X > 27 || monster->y / BLOCK_SIZE_Y < 0 || monster->y / BLOCK_SIZE_Y > 19) {
+			monster->visible = false;//放到handel failed event里面处理
+        }*/
 		//判断位置是否归巢
 		if (current_reachable[monster->y / BLOCK_SIZE_Y][monster->x / BLOCK_SIZE_X] == 5) {
-			monster->state = MONSTER_STATE_HOME;
+			if (monster->effects.size() == 0) { //没有状态时才有用
+				monster->state = MONSTER_STATE_HOME;
+			}
 		}else if(monster->state == MONSTER_STATE_HOME){
 			monster->state = MONSTER_STATE_MOVE;
 			monster->time_count = - 1; //重新加载
@@ -938,7 +968,6 @@ void UpdateMonsters(HWND hWnd)
 		}
 
 
-
 		//如果和玩家接触
 		int limit_x_left = player->x - HUMAN_SIZE_X * 0.5;
 		int limit_x_right = player->x + HUMAN_SIZE_X * 0.5;
@@ -951,7 +980,7 @@ void UpdateMonsters(HWND hWnd)
 
 			switch (player->direction) {
 			case UNIT_DIRECT_RIGHT:
-				if (CanMove(player->x, player->y, player->x - player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
+				if (CanMove(player->x, player->y, player->x - player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y, true)) {
 					player->x -= player->vx;
 				}
 				if (CanMove(monster->x, monster->y, monster->x + player->vx, monster->y, monster->size_x, monster->size_y)) {
@@ -959,7 +988,7 @@ void UpdateMonsters(HWND hWnd)
 				}
 				break;
 			case UNIT_DIRECT_LEFT:
-				if (CanMove(player->x, player->y, player->x + player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
+				if (CanMove(player->x, player->y, player->x + player->vx, player->y, HUMAN_SIZE_X, HUMAN_SIZE_Y, true)) {
 					player->x += player->vx;
 				}
 				if (CanMove(monster->x, monster->y, monster->x - player->vx, monster->y, monster->size_x, monster->size_y)) {
@@ -967,7 +996,7 @@ void UpdateMonsters(HWND hWnd)
 				}
 				break;
 			case UNIT_DIRECT_DOWN:
-				if (CanMove(player->x, player->y, player->x, player->y - player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
+				if (CanMove(player->x, player->y, player->x, player->y - player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y, true)) {
 					player->y -= player->vy;
 				}
 				if (CanMove(monster->x, monster->y, monster->x, monster->y + player->vy, monster->size_x, monster->size_y)) {
@@ -975,7 +1004,7 @@ void UpdateMonsters(HWND hWnd)
 				}
 				break;
 			case UNIT_DIRECT_UP:
-				if (CanMove(player->x, player->y, player->x, player->y + player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y)) {
+				if (CanMove(player->x, player->y, player->x, player->y + player->vy, HUMAN_SIZE_X, HUMAN_SIZE_Y, true)) {
 					player->y += player->vy;
 				}
 				if (CanMove(monster->x, monster->y, monster->x, monster->y - player->vy, monster->size_x, monster->size_y)) {
@@ -1011,7 +1040,8 @@ void UpdateMaps(HWND hWnd)
 
 	if (currentStage->stageID == STAGE_1 && player->x / BLOCK_SIZE_X >= 27)
 	{
-		player->x = BLOCK_SIZE_X; // 将x设置为0，使其跑到屏幕最左边
+		player->x = BLOCK_SIZE_X * 1; // 将x设置为0，使其跑到屏幕最左边
+		player->y = BLOCK_SIZE_Y * 17;
 		InitStage(hWnd, STAGE_MEADOW);
 		return;
 	}
@@ -1027,6 +1057,7 @@ void UpdateMaps(HWND hWnd)
 	if (currentStage->stageID == STAGE_MEADOW && player->x / BLOCK_SIZE_X <= 0)
 	{
 		player->x = BLOCK_SIZE_X * 26;
+		player->y = BLOCK_SIZE_Y * 15;
 		InitStage(hWnd, STAGE_1);
 		return;
 	}
@@ -1056,21 +1087,85 @@ void HandleConversationEvents(HWND hWnd)
 			((player->y <= npc->y && npc->y <= player->y + HUMAN_SIZE_Y) || (npc->y <= player->y && player->y <= npc->y + HUMAN_SIZE_X))) {
 			in_conversation = true;
 
+
+			if (currentStage->stageID == STAGE_1 && i == 1) {
+				//是在和meadow man说话
+
+				if (npc->task_state == 0) {
+					if (current_item != NULL && current_item->item_id == ITEM_CERTIFICATE) {
+						npc->task_state = 1;
+						npc->next_conversation_id = 0;
+					}
+				}
+				else if (npc->task_state == 1) {
+					if (npc->next_conversation_id == npc->conversations[npc->task_state].size() - 1) {//话讲完了，该移动位置了
+						npc->x = BLOCK_SIZE_X * 26;
+						npc->y = BLOCK_SIZE_Y * 13;
+					}
+				}
+			}
+
+			if (currentStage->stageID == STAGE_MEADOW && i == 0) {
+				if (npc->task_state == 0) {
+					if (npc->next_conversation_id == 3) {
+						bool has_bow = false;
+						for (const auto& item : items) {
+							if (item->item_id == ITEM_BOW) {
+								has_bow = true;
+								break;
+							}
+						}
+						if (!has_bow) {
+							items.push_back(new Item(ITEM_BOW));
+							show_name_item = items.back();
+							item_name_fading_time = ITEM_NAME_FADING;
+						}
+					}
+				}
+			}
+
 			converstaion_content = npc->conversations[npc->task_state][npc->next_conversation_id];
 			if (npc->next_conversation_id < npc->conversations[npc->task_state].size() - 1)
 				npc->next_conversation_id++;	//npc的这句话已经说完，下次该说下一句话了；如果已经说到最后一句话了，则一直重复
+		}
+	}
+}
 
-			/*if (!npc->task_complete) {
-				converstaion_content = npc->conversations_before[npc->next_conversation_id];
-				if(npc->next_conversation_id < npc->conversations_before.size()-1)
-					npc->next_conversation_id++;	//npc的这句话已经说完，下次该说下一句话了；如果已经说到最后一句话了，则一直重复
+
+void UpdateFailed(HWND hWnd) {
+	if (currentStage->stageID == STAGE_HOUSE_1) {
+		for (int i = 0; i < current_new_monsters->size(); i++) {
+			NewMonster* monster = current_new_monsters->at(i);
+
+			if (monster->visible == false && monster->monsterID == MONSTER_CHIKEN_ID) {
+				//鸡死掉了
+				HandleFailedEvents(hWnd, L"不能把鸡杀了！");
 			}
-			else {
-				converstaion_content = npc->conversations_after[npc->next_conversation_id];
-				if (npc->next_conversation_id < npc->conversations_after.size() - 1)
-					npc->next_conversation_id++;	//npc的这句话已经说完，下次该说下一句话了；如果已经说到最后一句话了，则一直重复
-			}*/
-			
+
+			if ((monster->x / BLOCK_SIZE_X == 6 || monster->x / BLOCK_SIZE_X == 7) && monster->y / BLOCK_SIZE_Y == 16) {
+				//到门口了
+				HandleFailedEvents(hWnd, L"鸡跑出去了！");
+			}
+
+		}
+	}
+	else if (currentStage->stageID == STAGE_MEADOW) {
+		for (int i = 0; i < current_new_monsters->size(); i++) {
+			NewMonster* monster = current_new_monsters->at(i);
+
+			if (monster->x / BLOCK_SIZE_X < 0 || monster->x / BLOCK_SIZE_X > 27 || monster->y / BLOCK_SIZE_Y < 0 || monster->y / BLOCK_SIZE_Y > 19) {
+				if (monster->monsterID == MONSTER_DUCK_ID) {
+					HandleFailedEvents(hWnd, L"鸭子跑出去了！");
+				}
+				else {
+					monster->visible = false;
+				}
+			}
+
+
+			if (monster->visible == false && monster->monsterID == MONSTER_DUCK_ID) {
+				HandleFailedEvents(hWnd, L"不能把鸭子杀了！");
+			}
 		}
 	}
 }
@@ -1080,12 +1175,24 @@ void HandleStopEvents(HWND hWnd)
 {
 	if (currentStage->stageID != STAGE_STARTMENU) {
 		in_stop = !in_stop;
+		currentStage->timerOn = !currentStage->timerOn;
 		char buff[256];
 		sprintf(buff, "stop: %d\n", in_stop);
 		OutputDebugStringA(buff);
 		InvalidateRect(hWnd, NULL, FALSE);
 	}
 
+}
+
+void HandleFailedEvents(HWND hWnd, std::wstring str)
+{
+	failed_message = str;
+	in_failed = !in_failed;
+	currentStage->timerOn = !currentStage->timerOn;
+	char buff[256];
+	sprintf(buff, "failed: %d\n", in_failed);
+	OutputDebugStringA(buff);
+	InvalidateRect(hWnd, NULL, FALSE);
 }
 
 
@@ -2169,7 +2276,7 @@ void Paint(HWND hWnd)
 					RGB(255, 255, 255)    // 透明色（假设白色为透明）
 				);
 
-				if (current_item == items[i] && item_name_fading_time > 0) {
+				if (show_name_item == items[i] && item_name_fading_time > 0) {
 					SelectObject(hdc_loadBmp, bmp_item_name_bg);
 					TransparentBlt(
 						hdc_memBuffer,
@@ -2191,7 +2298,7 @@ void Paint(HWND hWnd)
 					rect.top = yPos - ITEM_NAME_SIZE_Y + 3;
 					rect.right = rect.left + ITEM_NAME_SIZE_X;
 					rect.bottom = rect.top + ITEM_NAME_SIZE_Y;
-					DrawTextW(hdc_memBuffer, current_item->description.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
+					DrawTextW(hdc_memBuffer, show_name_item->description.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
 
 					item_name_fading_time--;
 					char buff[256];
@@ -2309,6 +2416,57 @@ void Paint(HWND hWnd)
 		SelectObject(hdc_loadBmp, bmp_Background);
 		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
 
+	}
+
+	if (in_failed) {
+		SelectObject(hdc_loadBmp, bmp_Background);
+		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
+
+		HFONT hFont = CreateFontW(
+			20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+			L"SimSun");		//创建字体
+		SelectObject(hdc_memBuffer, hFont);
+		SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+		SetBkMode(hdc_memBuffer, TRANSPARENT);
+		RECT rect;
+		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
+		rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4;
+		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
+		DrawTextW(hdc_memBuffer, failed_message.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
+
+		//TODO button
+		for (int i = 0; i < failed_buttons.size(); i++)
+		{
+			Button* button = failed_buttons[i];
+			if (button->visible)
+			{
+				SelectObject(hdc_loadBmp, button->img);
+				TransparentBlt(
+					hdc_memBuffer, button->x, button->y,
+					button->width, button->height,
+					hdc_loadBmp, 0, 0, button->width, button->height,
+					RGB(255, 255, 255)
+				);
+
+				// 设置文本背景透明
+				SetBkMode(hdc_memBuffer, TRANSPARENT);
+
+				// 设置字体颜色（例如白色）
+				SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
+
+				// 定义文本绘制区域
+				RECT textRect;
+				textRect.left = button->x;
+				textRect.top = button->y;
+				textRect.right = button->x + button->width;
+				textRect.bottom = button->y + button->height;
+
+				// 绘制文本在按钮的中心
+				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+			}
+		}
 	}
 
 

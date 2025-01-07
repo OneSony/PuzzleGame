@@ -38,9 +38,6 @@
     <ClCompile Include="PuzzleGame.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Create.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Maps.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -214,6 +211,30 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\item\item_sword.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\rock.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\rock_1.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\rock_2.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\rock_3.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\rock_4.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\grass.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\outside_table.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\tree.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

@@ -147,7 +147,6 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Create.cpp" />
     <ClCompile Include="Maps.cpp" />
     <ClCompile Include="NPCs.cpp" />
     <ClCompile Include="PuzzleGame.cpp" />
@@ -186,6 +185,11 @@
     <Image Include="resources\bg\barrier_top.bmp" />
     <Image Include="resources\bg\bitmap5.bmp" />
     <Image Include="resources\bg\floor_1.bmp" />
+    <Image Include="resources\bg\rock.bmp" />
+    <Image Include="resources\bg\rock_1.bmp" />
+    <Image Include="resources\bg\rock_2.bmp" />
+    <Image Include="resources\bg\rock_3.bmp" />
+    <Image Include="resources\bg\rock_4.bmp" />
     <Image Include="resources\bitmap4.bmp" />
     <Image Include="resources\dialog.bmp" />
     <Image Include="resources\item\certificate.bmp" />
@@ -203,8 +207,11 @@
     <Image Include="resources\obj\bar_v_tail.bmp" />
     <Image Include="resources\obj\carpet_1.bmp" />
     <Image Include="resources\obj\chair_1.bmp" />
+    <Image Include="resources\obj\grass.bmp" />
+    <Image Include="resources\obj\outside_table.bmp" />
     <Image Include="resources\obj\sofa_1.bmp" />
     <Image Include="resources\obj\table_1.bmp" />
+    <Image Include="resources\obj\tree.bmp" />
     <Image Include="resources\obj\tv_1.bmp" />
     <Image Include="resources\obj\wall_1.bmp" />
     <Image Include="resources\player.bmp" />

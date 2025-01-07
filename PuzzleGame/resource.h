@@ -64,8 +64,16 @@
 #define IDB_ITEM_BG                     197
 #define IDB_ITEM_NAME_BG                198
 #define IDB_ITEM_BOW                    199
-#define IDB_ITEM_SOWRD                  200
 #define IDB_ITEM_SWORD                  200
+#define IDB_BG_ROCK                     201
+#define IDB_BG_ROCK_1                   202
+#define IDB_BG_ROCK_2                   203
+#define IDB_BG_ROCK_3                   204
+#define IDB_BG_ROCK_4                   205
+#define IDB_OBJ_GRASS                   206
+#define IDB_OBJ_OUTSIDE_TABLE           207
+#define IDB_BITMAP5                     208
+#define IDB_OBJ_TREE                    208
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -73,7 +81,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        201
+#define _APS_NEXT_RESOURCE_VALUE        209
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           110

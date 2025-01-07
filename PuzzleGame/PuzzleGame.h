@@ -30,6 +30,7 @@ const double PI = 3.14159265358979323846;
 #define STAGE_1					1		//第一个游戏场景的ID
 #define STAGE_HOUSE_1			2
 #define STAGE_MEADOW			3
+#define STAGE_FAILED			4
 
 
 //尺寸
@@ -82,6 +83,7 @@ const double PI = 3.14159265358979323846;
 #define BUTTON_STOP_CONTINUE 1003
 #define BUTTON_STOP_HELP	1004
 #define BUTTON_STOP_HOME	1005
+#define BUTTON_FAILED_RESTART 1006
 
 #define TIMER_GAMETIMER				1		//游戏的默认计时器ID
 #define TIMER_GAMETIMER_ELAPSE		30		//默认计时器刷新间隔的毫秒数
@@ -90,7 +92,8 @@ const double PI = 3.14159265358979323846;
 #define NPC_MAN1_ID				2001		//每个NPC的ID号
 #define NPC_WOMAN1_ID			2002
 #define NPC_MAN2_ID				2003
-#define NPC_WEADOW_MAN_ID			2004
+#define NPC_MEADOW_MAN_ID			2004
+#define NPC_MAN3_ID				2005
 
 #define MONSTER_CAT_ID			3001
 #define MONSTER_CROW_ID			3002
@@ -125,6 +128,8 @@ const double PI = 3.14159265358979323846;
 #define OBJ_SOFA_1 20013
 #define OBJ_TV 20014
 #define OBJ_CARPET_1 20015
+#define OBJ_GRASS 20016
+#define OBJ_TREE 20017
 
 
 #define MAP_MAIN 30001
@@ -145,6 +150,10 @@ const double PI = 3.14159265358979323846;
 #define BG_BARRIER_LEFT_BOTTOM_R 40013
 #define BG_BARRIER_RIGHT_TOP_R 40014
 #define BG_BARRIER_RIGHT_BOTTOM_R 40015
+#define BG_ROCK_1 40016
+#define BG_ROCK_2 40017
+#define BG_ROCK_3 40018
+#define BG_ROCK_4 40019
 
 #define ITEM_CERTIFICATE 60001
 #define ITEM_SWORD 60002
@@ -436,11 +445,12 @@ void UpdateNPCs(HWND hWnd);
 void UpdateMonsters(HWND hWnd);
 void UpdateMaps(HWND hWnd);
 void UpdateTasks(HWND hWnd);
+void UpdateFailed(HWND hWnd);
 
 void HandleConversationEvents(HWND hWnd);
 void HandleStopEvents(HWND hWnd);
-
 void HandleHelpEvents(HWND hWnd);
+void HandleFailedEvents(HWND hWnd, std::wstring str);
 
 //TODO: 添加游戏需要的更多函数
 
