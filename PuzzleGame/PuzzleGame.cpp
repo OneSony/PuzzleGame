@@ -4,6 +4,7 @@
 #include "PuzzleGame.h"
 #include "Maps.h"
 #include "NPCs.h"
+#include "Items.h"
 #include <string.h>
 #define MAX_LOADSTRING 100
 
@@ -21,6 +22,8 @@ HBITMAP bmp_crow;		//怪物1图像
 HBITMAP bmp_duck;		//怪物1图像
 HBITMAP bmp_chiken;		//怪物1图像
 HBITMAP bmp_weapon;		//怪物1图像
+HBITMAP bmp_item_bg;
+HBITMAP bmp_item_name_bg;
 
 Stage* currentStage = NULL; //当前场景状态
 vector<Monster*> monsters;	//怪物列表
@@ -30,6 +33,10 @@ vector<NewMonster*> new_monsters_main;
 vector<NewMonster*> new_monsters_house_1;
 vector<NewMonster*> new_monsters_meadow;
 vector<NewMonster*>* current_new_monsters;
+
+vector<Item*> items;		//物品列表
+Item* current_item = NULL;	//当前物品
+int item_name_fading_time;
 
 Player* player = NULL;		//玩家
 vector<Button*> game_buttons;	//按钮	
@@ -243,7 +250,9 @@ void InitGame(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	bmp_duck = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_DUCK));
 	bmp_chiken = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_CHIKEN));
 	bmp_weapon = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_WEAPON));
-	
+	bmp_item_bg = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_ITEM_BG));
+	bmp_item_name_bg = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_ITEM_NAME_BG));
+
 	//添加按钮
 	Button* startButton = CreateButton(BUTTON_STARTGAME, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
 		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT)*2 / 4, L"START");
@@ -416,31 +425,113 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	else {
-		if (player->weapon != NULL) {
-			player->weapon->move = true;
-			char buff[256];
-			sprintf(buff, "weapon move %d\n", player->weapon->move);
-			OutputDebugStringA(buff);
+		//点到了任务栏
+
+		// 定义任务栏的大小和间距
+		int width = ITEM_BAR_SIZE_X;   // 每个任务栏项的宽度
+		int height = ITEM_BAR_SIZE_Y;  // 每个任务栏项的高度
+		int margin = ITEM_BAR_MARGIN;   // 每个任务栏项之间的间距
+
+		// 计算任务栏项的起始位置（居中）
+		int startX = (WINDOW_WIDTH - (width * 3 + margin * 2)) / 2;  // 水平居中
+		int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置（距离窗口底部）
+
+		int clickedIndex = -1;
+
+		for (int i = 0; i < 3; i++) {
+			int xPos = startX + i * (width + margin);  // 计算每个任务栏项的水平位置
+
+			// 判断鼠标点击是否在当前任务栏项范围内
+			if (mouseX >= xPos && mouseX <= xPos + width && mouseY >= yPos && mouseY <= yPos + height) {
+				clickedIndex = i;  // 如果点击在当前任务栏项范围内，记录点击的任务栏项索引
+				break;  // 结束循环，因为只需要找到第一个点击的任务栏项
+			}
 		}
 
+		if (clickedIndex != -1) {//点到了
+			char buff[256];
+			sprintf(buff, "clicked: %d\n", clickedIndex);
+			OutputDebugStringA(buff);
+			if (clickedIndex < items.size()) {
+				//点到了实际存在的
+				if (current_item == items[clickedIndex]) { //如果已经拿到了就取下来
+					current_item = NULL;
+				}
+				else {
+					current_item = items[clickedIndex];
+					item_name_fading_time = ITEM_NAME_FADING;
+				}
+			}
+			else {
+				//点到了空的，就不拿东西
+				current_item = NULL;
+			}
+			return;
+		}
+
+		//攻击
 		for (int i = 0; i < current_new_monsters->size(); i++) {
 			NewMonster* monster = current_new_monsters->at(i);
 
 			if (monster->visible) {
 				//TODO 碰撞了
-				if (mouseX >= monster->x-monster->size_x && mouseX <= monster->x + monster->size_x &&
+
+				if (mouseX >= monster->x - monster->size_x && mouseX <= monster->x + monster->size_x &&
 					mouseY >= monster->y - monster->size_y && mouseY <= monster->y + monster->size_y)
 				{
-					monster->hurt = true;
-					monster->hp -= player->weapon->damage;
-					monster->hp_visible = true;
-					monster->particles.push_back(CreateParticle(L"-" + to_wstring(player->weapon->damage) + L"HP"));
+					bool is_near = false;
+					bool can_hurt = false;
+					int damage = 0;
+					if (player->x - HURT_RADIUS < monster->x && player->x + HURT_RADIUS > monster->x && player->y - HURT_RADIUS < monster->y && player->y + HURT_RADIUS > monster->y) {
+						is_near = true;
+					}
 
-					AddEffect(monster, EFFECT_SPEED_UP_ID);
 
-					char buff[256];
-					sprintf(buff, "monster hp: %d\n", monster->hp);
-					OutputDebugStringA(buff);
+
+					if (current_item == NULL) {
+						if (is_near == true) {
+							can_hurt = true;
+							damage = 1;
+						}
+						else {
+							continue;
+						}
+					}
+					else if (current_item->item_id == ITEM_BOW) {
+						can_hurt = true;
+						damage = 5;
+					}
+					else if (current_item->item_id == ITEM_SWORD) {
+						if (is_near == true) {
+							can_hurt = true;
+							damage = 10;
+						}
+						else {
+							continue;
+						}
+					}
+					else {
+						if (is_near == true) {
+							can_hurt = true;
+							damage = 1;
+						}
+						else {
+							continue;
+						}
+					}
+
+					if (can_hurt == true) {
+						monster->hurt = true;
+						monster->hp -= damage;
+						monster->hp_visible = true;
+						monster->particles.push_back(CreateParticle(L"-" + to_wstring(damage) + L"HP"));
+
+						AddEffect(monster, EFFECT_SPEED_UP_ID);
+
+						char buff[256];
+						sprintf(buff, "monster hp: %d\n", monster->hp);
+						OutputDebugStringA(buff);
+					}
 				}
 			}
 
@@ -498,7 +589,7 @@ bool CanMove(int x_before, int y_before, int x_after, int y_after) { //player's 
 	if (current_reachable[y_after / BLOCK_SIZE_Y][x_after / BLOCK_SIZE_X] == 1) {
 		return false;
 	}
-	
+
 
 	//移动速度考虑了吗
 	/*
@@ -555,7 +646,18 @@ void UpdateTasks(HWND hWnd) {
 		npcs_house_1.at(0)->next_conversation_id = 0;
 		npcs_main.at(1)->task_state = 1;
 		npcs_main.at(1)->next_conversation_id = 0;
-
+		
+		//如果没有item certificate再添加
+		bool has_certificate = false;
+		for (const auto& item : items) {
+			if (item->item_id == ITEM_CERTIFICATE) {
+				has_certificate = true;
+				break;
+			}
+		}
+		if (!has_certificate) {
+			items.push_back(new Item(ITEM_CERTIFICATE));
+		}
 
 
 		reachable_main[16][27] = 0;
@@ -1263,6 +1365,7 @@ void InitStage(HWND hWnd, int stageID)
 		current_npcs = &npcs_main;
 		current_new_monsters = &new_monsters_main;
 		currentStage->timerOn = true;
+
 		//memcpy(new_map, new_map_stage1, sizeof(new_map));
 		//显示游戏界面的按钮
 		for (int i = 0; i < game_buttons.size(); i++)
@@ -1479,8 +1582,6 @@ void Paint(HWND hWnd)
 			}
 
 			
-			unordered_set<int> landValues = {4, 5, 6, 8, 9, 10, 12, 13, 14};
-			
 			//绘制地图
 			/*SelectObject(hdc_loadBmp, bmp_map);
 			for (int i = 0; i < sizeof(current_map) / sizeof(current_map[0]); i++) {
@@ -1586,7 +1687,25 @@ void Paint(HWND hWnd)
 			p->weight_x = p->x;
 			p->weight_y = p->y + HUMAN_SIZE_Y; //TODO
 
-			if (player->weapon != NULL) {
+
+			if (current_item != NULL) {
+				Drawable* item = new Drawable();
+				item->img = current_item->img;
+				item->x = player->x - 0.5 * ITEM_SIZE_X;
+				item->y = player->y - 0.5 * HUMAN_SIZE_Y - 0.5 * ITEM_SIZE_Y;
+				item->size_x = ITEM_SIZE_X;
+				item->size_y = ITEM_SIZE_Y;
+				item->bmp_x = 0;
+				item->bmp_y = 0;
+				item->bmp_size_x = current_item->bitmap_size_x;
+				item->bmp_size_y = current_item->bitmap_size_x;
+
+				//subdrawables应该不需要weight
+				p->subdrawables.push_back(item);
+
+				item->transparentColor = RGB(255, 255, 255);
+			}
+			/*if (player->weapon != NULL) {
 
 				Weapon* weapon = player->weapon;
 				Drawable* w = new Drawable();
@@ -1606,7 +1725,7 @@ void Paint(HWND hWnd)
 
 				p->subdrawables.push_back(w);
 
-			}
+			}*/
 			drawables.push_back(p);
 
 
@@ -2087,12 +2206,89 @@ void Paint(HWND hWnd)
 			}
 		}
 
+
+		//画物品栏
+
+		//画背景
+		int width = ITEM_BAR_SIZE_X;    // 绘制在画布上的宽度（缩小为 40px）
+		int height = ITEM_BAR_SIZE_Y;   // 绘制在画布上的高度（缩小为 40px）
+		int margin = ITEM_BAR_MARGIN;      // 每个图像之间的间距
+
+		SelectObject(hdc_loadBmp, bmp_item_bg);
+		int startX = (WINDOW_WIDTH - (width * 3 + margin * 2)) / 2; // 水平居中
+		for (int i = 0; i < 3; i++) {
+			int xPos = startX + i * (width + margin);  // 计算水平位置
+			int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
+
+			// 使用 TransparentBlt 绘制图像，透明色为 RGB(255, 255, 255)（白色）
+			TransparentBlt(
+				hdc_memBuffer,         // 目标 HDC
+				xPos, yPos,           // 目标绘制位置
+				width, height,  // 绘制尺寸
+				hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
+				0, 0,                 // 源位置
+				width, height,  // 源尺寸
+				RGB(255, 255, 255)    // 透明色（假设白色为透明）
+			);
+		}
+
+		int item_width = ITEM_SIZE_X;
+		int item_height = ITEM_SIZE_Y;
+
+		//画物品！！TODO
+		for (int i = 0; i < items.size(); i++) {
+			SelectObject(hdc_loadBmp, items[i]->img);
+			int xPos = startX + i * (width + margin);  // 计算水平位置
+			int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
+
+			TransparentBlt(
+				hdc_memBuffer,         // 目标 HDC
+				xPos + 0.5 * (width - item_width), yPos + 0.5 * (height - item_height),           // 目标绘制位置
+				item_width, item_height,  // 绘制尺寸
+				hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
+				0, 0,                 // 源位置
+				items[i]->bitmap_size_x, items[i]->bitmap_size_y,  // 源尺寸
+				RGB(255, 255, 255)    // 透明色（假设白色为透明）
+			);
+
+			if (current_item == items[i] && item_name_fading_time > 0) {
+				SelectObject(hdc_loadBmp, bmp_item_name_bg);
+				TransparentBlt(
+					hdc_memBuffer,
+					xPos - 0.5*(ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X), yPos - ITEM_NAME_SIZE_Y - 10, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,					// 界面上绘制位置
+					hdc_loadBmp,
+					0, 0, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,	// 位图上绘制位置
+					RGB(255, 255, 255)
+				);
+				//绘制文字
+				HFONT hFont = CreateFontW(
+					20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+					OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+					L"SimSun");		//创建字体
+				SelectObject(hdc_memBuffer, hFont);
+				SetTextColor(hdc_memBuffer, RGB(0, 0, 0));	// 设置颜色:黑色字体白色背景
+				SetBkMode(hdc_memBuffer, TRANSPARENT);
+				RECT rect;
+				rect.left = xPos - 0.5 * (ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X);
+				rect.top = yPos - ITEM_NAME_SIZE_Y + 3;
+				rect.right = rect.left + ITEM_NAME_SIZE_X;
+				rect.bottom = rect.top + ITEM_NAME_SIZE_Y;
+				DrawTextW(hdc_memBuffer, current_item->description.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
+
+				item_name_fading_time--;
+				char buff[256];
+
+			}
+
+		}
+
+
 	}
 
 
 	//最后加上透明度
 	if (in_stop) {
-		SelectObject(hdc_loadBmp, currentStage->bg);
+		SelectObject(hdc_loadBmp, bmp_Background);
 		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
 
 		//TODO button
@@ -2131,7 +2327,7 @@ void Paint(HWND hWnd)
 	if (in_help) {
 		//TODO
 
-		SelectObject(hdc_loadBmp, currentStage->bg);
+		SelectObject(hdc_loadBmp, bmp_Background);
 		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
 
 	}

@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Items.h" />
     <ClInclude Include="Maps.h" />
     <ClInclude Include="NPCs.h" />
     <ClInclude Include="PuzzleGame.h" />
@@ -183,9 +184,15 @@
     <Image Include="resources\bg\barrier_right_top.bmp" />
     <Image Include="resources\bg\barrier_right_top_r.bmp" />
     <Image Include="resources\bg\barrier_top.bmp" />
+    <Image Include="resources\bg\bitmap5.bmp" />
     <Image Include="resources\bg\floor_1.bmp" />
     <Image Include="resources\bitmap4.bmp" />
     <Image Include="resources\dialog.bmp" />
+    <Image Include="resources\item\certificate.bmp" />
+    <Image Include="resources\item\item_bg.bmp" />
+    <Image Include="resources\item\item_bow.bmp" />
+    <Image Include="resources\item\item_name_bg.bmp" />
+    <Image Include="resources\item\item_sword.bmp" />
     <Image Include="resources\map.bmp" />
     <Image Include="resources\monster1.bmp" />
     <Image Include="resources\npc_man1.bmp" />

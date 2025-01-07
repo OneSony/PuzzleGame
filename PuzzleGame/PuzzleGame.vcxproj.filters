@@ -30,6 +30,9 @@
     <ClInclude Include="NPCs.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Items.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PuzzleGame.cpp">
@@ -193,6 +196,24 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\bg\barrier_right_top.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\item\certificate.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\bitmap5.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\item\item_bg.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\item\item_name_bg.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\item\item_bow.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\item\item_sword.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
