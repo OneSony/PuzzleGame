@@ -363,7 +363,7 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				case BUTTON_STARTGAME:
 				{
 					AllInit();
-					InitStage(hWnd, STAGE_1);
+					InitStage(hWnd, STAGE_MAIN);
 					break;
 				}
 				case BUTTON_HELP:
@@ -374,7 +374,7 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				case BUTTON_FAILED_RESTART:
 				{
 					AllInit();
-					InitStage(hWnd, STAGE_1);
+					InitStage(hWnd, STAGE_MAIN);
 					break;
 				}
 				break;
@@ -585,6 +585,7 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	UpdateMaps(hWnd);
 	ScanTasks();
 	UpdateFailed(hWnd);
+	UpdateHolding(hWnd);
 	UpdateProgress();
 	//刷新显示
 	InvalidateRect(hWnd, NULL, FALSE);
@@ -700,6 +701,33 @@ int RandomInt(int min, int max) {
 	return dis(gen);
 }
 
+void UpdateHolding(HWND hWnd) {
+
+	if (current_item == NULL) {
+		if (currentStage->stageID == STAGE_MAIN) {
+			reachable_main[7][21] = 1;
+			reachable_main[7][22] = 1;
+		}
+
+		return;
+	}
+
+	if (current_item->item_id == ITEM_CERTIFICATE) {
+		if (currentStage->stageID == STAGE_MAIN) {
+			if (npcs_main.at(1)->task_state == 0) {
+				npcs_main.at(1)->ToConversation(1);
+			}
+		}
+	}
+	else if (current_item->item_id == ITEM_KEY) {
+		if (currentStage->stageID == STAGE_MAIN) {
+			reachable_main[7][21] = 3;
+			reachable_main[7][22] = 3;
+		}
+	}
+
+}
+
 //更新NPC状态
 void UpdateNPCs(HWND hWnd) {
 
@@ -735,18 +763,6 @@ void UpdateNPCs(HWND hWnd) {
 			}
 
 			it++;
-		}
-
-		//放在这里
-
-		if (currentStage->stageID == STAGE_1) {
-			if ((*current_npcs)[i]->npcID == NPC_MAN3_ID) {
-				if ((*current_npcs)[i]->task_state == 0) {
-					if (current_item != NULL && current_item->item_id == ITEM_CERTIFICATE) {
-						(*current_npcs)[i]->ToConversation(1);
-					}
-				}
-			}
 		}
 	}
 }
@@ -1041,7 +1057,7 @@ void UpdateMaps(HWND hWnd)
 	//走到地图边界，切换到map2
 	//TODO逻辑有问题，可能是负数
 
-	if (currentStage->stageID == STAGE_1 && (player->x / BLOCK_SIZE_X == 4 || player->x / BLOCK_SIZE_X == 5) && player->y/BLOCK_SIZE_Y == 9)
+	if (currentStage->stageID == STAGE_MAIN && (player->x / BLOCK_SIZE_X == 4 || player->x / BLOCK_SIZE_X == 5) && player->y/BLOCK_SIZE_Y == 9)
 	{	
 		player->y = BLOCK_SIZE_Y * 15;
 		player->x = BLOCK_SIZE_X * 7;
@@ -1049,7 +1065,16 @@ void UpdateMaps(HWND hWnd)
 		return;
 	}
 
-	if (currentStage->stageID == STAGE_1 && player->x / BLOCK_SIZE_X >= 27)
+	//to house 2
+	if (currentStage->stageID == STAGE_MAIN && (player->x / BLOCK_SIZE_X == 21 || player->x / BLOCK_SIZE_X == 22) && player->y / BLOCK_SIZE_Y == 7)
+	{
+		player->y = BLOCK_SIZE_Y * 15;
+		player->x = BLOCK_SIZE_X * 6;
+		InitStage(hWnd, STAGE_HOUSE_2);
+		return;
+	}
+
+	if (currentStage->stageID == STAGE_MAIN && player->x / BLOCK_SIZE_X >= 27)
 	{
 		player->x = BLOCK_SIZE_X * 1; // 将x设置为0，使其跑到屏幕最左边
 		player->y = BLOCK_SIZE_Y * 17;
@@ -1061,7 +1086,7 @@ void UpdateMaps(HWND hWnd)
 	{
 		player->x = BLOCK_SIZE_X * 5;
 		player->y = BLOCK_SIZE_Y * 10;
-		InitStage(hWnd, STAGE_1);
+		InitStage(hWnd, STAGE_MAIN);
 		return;
 	}
 
@@ -1069,7 +1094,15 @@ void UpdateMaps(HWND hWnd)
 	{
 		player->x = BLOCK_SIZE_X * 26;
 		player->y = BLOCK_SIZE_Y * 15;
-		InitStage(hWnd, STAGE_1);
+		InitStage(hWnd, STAGE_MAIN);
+		return;
+	}
+
+	if (currentStage->stageID == STAGE_HOUSE_2 && (player->x / BLOCK_SIZE_X == 5 || player->x / BLOCK_SIZE_X == 6) && player->y / BLOCK_SIZE_Y == 16)
+	{
+		player->x = BLOCK_SIZE_X * 22;
+		player->y = BLOCK_SIZE_Y * 8;
+		InitStage(hWnd, STAGE_MAIN);
 		return;
 	}
 
@@ -1077,7 +1110,7 @@ void UpdateMaps(HWND hWnd)
 
 void ScanTasks() {//顺便判断胜利和结束
 
-	if (currentStage->stageID == STAGE_1) {
+	if (currentStage->stageID == STAGE_MAIN) {
 
 		if (current_npcs->at(1)->task_state == 1 &&
 			//current_npcs->at(1)->next_conversation_id == current_npcs->at(1)->conversations[current_npcs->at(1)->task_state].size() - 1) {
@@ -1106,6 +1139,12 @@ void ScanTasks() {//顺便判断胜利和结束
 			//current_npcs->at(0)->next_conversation_id == current_npcs->at(0)->conversations[current_npcs->at(0)->task_state].size() - 1) {
 			current_npcs->at(0)->is_finished == true) {
 			progress_list.push_back(PRO_GET_CERTIFICATE);
+		}
+
+		if (current_npcs->at(0)->task_state == 2 &&
+			//current_npcs->at(0)->next_conversation_id == current_npcs->at(0)->conversations[current_npcs->at(0)->task_state].size() - 1) {
+			current_npcs->at(0)->is_finished == true) {
+			progress_list.push_back(PRO_GET_KEY);
 		}
 
 	}
@@ -1266,7 +1305,7 @@ void InitStage(HWND hWnd, int stageID)
 		current_buttons = &menu_buttons;
 	}
 	//TODO：添加多个游戏场景
-	else if (stageID == STAGE_1)
+	else if (stageID == STAGE_MAIN)
 	{
 
 		current_bg = &bg_main;
@@ -1314,6 +1353,20 @@ void InitStage(HWND hWnd, int stageID)
 		if (player == NULL)
 			player = CreatePlayer(200, 200);
 
+	}
+	else if (stageID == STAGE_HOUSE_2) {
+		current_bg = &bg_house_2;
+		current_reachable = &reachable_house_2;
+		current_obj = &obj_house_2;
+
+		current_npcs = &npcs_house_2;
+		current_new_monsters = &new_monsters_house_2;
+		currentStage->timerOn = true;
+
+		current_buttons = &void_buttons;
+
+		if (player == NULL)
+			player = CreatePlayer(200, 200);
 	}
 
 	//刷新显示
@@ -1373,8 +1426,10 @@ void Paint(HWND hWnd)
 			hdc_memBuffer, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
 			hdc_loadBmp, 0, 0, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT,
 			RGB(255, 255, 255));
+
+		//TODO有问题
 	} else {
-		if (currentStage->stageID >= STAGE_1) //TODO：添加多个游戏场景
+		if (currentStage->stageID >= STAGE_MAIN) //TODO：添加多个游戏场景
 		{
 
 			//首先绘制背景，背景只有一个块

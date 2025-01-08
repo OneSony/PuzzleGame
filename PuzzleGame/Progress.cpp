@@ -22,6 +22,7 @@ void InitProgress() {
 		{PRO_GET_CERTIFICATE, false},
 		{PRO_GET_BOW, false},
 		{PRO_CHICKEN_UNHOMED_AGAIN,false},
+		{PRO_GET_KEY, false},
 	};
 
 	progress_record = help_progress_record;
@@ -55,7 +56,7 @@ void UpdateProgress() {
 			else {
 				if (progress_record[PRO_GET_CERTIFICATE] == true) {
 					//拿到了证书之后鸡在外面
-					npcs_house_1.at(0)->ToConversation(2);
+					npcs_house_1.at(0)->ToConversation(3);
 					progress_record[PRO_CHICKEN_UNHOMED_AGAIN] = true;
 				}
 			}
@@ -73,7 +74,7 @@ void UpdateProgress() {
 				//第二次进入
 				if (progress_record[PRO_CHICKEN_UNHOMED_AGAIN] == true) {
 					//如果鸡出走过又回来进入这里
-					npcs_house_1.at(0)->ToConversation(3);
+					npcs_house_1.at(0)->ToConversation(4);
 				}
 			}
 		}
@@ -91,6 +92,31 @@ void UpdateProgress() {
 				}
 				if (!has_certificate) {
 					items.push_back(new Item(ITEM_CERTIFICATE));
+					show_name_item = items.back();
+					item_name_fading_time = ITEM_NAME_FADING;
+				}
+
+				npcs_house_1.at(0)->ToConversation(2);
+			}
+			else {
+
+
+			}
+		}
+		else if (current_progress == PRO_GET_KEY) {
+
+			if (progress_record[PRO_GET_KEY] == false) {
+				progress_record[PRO_GET_KEY] = true;
+				//添加物品
+				bool has_key = false;
+				for (const auto& item : items) {
+					if (item->item_id == ITEM_KEY) {
+						has_key = true;
+						break;
+					}
+				}
+				if (!has_key) {
+					items.push_back(new Item(ITEM_KEY));
 					show_name_item = items.back();
 					item_name_fading_time = ITEM_NAME_FADING;
 				}

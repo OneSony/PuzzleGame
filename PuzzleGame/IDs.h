@@ -5,10 +5,11 @@
 #define WINDOW_HEIGHT			640+32		//游戏窗口高度
 
 #define STAGE_STARTMENU			0		//开始画面的ID
-#define STAGE_1					1		//第一个游戏场景的ID
+#define STAGE_MAIN				1		//第一个游戏场景的ID
 #define STAGE_HOUSE_1			2
 #define STAGE_MEADOW			3
 #define STAGE_FAILED			4
+#define STAGE_HOUSE_2			5
 
 
 //尺寸
@@ -138,6 +139,7 @@
 #define ITEM_CERTIFICATE 60001
 #define ITEM_SWORD 60002
 #define ITEM_BOW 60003
+#define ITEM_KEY 60004
 
 #define ANI_DEATH 70001
 #define ANI_EXCLAMATION 70002

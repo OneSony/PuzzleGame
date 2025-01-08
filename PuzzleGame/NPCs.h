@@ -53,4 +53,5 @@ void InitNPCs();
 extern std::vector<NPC*> npcs_main;
 extern std::vector<NPC*> npcs_house_1;
 extern std::vector<NPC*> npcs_meadow;
+extern std::vector<NPC*> npcs_house_2;
 #pragma once

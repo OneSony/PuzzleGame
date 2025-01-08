@@ -72,6 +72,7 @@ struct NewMonster
 extern std::vector<NewMonster*> new_monsters_main;
 extern std::vector<NewMonster*> new_monsters_house_1;
 extern std::vector<NewMonster*> new_monsters_meadow;
+extern std::vector<NewMonster*> new_monsters_house_2;
 
 Effect* CreateEffect(int effect_id);
 NewMonster* NewCreateMonster(int x, int y, int monster_id);

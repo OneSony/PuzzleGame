@@ -62,12 +62,16 @@ NPC::NPC(int x, int y, int npc_id)
 		this->conversations.push_back(conversations_2);
 
 		std::vector<const wchar_t*> conversations_3;
-		conversations_3.push_back(L"你又把它们赶下来干嘛！");
+		conversations_3.push_back(L"哦对，这是你家里的钥匙");
 		this->conversations.push_back(conversations_3);
 
 		std::vector<const wchar_t*> conversations_4;
-		conversations_4.push_back(L"它们还是在地毯上比较好");
+		conversations_4.push_back(L"你又把它们赶下来干嘛！");
 		this->conversations.push_back(conversations_4);
+
+		std::vector<const wchar_t*> conversations_5;
+		conversations_5.push_back(L"它们还是在地毯上比较好");
+		this->conversations.push_back(conversations_5);
 
 		break;
 	}
@@ -164,6 +168,7 @@ void NPC::ToConversation(int task_id) {
 std::vector<NPC*> npcs_main;
 std::vector<NPC*> npcs_house_1;
 std::vector<NPC*> npcs_meadow;
+std::vector<NPC*> npcs_house_2;
 
 
 void InitNPCs()
@@ -174,15 +179,20 @@ void InitNPCs()
 	}
 	npcs_main.clear();
 
-	for (int i = 0; i < npcs_main.size(); i++) {
+	for (int i = 0; i < npcs_house_1.size(); i++) {
 		delete npcs_house_1[i];
 	}
 	npcs_house_1.clear();
 
-	for (int i = 0; i < npcs_main.size(); i++) {
+	for (int i = 0; i < npcs_meadow.size(); i++) {
 		delete npcs_meadow[i];
 	}
 	npcs_meadow.clear();
+
+	for (int i = 0; i < npcs_house_2.size(); i++) {
+		delete npcs_house_2[i];
+	}
+	npcs_house_2.clear();
 
 	npcs_main.push_back(new NPC(BLOCK_SIZE_X * 10, BLOCK_SIZE_Y * 14, NPC_MAN1_ID));
 

@@ -125,6 +125,7 @@ void AddEffect(NewMonster* monster, int effect_id) {
 std::vector<NewMonster*> new_monsters_main;
 std::vector<NewMonster*> new_monsters_house_1;
 std::vector<NewMonster*> new_monsters_meadow;
+std::vector<NewMonster*> new_monsters_house_2;
 
 void InitMonsters() {
 
@@ -142,6 +143,12 @@ void InitMonsters() {
 		delete new_monsters_meadow[i];
 	}
 	new_monsters_meadow.clear();
+
+	for (int i = 0; i < new_monsters_house_2.size(); i++) {
+		delete new_monsters_house_2[i];
+	}
+	new_monsters_house_2.clear();
+
 
 	new_monsters_main.push_back(NewCreateMonster(505, 205, MONSTER_CROW_ID));
 	new_monsters_main.push_back(NewCreateMonster(205, 405, MONSTER_CROW_ID));

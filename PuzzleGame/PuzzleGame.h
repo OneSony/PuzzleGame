@@ -92,6 +92,7 @@ void UpdateNPCs(HWND hWnd);
 void UpdateMonsters(HWND hWnd);
 void UpdateMaps(HWND hWnd);
 void UpdateFailed(HWND hWnd);
+void UpdateHolding(HWND hWnd);
 void ScanTasks();
 
 void HandleConversationEvents(HWND hWnd);
