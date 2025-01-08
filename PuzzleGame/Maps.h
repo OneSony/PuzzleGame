@@ -1,4 +1,4 @@
-#pragma once
+#pragma once Maps
 
 #include <map>
 class Obj_info

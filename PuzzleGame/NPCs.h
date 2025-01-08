@@ -1,8 +1,10 @@
+#pragma once NPCs
 #include "PuzzleGame.h"
-
+#include "Particles.h"
 // NPC结构体
-struct NPC
+class NPC
 {
+public:
 	int npcID;				//NPC编号
 	HBITMAP img;			//图片
 	bool visible;			//该NPC是否可见
@@ -33,10 +35,15 @@ struct NPC
 	vector<const wchar_t*> conversations_before;	//任务完成前NPC的台词
 	vector<const wchar_t*> conversations_after;		//任务完成后NPC的台词
 	int next_conversation_id;				//NPC下一次要说第几句台词
+
+	vector<FigParticle*> fig_particles;
+
+	NPC(int x, int y, int npc_id);
+	void AddFigParticle(int particle_id);
+	void RemoveFigParticle(int particle_id);
+	void ToConversation(int conversation_id);
 };
 
-// 创建NPC
-NPC* CreateNPC(int x, int y, int npc_id);
 void InitNPCs();
 
 extern std::vector<NPC*> npcs_main;

@@ -1,23 +1,14 @@
-#pragma once
+#pragma once Monsters
+#define _CRT_SECURE_NO_WARNINGS
 #include "PuzzleGame.h"
-struct Particle
-{
-
-	int offset_x;
-	int offset_y;
-	int vx;
-	int vy;
-	int life_max;
-	int life_count;
-
-	wstring text;
-};
+#include "Particles.h"
 
 struct Effect {
 	int effectID;
 	int life_count;
 	int life_max;
 };
+
 
 // 怪物结构体
 struct NewMonster
@@ -60,6 +51,7 @@ struct NewMonster
 	int time_max;
 
 	vector<Particle*> particles;
+	vector<FigParticle*> fig_particles;
 
 	vector<Effect*> effects;
 
@@ -71,8 +63,6 @@ extern vector<NewMonster*> new_monsters_main;
 extern vector<NewMonster*> new_monsters_house_1;
 extern vector<NewMonster*> new_monsters_meadow;
 
-
-Particle* CreateParticle(wstring text);
 Effect* CreateEffect(int effect_id);
 NewMonster* NewCreateMonster(int x, int y, int monster_id);
 

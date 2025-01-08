@@ -1,4 +1,4 @@
-#pragma once
+#pragma once Buttons
 #include "PuzzleGame.h"
 
 extern vector<Button*> menu_buttons;

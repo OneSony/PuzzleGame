@@ -566,7 +566,7 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 						monster->hurt = true;
 						monster->hp -= damage;
 						monster->hp_visible = true;
-						monster->particles.push_back(CreateParticle(L"-" + to_wstring(damage) + L"HP"));
+						monster->particles.push_back(new Particle(L"-" + to_wstring(damage) + L"HP"));
 
 						AddEffect(monster, EFFECT_SPEED_UP_ID);
 
@@ -661,16 +661,21 @@ void UpdateTasks(HWND hWnd) {//顺便判断胜利和结束
 			}
 
 			if ((*current_new_monsters)[i]->state != MONSTER_STATE_HOME) {
-				if (npcs_house_1.at(0)->task_state == 1) {
-					npcs_house_1.at(0)->task_state = 2;
-					npcs_house_1.at(0)->next_conversation_id = 0;
+				if (npcs_house_1.at(0)->task_state == 1 || npcs_house_1.at(0)->task_state == 3) {
+					npcs_house_1.at(0)->ToConversation(2);
 				}
 				return;
 			}
 		}
 		//完成任务
-		npcs_house_1.at(0)->task_state = 1;
-		npcs_house_1.at(0)->next_conversation_id = 0;
+
+		if (npcs_house_1.at(0)->task_state == 0) {
+			npcs_house_1.at(0)->ToConversation(1);
+		}
+		else if (npcs_house_1.at(0)->task_state == 2) {
+			npcs_house_1.at(0)->ToConversation(3);
+		}
+
 		
 		//如果没有item certificate再添加
 		bool has_certificate = false;
@@ -687,9 +692,9 @@ void UpdateTasks(HWND hWnd) {//顺便判断胜利和结束
 		}
 
 
-		reachable_main[16][27] = 0;
-		reachable_main[15][27] = 0;
-		reachable_main[14][27] = 0;
+		reachable_main[16][27] = 3;
+		reachable_main[15][27] = 3;
+		reachable_main[14][27] = 3;
 	}
 	else if (currentStage->stageID == STAGE_MEADOW) {
 		for (int i = 0; i < current_new_monsters->size(); i++) {
@@ -784,6 +789,45 @@ void UpdateNPCs(HWND hWnd) {
 		(*current_npcs)[i]->frame_id++;
 		(*current_npcs)[i]->frame_id = (*current_npcs)[i]->frame_id % (*current_npcs)[i]->frame_count;
 		(*current_npcs)[i]->frame_column = (*current_npcs)[i]->frame_sequence[(*current_npcs)[i]->frame_id];
+
+		//更新fig particle
+		for (auto it = (*current_npcs)[i]->fig_particles.begin(); it != (*current_npcs)[i]->fig_particles.end(); ) {
+
+			FigParticle* particle = (*it);
+
+			particle->frame_id++;
+
+			if (particle->frame_id >= particle->frame_count) {//超过了
+				if (particle->infinity == true) {
+					particle->frame_id = 0;
+				}
+				else {
+					//删除！！
+					delete particle;
+					it = (*current_npcs)[i]->fig_particles.erase(it); // 删除粒子并更新迭代器
+
+					char buff[256];
+					sprintf(buff, "delete fig_par\n");
+					OutputDebugStringA(buff);
+
+					continue;
+				}
+			}
+
+			it++;
+		}
+
+		//放在这里
+
+		if (currentStage->stageID == STAGE_1) {
+			if ((*current_npcs)[i]->npcID == NPC_MAN3_ID) {
+				if ((*current_npcs)[i]->task_state == 0) {
+					if (current_item != NULL && current_item->item_id == ITEM_CERTIFICATE) {
+						(*current_npcs)[i]->ToConversation(1);
+					}
+				}
+			}
+		}
 	}
 }
 void UpdateMonsters(HWND hWnd)
@@ -793,6 +837,56 @@ void UpdateMonsters(HWND hWnd)
 	for (int i = 0; i < current_new_monsters->size(); i++) {
 
 		NewMonster* monster = (*current_new_monsters)[i];
+
+
+		//更新粒子动画
+		for (auto it = monster->particles.begin(); it != monster->particles.end(); ) {
+
+			(*it)->life_count++;
+			(*it)->offset_y -= (*it)->vy;
+
+			char buff[256];
+			sprintf(buff, "life: %d  max: %d", (*it)->life_count, (*it)->life_max);
+			OutputDebugStringA(buff);
+
+			if ((*it)->life_count >= (*it)->life_max) {
+				// 如果生命值达到最大值，则删除当前粒子
+				delete* it; // 释放内存
+				it = monster->particles.erase(it); // 删除粒子并更新迭代器
+
+				sprintf(buff, "delete\n");
+				OutputDebugStringA(buff);
+			}
+			else {
+				it++; // 如果没有删除，移动到下一个粒子
+			}
+		}
+
+		for (auto it = monster->fig_particles.begin(); it != monster->fig_particles.end(); ) {
+
+			FigParticle* particle = (*it);
+
+			particle->frame_id++;
+
+			if (particle->frame_id >= particle->frame_count) {//超过了
+				if (particle->infinity == true) {
+					particle->frame_id = 0;
+				}
+				else {
+					//删除！！
+					delete particle;
+					it = monster->fig_particles.erase(it); // 删除粒子并更新迭代器
+
+					char buff[256];
+					sprintf(buff, "delete fig_par\n");
+					OutputDebugStringA(buff);
+
+					continue;
+				}
+			}
+
+			it++;
+		}
 
 
 		if (monster->visible == false) {
@@ -957,34 +1051,11 @@ void UpdateMonsters(HWND hWnd)
 			break;
 		}
 
-		
-		//更新粒子动画
-		for (auto it = monster->particles.begin(); it != monster->particles.end(); ) {
-
-			(*it)->life_count++;
-			(*it)->offset_y -= (*it)->vy;
-
-			char buff[256];
-			sprintf(buff, "life: %d  max: %d", (*it)->life_count, (*it)->life_max);
-			OutputDebugStringA(buff);
-
-			if ((*it)->life_count >= (*it)->life_max) {
-				// 如果生命值达到最大值，则删除当前粒子
-				delete* it; // 释放内存
-				it = monster->particles.erase(it); // 删除粒子并更新迭代器
-
-				sprintf(buff, "delete\n");
-				OutputDebugStringA(buff);
-			}
-			else {
-				it++; // 如果没有删除，移动到下一个粒子
-			}
-		}
-
-
 		//检查死亡
 		if (monster->hp <= 0) {
 			monster->visible = false;
+			monster->hp_visible = false;
+			monster->fig_particles.push_back(new FigParticle(ANI_DEATH));
 		}
 
 
@@ -1106,18 +1177,12 @@ void HandleConversationEvents(HWND hWnd)
 		if (((player->x <= npc->x && npc->x <= player->x + HUMAN_SIZE_X) || (npc->x <= player->x && player->x <= npc->x + HUMAN_SIZE_X)) &&
 			((player->y <= npc->y && npc->y <= player->y + HUMAN_SIZE_Y) || (npc->y <= player->y && player->y <= npc->y + HUMAN_SIZE_X))) {
 			in_conversation = true;
-
+			npc->RemoveFigParticle(ANI_EXCLAMATION);
 
 			if (currentStage->stageID == STAGE_1 && i == 1) {
 				//是在和meadow man说话
 
-				if (npc->task_state == 0) {
-					if (current_item != NULL && current_item->item_id == ITEM_CERTIFICATE) {
-						npc->task_state = 1;
-						npc->next_conversation_id = 0;
-					}
-				}
-				else if (npc->task_state == 1) {
+				if (npc->task_state == 1) {
 					if (npc->next_conversation_id == npc->conversations[npc->task_state].size() - 1) {//话讲完了，该移动位置了
 						npc->x = BLOCK_SIZE_X * 26;
 						npc->y = BLOCK_SIZE_Y * 13;
@@ -1570,41 +1635,17 @@ void Paint(HWND hWnd)
 				item->bmp_y = 0;
 				item->bmp_size_x = current_item->bitmap_size_x;
 				item->bmp_size_y = current_item->bitmap_size_x;
-
-				//subdrawables应该不需要weight
-				p->subdrawables.push_back(item);
-
 				item->transparentColor = RGB(255, 255, 255);
+				p->subdrawables.push_back(item);
 			}
-			/*if (player->weapon != NULL) {
-
-				Weapon* weapon = player->weapon;
-				Drawable* w = new Drawable();
-				w->img = weapon->img;
-				w->x = player->x - 0.5 * weapon->size_x;
-				w->y = player->y - 0.5 * HUMAN_SIZE_Y - 0.5 * weapon->size_y;
-				w->size_x = weapon->size_x;
-				w->size_y = weapon->size_y;
-				w->bmp_x = weapon->bmp_size_x * weapon->bmp_col;
-				w->bmp_y = weapon->bmp_size_y * weapon->bmp_row;
-				w->bmp_size_x = weapon->bmp_size_x;
-				w->bmp_size_y = weapon->bmp_size_y;
-				w->transparentColor = RGB(255, 255, 255);
-
-				w->weight_x = w->x;
-				w->weight_y = w->y; //TODO
-
-				p->subdrawables.push_back(w);
-
-			}*/
 			drawables.push_back(p);
 
 
 			for (int i = 0; i < current_npcs->size(); i++) {
 				if ((*current_npcs)[i]->visible) {
 
-
 					Drawable* n = new Drawable();
+
 					n->img = (*current_npcs)[i]->img;
 					n->x = (*current_npcs)[i]->x - 0.5 * HUMAN_SIZE_X;
 					n->y = (*current_npcs)[i]->y - 0.5 * HUMAN_SIZE_Y;
@@ -1618,6 +1659,24 @@ void Paint(HWND hWnd)
 
 					n->weight_x = n->x;
 					n->weight_y = n->y + HUMAN_SIZE_Y;
+
+					for (int j = 0; j < (*current_npcs)[i]->fig_particles.size(); j++) {
+						Drawable* animation = new Drawable();
+
+						FigParticle* particle = (*current_npcs)[i]->fig_particles[j];
+
+						animation->img = particle->img;
+						animation->x = ((*current_npcs)[i]->x - 0.5 * particle->size_x) + particle->offset_x; //前半部分保证画在人物中心
+						animation->y = n->y + particle->offset_y; //n->y是人物头顶
+						animation->size_x = particle->size_x;
+						animation->size_y = particle->size_y;
+						animation->bmp_x = particle->frame_sequence->at(particle->frame_id) * particle->bitmap_size_x;
+						animation->bmp_y = 0;
+						animation->bmp_size_x = particle->bitmap_size_x;
+						animation->bmp_size_y = particle->bitmap_size_y;
+						animation->transparentColor = RGB(255, 255, 255);
+						n->subdrawables.push_back(animation);
+					}
 					
 					drawables.push_back(n);
 				}
@@ -1626,12 +1685,13 @@ void Paint(HWND hWnd)
 
 
 			for (int i = 0; i < current_new_monsters->size(); i++) {
-				if ((*current_new_monsters)[i]->visible) {
+				if ((*current_new_monsters)[i]->visible || ((*current_new_monsters)[i]->visible==false && (*current_new_monsters)[i]->fig_particles.size()!=0)) {
 
 					NewMonster* monster = (*current_new_monsters)[i];
 
 					Drawable* m = new Drawable();
 
+					m->visible = (*current_new_monsters)[i]->visible;
 					m->img = monster->img;
 					m->x = monster->x - 0.5 * monster->size_x;
 					m->y = monster->y - 0.5 * monster->size_y;
@@ -1647,6 +1707,24 @@ void Paint(HWND hWnd)
 					m->weight_x = m->x;
 					m->weight_y = m->y + monster->size_y;
 
+					for (int j = 0; j < monster->fig_particles.size(); j++) {
+						Drawable* animation = new Drawable();
+
+						FigParticle* particle = monster->fig_particles[j];
+
+						animation->img = particle->img;
+						animation->x = (monster->x - 0.5 * particle->size_x) + particle->offset_x;
+						animation->y = m->y + particle->offset_y;
+						animation->size_x = particle->size_x;
+						animation->size_y = particle->size_y;
+						animation->bmp_x = particle->frame_sequence->at(particle->frame_id) * particle->bitmap_size_x;
+						animation->bmp_y = 0;
+						animation->bmp_size_x = particle->bitmap_size_x;
+						animation->bmp_size_y = particle->bitmap_size_y;
+						animation->transparentColor = RGB(255, 255, 255);
+						m->subdrawables.push_back(animation);
+					}
+
 					drawables.push_back(m);
 				}
 			}
@@ -1659,16 +1737,19 @@ void Paint(HWND hWnd)
 			});
 
 			for (const auto drawable : drawables) {
-				SelectObject(hdc_loadBmp, drawable->img);
-				TransparentBlt(
-					hdc_memBuffer,
-					drawable->x, drawable->y, // 界面上起始绘制点
-					drawable->size_x, drawable->size_y,                                    // 绘制宽度高度
-					hdc_loadBmp,
-					drawable->bmp_x, drawable->bmp_y, // 位图起始点
-					drawable->bmp_size_x, drawable->bmp_size_y,                                    // 位图宽度高度
-					drawable->transparentColor                                            // 透明色
-				);
+
+				if (drawable->visible == true) {
+					SelectObject(hdc_loadBmp, drawable->img);
+					TransparentBlt(
+						hdc_memBuffer,
+						drawable->x, drawable->y, // 界面上起始绘制点
+						drawable->size_x, drawable->size_y,                                    // 绘制宽度高度
+						hdc_loadBmp,
+						drawable->bmp_x, drawable->bmp_y, // 位图起始点
+						drawable->bmp_size_x, drawable->bmp_size_y,                                    // 位图宽度高度
+						drawable->transparentColor                                            // 透明色
+					);
+				}
 
 				for (const auto subdrawable : drawable->subdrawables) { //只能一层
 					SelectObject(hdc_loadBmp, subdrawable->img);
@@ -1695,7 +1776,8 @@ void Paint(HWND hWnd)
 			//上层动画
 
 			for (int i = 0; i < current_new_monsters->size(); i++) {
-				if ((*current_new_monsters)[i]->visible) {
+				if ((*current_new_monsters)[i]->visible || 
+					((*current_new_monsters)[i]->visible==false && ((*current_new_monsters)[i]->particles.size()!=0))) {
 
 					NewMonster* monster = (*current_new_monsters)[i];
 

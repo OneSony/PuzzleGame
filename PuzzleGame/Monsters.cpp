@@ -8,39 +8,6 @@ std::map<int, HBITMAP> monster_hitmap = {
 	{ MONSTER_CHIKEN_ID, LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_CHIKEN))},
 };
 
-Particle* CreateParticle(wstring text) {
-	Particle* particle = new Particle();
-	particle->text = text;
-	particle->offset_x = 0;
-	particle->offset_y = 0;
-	particle->vx = 0;
-	particle->vy = 2;
-	particle->life_max = 15;
-	particle->life_count = 0;
-
-	return particle;
-}
-
-Effect* CreateEffect(int effect_id) {
-	Effect* effect = new Effect();
-	effect->effectID = effect_id;
-	effect->life_count = 0;
-
-	switch (effect_id)
-	{
-	case EFFECT_SPEED_UP_ID:
-	{
-		effect->life_max = 100;
-		break;
-	}
-	default:
-		break;
-	}
-
-	return effect;
-}
-
-
 NewMonster* NewCreateMonster(int x, int y, int monster_id)
 {
 	NewMonster* monster = new NewMonster();
@@ -73,7 +40,7 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 		monster->size_y = 30;
 		monster->time_stop = 50;
 		monster->time_max = 100;
-		monster->hp_max = 200;
+		monster->hp_max = 2;
 		monster->hp = monster->hp_max;
 		break;
 	}
@@ -86,7 +53,7 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 		monster->size_y = 30;
 		monster->time_stop = 50;
 		monster->time_max = 100;
-		monster->hp_max = 200;
+		monster->hp_max = 5;
 		monster->hp = monster->hp_max;
 		break;
 	}
@@ -99,7 +66,7 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 		monster->size_y = 30;
 		monster->time_stop = 50;
 		monster->time_max = 100;
-		monster->hp_max = 50;
+		monster->hp_max = 5;
 		monster->hp = monster->hp_max;
 		break;
 	}
@@ -109,6 +76,25 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 
 
 	return monster;
+}
+
+Effect* CreateEffect(int effect_id) {
+	Effect* effect = new Effect();
+	effect->effectID = effect_id;
+	effect->life_count = 0;
+
+	switch (effect_id)
+	{
+	case EFFECT_SPEED_UP_ID:
+	{
+		effect->life_max = 100;
+		break;
+	}
+	default:
+		break;
+	}
+
+	return effect;
 }
 
 void AddEffect(NewMonster* monster, int effect_id) {
@@ -144,14 +130,17 @@ void InitMonsters() {
 	}
 	new_monsters_meadow.clear();
 
+	new_monsters_main.push_back(NewCreateMonster(505, 205, MONSTER_CROW_ID));
+	new_monsters_main.push_back(NewCreateMonster(205, 405, MONSTER_CROW_ID));
 
 	new_monsters_house_1.push_back(NewCreateMonster(300, 300, MONSTER_CHIKEN_ID));
 	new_monsters_house_1.push_back(NewCreateMonster(350, 350, MONSTER_CHIKEN_ID));
 
-
-	new_monsters_meadow.push_back(NewCreateMonster(495, 205, MONSTER_CROW_ID));
+	new_monsters_meadow.push_back(NewCreateMonster(405, 205, MONSTER_CROW_ID));
+	new_monsters_meadow.push_back(NewCreateMonster(405, 305, MONSTER_CROW_ID));
+	new_monsters_meadow.push_back(NewCreateMonster(505, 205, MONSTER_CROW_ID));
 	new_monsters_meadow.push_back(NewCreateMonster(290, 290, MONSTER_DUCK_ID));
-	new_monsters_meadow.push_back(NewCreateMonster(310, 300, MONSTER_DUCK_ID));
+	new_monsters_meadow.push_back(NewCreateMonster(300, 300, MONSTER_DUCK_ID));
 	new_monsters_meadow.push_back(NewCreateMonster(200, 200, MONSTER_DUCK_ID));
 	new_monsters_meadow.push_back(NewCreateMonster(250, 250, MONSTER_DUCK_ID));
 

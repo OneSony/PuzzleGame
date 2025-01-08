@@ -144,15 +144,18 @@
     <ClInclude Include="Maps.h" />
     <ClInclude Include="Monsters.h" />
     <ClInclude Include="NPCs.h" />
+    <ClInclude Include="Particles.h" />
     <ClInclude Include="PuzzleGame.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Buttons.cpp" />
+    <ClCompile Include="Items.cpp" />
     <ClCompile Include="Maps.cpp" />
     <ClCompile Include="Monsters.cpp" />
     <ClCompile Include="NPCs.cpp" />
+    <ClCompile Include="Particles.cpp" />
     <ClCompile Include="PuzzleGame.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,12 +171,13 @@
     <Image Include="..\..\..\..\..\Desktop\Goat..bmp" />
     <Image Include="..\..\..\..\..\Desktop\grass.bmp" />
     <Image Include="..\..\..\..\..\Desktop\sand.bmp" />
-    <Image Include="..\..\..\..\..\Desktop\summer_beach.zh-CN..bmp" />
     <Image Include="..\..\..\..\..\Desktop\weapons..bmp" />
     <Image Include="..\..\..\..\..\Desktop\星露谷物语素材\Stardew valley\Characters\Monsters\Crow..png" />
     <Image Include="..\..\..\..\..\Desktop\未标题-1.bmp" />
     <Image Include="..\..\..\..\..\Desktop\美术资源_PS源文件\btn_bg.bmp" />
     <Image Include="PuzzleGame.ico" />
+    <Image Include="resources\animation\death.bmp" />
+    <Image Include="resources\animation\exclamation.bmp" />
     <Image Include="resources\background.bmp" />
     <Image Include="resources\bg\barrier_bottom.bmp" />
     <Image Include="resources\bg\barrier_left.bmp" />
@@ -211,10 +215,14 @@
     <Image Include="resources\obj\bar_v_tail.bmp" />
     <Image Include="resources\obj\carpet_1.bmp" />
     <Image Include="resources\obj\chair_1.bmp" />
+    <Image Include="resources\obj\cherry.bmp" />
     <Image Include="resources\obj\grass.bmp" />
+    <Image Include="resources\obj\grass_block.bmp" />
+    <Image Include="resources\obj\house_2.bmp" />
     <Image Include="resources\obj\outside_table.bmp" />
     <Image Include="resources\obj\sofa_1.bmp" />
     <Image Include="resources\obj\table_1.bmp" />
+    <Image Include="resources\obj\tent.bmp" />
     <Image Include="resources\obj\tree.bmp" />
     <Image Include="resources\obj\tv_1.bmp" />
     <Image Include="resources\obj\wall_1.bmp" />

@@ -72,8 +72,14 @@
 #define IDB_BG_ROCK_4                   205
 #define IDB_OBJ_GRASS                   206
 #define IDB_OBJ_OUTSIDE_TABLE           207
-#define IDB_BITMAP5                     208
 #define IDB_OBJ_TREE                    208
+#define IDB_ANI_DEATH                   209
+#define IDB_ANI_EXCLAMATION             210
+#define IDB_OBJ_CHERRY                  211
+#define IDB_OBJ_TENT                    212
+#define IDB_OBJ_GRASS_BLOCK             213
+#define IDB_BITMAP5                     214
+#define IDB_OBJ_HOUSE_2                 214
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -81,7 +87,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        209
+#define _APS_NEXT_RESOURCE_VALUE        215
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           110

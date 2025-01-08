@@ -39,6 +39,9 @@
     <ClInclude Include="Buttons.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Particles.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PuzzleGame.cpp">
@@ -54,6 +57,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Buttons.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Items.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Particles.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -112,9 +121,6 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="..\..\..\..\..\Desktop\weapons..bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\Desktop\summer_beach.zh-CN..bmp">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="..\..\..\..\..\Desktop\Coop_.bmp">
@@ -247,6 +253,24 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\obj\tree.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\animation\death.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\animation\exclamation.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\cherry.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\tent.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\grass_block.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\obj\house_2.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

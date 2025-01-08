@@ -130,6 +130,9 @@ const double PI = 3.14159265358979323846;
 #define OBJ_CARPET_1 20015
 #define OBJ_GRASS 20016
 #define OBJ_TREE 20017
+#define OBJ_CHERRY 20018
+#define OBJ_TENT 20019
+#define OBJ_GRASS_BLOCK 20020
 
 
 #define MAP_MAIN 30001
@@ -158,6 +161,9 @@ const double PI = 3.14159265358979323846;
 #define ITEM_CERTIFICATE 60001
 #define ITEM_SWORD 60002
 #define ITEM_BOW 60003
+
+#define ANI_DEATH 70001
+#define ANI_EXCLAMATION 70002
 
 
 
@@ -288,6 +294,7 @@ struct Monster
 
 
 struct Drawable {
+	bool visible = true;
 	HBITMAP img;      // Í¼Ïñ¾ä±ú
 	int x, y;       // Í¼Ïñ»æÖÆ×óÉÏ½Ç
 	int size_x, size_y; // »æÖÆ³ß´ç
