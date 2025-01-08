@@ -57,7 +57,8 @@ NPC::NPC(int x, int y, int npc_id)
 		this->conversations.push_back(conversations_1);
 
 		std::vector<const wchar_t*> conversations_2;
-		conversations_2.push_back(L"谢谢你！");
+		conversations_2.push_back(L"谢谢你！它们现在很舒服");
+		conversations_2.push_back(L"这是你的工作证，拿去吧");
 		this->conversations.push_back(conversations_2);
 
 		std::vector<const wchar_t*> conversations_3;
@@ -88,7 +89,7 @@ NPC::NPC(int x, int y, int npc_id)
 		this->conversations.push_back(conversations_2);
 
 		std::vector<const wchar_t*> conversations_3;
-		conversations_3.push_back(L"谢谢你！");
+		conversations_3.push_back(L"谢谢你！帮我们");
 		this->conversations.push_back(conversations_3);
 
 		break;
@@ -144,14 +145,20 @@ void NPC::RemoveFigParticle(int particle_id) {
 }
 
 void NPC::ToConversation(int task_id) {
-	if (this->task_state == task_id) {
+	/*if (this->task_state == task_id) {
 		return;
 	}
 	else {
 		this->task_state = task_id;
 		this->next_conversation_id = 0;
 		AddFigParticle(ANI_EXCLAMATION);
-	}
+	}*/
+
+	//现在调用应该只会是单次的
+	this->task_state = task_id;
+	this->next_conversation_id = 0;
+	is_finished = false;
+	AddFigParticle(ANI_EXCLAMATION);
 }
 
 std::vector<NPC*> npcs_main;
@@ -177,13 +184,11 @@ void InitNPCs()
 	}
 	npcs_meadow.clear();
 
-	npcs_main.push_back(new NPC(BLOCK_SIZE_X * 10, BLOCK_SIZE_Y * 18, NPC_MAN1_ID));
-	npcs_main.at(0)->AddFigParticle(ANI_EXCLAMATION);
+	npcs_main.push_back(new NPC(BLOCK_SIZE_X * 10, BLOCK_SIZE_Y * 14, NPC_MAN1_ID));
 
 	npcs_main.push_back(new NPC(BLOCK_SIZE_X * 26, BLOCK_SIZE_Y * 15, NPC_MAN3_ID));
 
 	npcs_house_1.push_back(new NPC(BLOCK_SIZE_X * 10, BLOCK_SIZE_Y * 15, NPC_MAN2_ID));
-	npcs_house_1.at(0)->AddFigParticle(ANI_EXCLAMATION);
 
 	npcs_meadow.push_back(new NPC(BLOCK_SIZE_X * 5, BLOCK_SIZE_Y * 15, NPC_MEADOW_MAN_ID));
 };

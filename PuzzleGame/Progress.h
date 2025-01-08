@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <list>
 #include "Windows.h"
 #include "Player.h"
 #include "Items.h"
@@ -9,8 +10,16 @@
 #include "Buttons.h"
 #include "Maps.h"
 
+#define PRO_INIT 100000
+#define PRO_CHICKEN_UNHOMED 100001
+#define PRO_CHICKEN_HOMED 100002
+#define PRO_GET_CERTIFICATE 100003
+#define PRO_CHICKEN_UNHOMED_AGAIN 100004
+#define PRO_PEOPLE_KNOWN 110001 //大家知道了
+#define PRO_GET_BOW		120000
+#define PRO_DUCK_UNHOMED 120001
+#define PRO_DUCK_HOMED 120002
 
-// 场景结构体
 struct Stage
 {
 	int stageID;		//场景编号
@@ -18,20 +27,6 @@ struct Stage
 	bool timerOn;		//计时器是否运行（游戏是否被暂停）
 };
 
-
-void UpdateTasks();
-
-extern std::wstring failed_message;
-extern Stage* currentStage; //当前场景状态
-extern std::vector<NewMonster*>* current_new_monsters;
-extern std::vector<Button*>* current_buttons;
-extern std::vector<Button*>* buttons_before;
-extern std::vector<Item*> items;		//物品列表
-extern Item* current_item;	//当前物品
-extern Item* show_name_item;
-extern int item_name_fading_time;
-extern Player* player;		//玩家
-extern int current_reachable[20][28];
-extern int current_bg[20][28];
-extern int current_obj[20][28];
-extern std::vector<NPC*>* current_npcs;
+void UpdateProgress();
+void InitProgress();
+extern std::list<int> progress_list;

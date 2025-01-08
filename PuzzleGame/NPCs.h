@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <windows.h>
+#include <map>
 // NPC结构体
 class NPC
 {
@@ -37,6 +38,7 @@ public:
 	std::vector<const wchar_t*> conversations_before;	//任务完成前NPC的台词
 	std::vector<const wchar_t*> conversations_after;		//任务完成后NPC的台词
 	int next_conversation_id;				//NPC下一次要说第几句台词
+	bool is_finished = false;
 
 	std::vector<FigParticle*> fig_particles;
 

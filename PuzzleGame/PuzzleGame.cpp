@@ -4,6 +4,7 @@
 #include "PuzzleGame.h"
 #include <string>
 #include <set>
+#include <map>
 #define MAX_LOADSTRING 100
 
 HINSTANCE hInst;                                // 当前实例
@@ -14,6 +15,24 @@ HBITMAP bmp_background = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_B
 HBITMAP bmp_dialog = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_DIALOG));
 HBITMAP bmp_item_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_BG));
 HBITMAP bmp_item_name_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_NAME_BG));
+
+
+std::wstring failed_message;
+Stage* currentStage; //当前场景状态
+std::vector<NewMonster*>* current_new_monsters;
+std::vector<Button*>* current_buttons;
+std::vector<Button*>* buttons_before;
+std::vector<Item*> items;		//物品列表
+Item* current_item;	//当前物品
+Item* show_name_item;
+int item_name_fading_time;
+Player* player;		//玩家
+int (*current_reachable)[20][28];
+int (*current_bg)[20][28];
+int (*current_obj)[20][28];
+std::vector<NPC*>* current_npcs;
+
+
 
 int mouseX = 0;
 int mouseY = 0;
@@ -191,6 +210,7 @@ void AllInit() {
 	InitMaps();
 	InitMonsters();
 	InitButtons();
+	InitProgress();
 	InitCurrent();
 }
 
@@ -213,9 +233,10 @@ void InitCurrent() {
 	item_name_fading_time = 0;
 	player = NULL;		//玩家
 
-	memset(current_reachable, 0, sizeof(current_reachable));
-	memset(current_bg, 0, sizeof(current_bg));
-	memset(current_obj, 0, sizeof(current_obj));
+
+	current_reachable = nullptr;
+	current_bg = nullptr;
+	current_obj = nullptr;
 
 	current_npcs = NULL;
 
@@ -562,8 +583,9 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	UpdateNPCs(hWnd);
 	UpdateMonsters(hWnd);
 	UpdateMaps(hWnd);
-	UpdateTasks();
+	ScanTasks();
 	UpdateFailed(hWnd);
+	UpdateProgress();
 	//刷新显示
 	InvalidateRect(hWnd, NULL, FALSE);
 }
@@ -592,10 +614,10 @@ bool CanMove(int x_before, int y_before, int x_after, int y_after, int size_x, i
 		return false;
 	}*/
 
-	if (cannot_move.count(current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X]) > 0 || 
-		cannot_move.count(current_reachable[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X]) > 0 ||
-		cannot_move.count(current_reachable[y_after / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X]) > 0 ||
-		cannot_move.count(current_reachable[y_after / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X]) > 0) {
+	if (cannot_move.count((*current_reachable)[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X]) > 0 || 
+		cannot_move.count((*current_reachable)[int(y_after + (0.5 * size_y)) / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X]) > 0 ||
+		cannot_move.count((*current_reachable)[y_after / BLOCK_SIZE_Y][int(x_after + (0.5 * size_x)) / BLOCK_SIZE_X]) > 0 ||
+		cannot_move.count((*current_reachable)[y_after / BLOCK_SIZE_Y][int(x_after - (0.5 * size_x)) / BLOCK_SIZE_X]) > 0) {
 
 		return false;
 	}
@@ -795,7 +817,7 @@ void UpdateMonsters(HWND hWnd)
 			monster->visible = false;//放到handel failed event里面处理
         }*/
 		//判断位置是否归巢
-		if (current_reachable[monster->y / BLOCK_SIZE_Y][monster->x / BLOCK_SIZE_X] == 5) {
+		if ((*current_reachable)[monster->y / BLOCK_SIZE_Y][monster->x / BLOCK_SIZE_X] == 5) {
 			if (monster->effects.size() == 0) { //没有状态时才有用
 				monster->state = MONSTER_STATE_HOME;
 			}
@@ -1053,6 +1075,66 @@ void UpdateMaps(HWND hWnd)
 
 }
 
+void ScanTasks() {//顺便判断胜利和结束
+
+	if (currentStage->stageID == STAGE_1) {
+
+		if (current_npcs->at(1)->task_state == 1 &&
+			//current_npcs->at(1)->next_conversation_id == current_npcs->at(1)->conversations[current_npcs->at(1)->task_state].size() - 1) {
+			current_npcs->at(1)->is_finished == true) {
+			progress_list.push_back(PRO_PEOPLE_KNOWN);
+		}
+
+	}
+	else if (currentStage->stageID == STAGE_HOUSE_1) {
+		
+		for (int i = 0; i < current_new_monsters->size(); i++) {
+			if ((*current_new_monsters)[i]->visible == false) {
+				continue;
+			}
+
+			if ((*current_new_monsters)[i]->state != MONSTER_STATE_HOME) {
+
+				progress_list.push_back(PRO_CHICKEN_UNHOMED);
+				return;
+			}
+		}
+		//完成任务
+		progress_list.push_back(PRO_CHICKEN_HOMED);
+
+		if (current_npcs->at(0)->task_state == 1 &&
+			//current_npcs->at(0)->next_conversation_id == current_npcs->at(0)->conversations[current_npcs->at(0)->task_state].size() - 1) {
+			current_npcs->at(0)->is_finished == true) {
+			progress_list.push_back(PRO_GET_CERTIFICATE);
+		}
+
+	}
+	else if (currentStage->stageID == STAGE_MEADOW) {
+
+		if (current_npcs->at(0)->task_state == 0) {
+			//if (current_npcs->at(0)->next_conversation_id == current_npcs->at(0)->conversations[current_npcs->at(0)->task_state].size() - 1) {
+			if (current_npcs->at(0)->is_finished == true) {
+				progress_list.push_back(PRO_GET_BOW);
+			}
+		}
+
+		for (int i = 0; i < current_new_monsters->size(); i++) {
+			if ((*current_new_monsters)[i]->visible == false) {
+				continue;
+			}
+			if (((*current_new_monsters)[i]->monsterID == MONSTER_DUCK_ID && (*current_new_monsters)[i]->state != MONSTER_STATE_HOME) || ((*current_new_monsters)[i]->monsterID == MONSTER_CROW_ID && (*current_new_monsters)[i]->state == MONSTER_STATE_HOME)) {
+				//没完成任务
+				
+				progress_list.push_back(PRO_DUCK_UNHOMED);
+				return;
+			}
+		}
+
+		progress_list.push_back(PRO_DUCK_HOMED);
+	}
+
+};
+
 
 //抬起空格时触发，开启对话
 void HandleConversationEvents(HWND hWnd) 
@@ -1070,37 +1152,10 @@ void HandleConversationEvents(HWND hWnd)
 			in_conversation = true;
 			npc->RemoveFigParticle(ANI_EXCLAMATION);
 
-			if (currentStage->stageID == STAGE_1 && i == 1) {
-				//是在和meadow man说话
-
-				if (npc->task_state == 1) {
-					if (npc->next_conversation_id == npc->conversations[npc->task_state].size() - 1) {//话讲完了，该移动位置了
-						npc->x = BLOCK_SIZE_X * 26;
-						npc->y = BLOCK_SIZE_Y * 13;
-					}
-				}
-			}
-
-			if (currentStage->stageID == STAGE_MEADOW && i == 0) {
-				if (npc->task_state == 0) {
-					if (npc->next_conversation_id == 3) {
-						bool has_bow = false;
-						for (const auto& item : items) {
-							if (item->item_id == ITEM_BOW) {
-								has_bow = true;
-								break;
-							}
-						}
-						if (!has_bow) {
-							items.push_back(new Item(ITEM_BOW));
-							show_name_item = items.back();
-							item_name_fading_time = ITEM_NAME_FADING;
-						}
-					}
-				}
-			}
-
 			converstaion_content = npc->conversations[npc->task_state][npc->next_conversation_id];
+			if (npc->next_conversation_id == npc->conversations[npc->task_state].size() - 1) {
+				npc->is_finished = true;
+			}
 			if (npc->next_conversation_id < npc->conversations[npc->task_state].size() - 1)
 				npc->next_conversation_id++;	//npc的这句话已经说完，下次该说下一句话了；如果已经说到最后一句话了，则一直重复
 		}
@@ -1213,9 +1268,10 @@ void InitStage(HWND hWnd, int stageID)
 	//TODO：添加多个游戏场景
 	else if (stageID == STAGE_1)
 	{
-		memcpy(current_bg, bg_main, sizeof(current_bg));
-		memcpy(current_reachable, reachable_main, sizeof(current_reachable));
-		memcpy(current_obj, obj_main, sizeof(current_obj));
+
+		current_bg = &bg_main;
+		current_reachable = &reachable_main;
+		current_obj = &obj_main;
 		current_npcs = &npcs_main;
 		current_new_monsters = &new_monsters_main;
 		currentStage->timerOn = true;
@@ -1228,9 +1284,10 @@ void InitStage(HWND hWnd, int stageID)
 	}
 	else if (stageID == STAGE_HOUSE_1)
 	{
-		memcpy(current_bg, bg_house_1, sizeof(current_bg));
-		memcpy(current_reachable, reachable_house_1, sizeof(current_reachable));
-		memcpy(current_obj, obj_house_1, sizeof(current_obj));
+
+		current_bg = &bg_house_1;
+		current_reachable = &reachable_house_1;
+		current_obj = &obj_house_1;
 
 		current_npcs = &npcs_house_1;
 		current_new_monsters = &new_monsters_house_1;
@@ -1244,9 +1301,10 @@ void InitStage(HWND hWnd, int stageID)
 
 	}
 	else if (stageID == STAGE_MEADOW) {
-		memcpy(current_bg, bg_meadow, sizeof(current_bg));
-		memcpy(current_reachable, reachable_meadow, sizeof(current_reachable));
-		memcpy(current_obj, obj_meadow, sizeof(current_obj));
+
+		current_bg = &bg_meadow;
+		current_reachable = &reachable_meadow;
+		current_obj = &obj_meadow;
 		current_npcs = &npcs_meadow;
 		current_new_monsters = &new_monsters_meadow;
 		currentStage->timerOn = true;
@@ -1295,6 +1353,19 @@ void Paint(HWND hWnd)
 	SelectObject(hdc_memBuffer, blankBmp);
 
 
+	char buff[256];
+
+	/*if (current_reachable != nullptr) {
+		sprintf(buff, "16 %d %d %d\n", (*current_reachable)[16][27], sizeof((*current_bg)) / sizeof((*current_bg)[0]), sizeof((*current_bg)[0]) / sizeof((*current_bg)[0][0]));
+		OutputDebugStringA(buff);
+
+		sprintf(buff, "15 %d\n", (*current_reachable)[15][27]);
+		OutputDebugStringA(buff);
+
+		sprintf(buff, "14 %d\n", (*current_reachable)[14][27]);
+		OutputDebugStringA(buff);
+	}*/
+
 	// 先分为开始菜单和游戏内部
 	if (currentStage->stageID == STAGE_STARTMENU) {
 		SelectObject(hdc_loadBmp, bmp_background);
@@ -1307,11 +1378,11 @@ void Paint(HWND hWnd)
 		{
 
 			//首先绘制背景，背景只有一个块
-			for (int i = 0; i < sizeof(current_bg) / sizeof(current_bg[0]); i++) {
-				for (int j = 0; j < sizeof(current_bg[0]) / sizeof(current_bg[0][0]); j++) {
+			for (int i = 0; i < sizeof((*current_bg)) / sizeof((*current_bg)[0]); i++) {
+				for (int j = 0; j < sizeof((*current_bg)[0]) / sizeof((*current_bg)[0][0]); j++) {
 
 					//根据bg的值绘制不同的背景
-					SelectObject(hdc_loadBmp, bg_hitmap[current_bg[i][j]].bitmap);
+					SelectObject(hdc_loadBmp, bg_hitmap[(*current_bg)[i][j]].bitmap);
 
 					TransparentBlt(
 						hdc_memBuffer,
@@ -1320,7 +1391,7 @@ void Paint(HWND hWnd)
 						hdc_loadBmp,
 						0,						// 位图上起始绘制点
 						0,
-						bg_hitmap[current_bg[i][j]].bitmap_size_x, bg_hitmap[current_bg[i][j]].bitmap_size_y,					// 位图上绘制宽度高度
+						bg_hitmap[(*current_bg)[i][j]].bitmap_size_x, bg_hitmap[(*current_bg)[i][j]].bitmap_size_y,					// 位图上绘制宽度高度
 						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
 				}
 			}
@@ -1328,29 +1399,29 @@ void Paint(HWND hWnd)
 			vector<Drawable*> drawables;
 
 
-			for (int i = 0; i < sizeof(current_obj) / sizeof(current_obj[0]); i++) {
-				for (int j = 0; j < sizeof(current_obj[0]) / sizeof(current_obj[0][0]); j++) {
+			for (int i = 0; i < sizeof((*current_obj)) / sizeof((*current_obj)[0]); i++) {
+				for (int j = 0; j < sizeof((*current_obj)[0]) / sizeof((*current_obj)[0][0]); j++) {
 
-					if (current_obj == 0) {
+					if ((*current_obj)[i][j] == 0) {
 						continue;
 					}
 
-					int num_x = obj_hitmap[current_obj[i][j]].num_x;
-					int num_y = obj_hitmap[current_obj[i][j]].num_y;
+					int num_x = obj_hitmap[(*current_obj)[i][j]].num_x;
+					int num_y = obj_hitmap[(*current_obj)[i][j]].num_y;
 
 					Drawable* obj = new Drawable();
-					obj->img = obj_hitmap[current_obj[i][j]].bitmap;
+					obj->img = obj_hitmap[(*current_obj)[i][j]].bitmap;
 					obj->x = j * BLOCK_SIZE_X;
 					obj->y = i * BLOCK_SIZE_Y;
 					obj->size_x = BLOCK_SIZE_X * num_x;
 					obj->size_y = BLOCK_SIZE_Y * num_y;
 					obj->bmp_x = 0;
 					obj->bmp_y = 0;
-					obj->bmp_size_x = obj_hitmap[current_obj[i][j]].bitmap_size_x * num_x;
-					obj->bmp_size_y = obj_hitmap[current_obj[i][j]].bitmap_size_y * num_y;
+					obj->bmp_size_x = obj_hitmap[(*current_obj)[i][j]].bitmap_size_x * num_x;
+					obj->bmp_size_y = obj_hitmap[(*current_obj)[i][j]].bitmap_size_y * num_y;
 					obj->transparentColor = RGB(255, 255, 255);
-					obj->weight_x = obj->x + obj_hitmap[current_obj[i][j]].weight_offset_num_x * BLOCK_SIZE_X;
-					obj->weight_y = obj->y + obj_hitmap[current_obj[i][j]].weight_offset_num_y * BLOCK_SIZE_Y;
+					obj->weight_x = obj->x + obj_hitmap[(*current_obj)[i][j]].weight_offset_num_x * BLOCK_SIZE_X;
+					obj->weight_y = obj->y + obj_hitmap[(*current_obj)[i][j]].weight_offset_num_y * BLOCK_SIZE_Y;
 					drawables.push_back(obj);
 				}
 			}

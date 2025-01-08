@@ -1,83 +1,176 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Progress.h"
 #include "IDs.h"
+#include <map>
+#include "PuzzleGame.h"
 
-std::wstring failed_message;
-Stage* currentStage; //当前场景状态
-std::vector<NewMonster*>* current_new_monsters;
-std::vector<Button*>* current_buttons;
-std::vector<Button*>* buttons_before;
-std::vector<Item*> items;		//物品列表
-Item* current_item;	//当前物品
-Item* show_name_item;
-int item_name_fading_time;
-Player* player;		//玩家
-int current_reachable[20][28] = { 0 };
-int current_bg[20][28] = { 0 };
-int current_obj[20][28] = { 0 };
-std::vector<NPC*>* current_npcs;
 
-void UpdateTasks() {//顺便判断胜利和结束
+std::map<int, bool> progress_record;
+std::list<int> progress_list;
 
-	if (currentStage->stageID == STAGE_1) {
+void InitProgress() {
+	progress_list.clear();
+	progress_list.push_back(PRO_INIT);
 
-	}
-	else if (currentStage->stageID == STAGE_HOUSE_1) {
-		for (int i = 0; i < current_new_monsters->size(); i++) {
-			if ((*current_new_monsters)[i]->visible == false) {
-				continue;
+	std::map<int, bool> help_progress_record = {
+		{PRO_INIT, false},
+		{PRO_CHICKEN_UNHOMED, false},
+		{PRO_CHICKEN_HOMED, false},
+		{PRO_PEOPLE_KNOWN, false},
+		{PRO_DUCK_UNHOMED, false},
+		{PRO_DUCK_HOMED, false},
+		{PRO_GET_CERTIFICATE, false},
+		{PRO_GET_BOW, false},
+		{PRO_CHICKEN_UNHOMED_AGAIN,false},
+	};
+
+	progress_record = help_progress_record;
+}
+
+void UpdateProgress() {
+
+	while(!progress_list.empty()){
+
+		int current_progress = progress_list.back();  // 获取最后一个元素
+		progress_list.pop_back();  // 删除最后一个元素
+
+		char buff[256];
+		sprintf(buff, "in progress %d\n", current_progress);
+		OutputDebugStringA(buff);
+
+		if (current_progress == PRO_INIT) {
+			if (progress_record[PRO_INIT] == false) {
+				progress_record[PRO_INIT] = true;
+				npcs_main.at(0)->ToConversation(0);
 			}
+			else {
 
-			if ((*current_new_monsters)[i]->state != MONSTER_STATE_HOME) {
-				if (npcs_house_1.at(0)->task_state == 1 || npcs_house_1.at(0)->task_state == 3) {
+			}
+		}
+		else if (current_progress == PRO_CHICKEN_UNHOMED) {
+			if (progress_record[PRO_CHICKEN_UNHOMED] == false) {
+				progress_record[PRO_CHICKEN_UNHOMED] = true;
+				npcs_house_1.at(0)->ToConversation(0);
+			}
+			else {
+				if (progress_record[PRO_GET_CERTIFICATE] == true) {
+					//拿到了证书之后鸡在外面
 					npcs_house_1.at(0)->ToConversation(2);
+					progress_record[PRO_CHICKEN_UNHOMED_AGAIN] = true;
 				}
-				return;
 			}
 		}
-		//完成任务
+		else if (current_progress == PRO_CHICKEN_HOMED) {
+			//第一次进入这个状态
+			if (progress_record[PRO_CHICKEN_HOMED] == false) {
+				progress_record[PRO_CHICKEN_HOMED] = true;
 
-		if (npcs_house_1.at(0)->task_state == 0) {
-			npcs_house_1.at(0)->ToConversation(1);
-		}
-		else if (npcs_house_1.at(0)->task_state == 2) {
-			npcs_house_1.at(0)->ToConversation(3);
-		}
+				//更新所有的对话
+				npcs_house_1.at(0)->ToConversation(1);
 
-
-		//如果没有item certificate再添加
-		bool has_certificate = false;
-		for (const auto& item : items) {
-			if (item->item_id == ITEM_CERTIFICATE) {
-				has_certificate = true;
-				break;
+			}
+			else {
+				//第二次进入
+				if (progress_record[PRO_CHICKEN_UNHOMED_AGAIN] == true) {
+					//如果鸡出走过又回来进入这里
+					npcs_house_1.at(0)->ToConversation(3);
+				}
 			}
 		}
-		if (!has_certificate) {
-			items.push_back(new Item(ITEM_CERTIFICATE));
-			show_name_item = items.back();
-			item_name_fading_time = ITEM_NAME_FADING;
+		else if (current_progress == PRO_GET_CERTIFICATE) {
+
+			if (progress_record[PRO_GET_CERTIFICATE] == false) {
+				progress_record[PRO_GET_CERTIFICATE] = true;
+				//添加物品
+				bool has_certificate = false;
+				for (const auto& item : items) {
+					if (item->item_id == ITEM_CERTIFICATE) {
+						has_certificate = true;
+						break;
+					}
+				}
+				if (!has_certificate) {
+					items.push_back(new Item(ITEM_CERTIFICATE));
+					show_name_item = items.back();
+					item_name_fading_time = ITEM_NAME_FADING;
+				}
+			}
+			else {
+
+
+			}
+		}
+		else if (current_progress == PRO_PEOPLE_KNOWN) {
+
+			if (progress_record[PRO_PEOPLE_KNOWN] == false) {
+				progress_record[PRO_PEOPLE_KNOWN] = true;
+
+				//更新地图
+				reachable_main[16][27] = 3;
+				reachable_main[15][27] = 3;
+				reachable_main[14][27] = 3;
+
+				npcs_main.at(1)->x = BLOCK_SIZE_X * 26;
+				npcs_main.at(1)->y = BLOCK_SIZE_Y * 13;
+
+				//TODO 判断一下玩家位置
+
+
+				//更新npc对话
+				npcs_meadow.at(0)->ToConversation(0);
+
+			}
+			else {
+
+			}
+
+		}
+		else if (current_progress == PRO_GET_BOW) {
+
+			if (progress_record[PRO_GET_BOW] == false) {
+				progress_record[PRO_GET_BOW] = true;
+				//给弓箭
+				bool has_bow = false;
+				for (const auto& item : items) {
+					if (item->item_id == ITEM_BOW) {
+						has_bow = true;
+						break;
+					}
+				}
+				if (!has_bow) {
+					items.push_back(new Item(ITEM_BOW));
+					show_name_item = items.back();
+					item_name_fading_time = ITEM_NAME_FADING;
+				}
+			}
+			else {
+
+			}
+
+		}
+		else if (current_progress == PRO_DUCK_UNHOMED) {
+
+			if (progress_record[PRO_DUCK_UNHOMED] == false) {
+				progress_record[PRO_DUCK_UNHOMED] = true;
+
+			}
+			else {
+
+			}
+		}
+		else if (current_progress == PRO_DUCK_HOMED) {
+
+			if (progress_record[PRO_DUCK_HOMED] == false) {
+				progress_record[PRO_DUCK_HOMED] = true;
+
+				npcs_meadow.at(0)->ToConversation(1);
+				npcs_main.at(1)->ToConversation(2);
+			}
+			else {
+
+			}
 		}
 
-
-		reachable_main[16][27] = 3;
-		reachable_main[15][27] = 3;
-		reachable_main[14][27] = 3;
 	}
-	else if (currentStage->stageID == STAGE_MEADOW) {
-		for (int i = 0; i < current_new_monsters->size(); i++) {
-			if ((*current_new_monsters)[i]->visible == false) {
-				continue;
-			}
-			if (((*current_new_monsters)[i]->monsterID == MONSTER_DUCK_ID && (*current_new_monsters)[i]->state != MONSTER_STATE_HOME) || ((*current_new_monsters)[i]->monsterID == MONSTER_CROW_ID && (*current_new_monsters)[i]->state == MONSTER_STATE_HOME)) {
-				//没完成任务
-				return;
-			}
-		}
 
-		if (npcs_main.at(1)->task_state != 2) {
-			npcs_main.at(1)->task_state = 2;
-			npcs_main.at(1)->next_conversation_id = 0;
-		}
-	}
-
-};
+}
