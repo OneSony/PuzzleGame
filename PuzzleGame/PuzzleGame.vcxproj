@@ -219,6 +219,7 @@
     <Image Include="resources\obj\bar_h_right.bmp" />
     <Image Include="resources\obj\bar_v_head.bmp" />
     <Image Include="resources\obj\bar_v_tail.bmp" />
+    <Image Include="resources\obj\bed.bmp" />
     <Image Include="resources\obj\carpet_1.bmp" />
     <Image Include="resources\obj\chair_1.bmp" />
     <Image Include="resources\obj\cherry.bmp" />

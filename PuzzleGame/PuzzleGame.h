@@ -93,14 +93,13 @@ void UpdateMonsters(HWND hWnd);
 void UpdateMaps(HWND hWnd);
 void UpdateFailed(HWND hWnd);
 void UpdateHolding(HWND hWnd);
-void ScanTasks();
+void ScanTasks(HWND hWnd);
 
 void HandleConversationEvents(HWND hWnd);
 void HandleStopEvents(HWND hWnd);
 void HandleHelpEvents(HWND hWnd);
 void HandleFailedEvents(HWND hWnd, std::wstring str);
-
-//TODO: 添加游戏需要的更多函数
+void HandleBedEvents(HWND hWnd);
 
 
 #pragma endregion 
@@ -118,7 +117,7 @@ extern std::wstring failed_message;
 extern Stage* currentStage; //当前场景状态
 extern std::vector<NewMonster*>* current_new_monsters;
 extern std::vector<Button*>* current_buttons;
-extern std::vector<Button*>* buttons_before;
+extern std::list<std::vector<Button*>*> buttons_before;
 extern std::vector<Item*> items;		//物品列表
 extern Item* current_item;	//当前物品
 extern Item* show_name_item;

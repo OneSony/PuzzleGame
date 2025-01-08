@@ -6,6 +6,8 @@
 std::vector<Button*> menu_buttons;
 std::vector<Button*> stop_buttons;
 std::vector<Button*> failed_buttons;
+std::vector<Button*> bed_buttons;
+std::vector<Button*> end_buttons;
 std::vector<Button*> void_buttons;
 
 HBITMAP bmp_button = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_BTN_BG));
@@ -49,6 +51,16 @@ void InitButtons() {
 	}
 	void_buttons.clear();
 
+	for (int i = 0; i < bed_buttons.size(); i++) {
+		delete bed_buttons[i];
+	}
+	bed_buttons.clear();
+
+	for (int i = 0; i < end_buttons.size(); i++) {
+		delete end_buttons[i];
+	}
+	end_buttons.clear();
+
 
 
 	Button* startButton = CreateButton(BUTTON_STARTGAME, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
@@ -73,4 +85,14 @@ void InitButtons() {
 	Button* restartButton = CreateButton(BUTTON_FAILED_RESTART, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
 		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"RESTART");
 	failed_buttons.push_back(restartButton);
+
+	bed_buttons.push_back(CreateButton(BUTTON_BED_END, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 2 / 4, L"YES"));
+
+	bed_buttons.push_back(CreateButton(BUTTON_BED_CONTINUE, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"NO"));
+
+	end_buttons.push_back(CreateButton(BUTTON_END_BACK, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3.5 / 4, L"BACK"));
+
 }

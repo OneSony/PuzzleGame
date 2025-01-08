@@ -18,6 +18,8 @@ struct Button
 extern std::vector<Button*> menu_buttons;
 extern std::vector<Button*> stop_buttons;
 extern std::vector<Button*> failed_buttons;
+extern std::vector<Button*> bed_buttons;
+extern std::vector<Button*> end_buttons;
 extern std::vector<Button*> void_buttons;
 
 void InitButtons();

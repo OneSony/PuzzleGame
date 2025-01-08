@@ -44,6 +44,10 @@ NPC::NPC(int x, int y, int npc_id)
 		conversations_1.push_back(L"你去探望一下绿色房子里的人吧");
 		this->conversations.push_back(conversations_1);
 
+		std::vector<const wchar_t*> conversations_2;
+		conversations_2.push_back(L"你好啊新村长");
+		this->conversations.push_back(conversations_2);
+
 		break;
 	}
 	case NPC_MAN2_ID: {

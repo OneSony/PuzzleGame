@@ -21,7 +21,7 @@ std::wstring failed_message;
 Stage* currentStage; //当前场景状态
 std::vector<NewMonster*>* current_new_monsters;
 std::vector<Button*>* current_buttons;
-std::vector<Button*>* buttons_before;
+std::list<std::vector<Button*>*> buttons_before;
 std::vector<Item*> items;		//物品列表
 Item* current_item;	//当前物品
 Item* show_name_item;
@@ -45,6 +45,8 @@ bool in_conversation = false;	//当前游戏处在对话状态
 bool in_stop = false;
 bool in_help = false;
 bool in_failed = false;
+bool in_bed = false;
+bool is_last_time_in_bed = false;
 const wchar_t* converstaion_content = nullptr;	//当前对话的内容
 
 
@@ -220,7 +222,7 @@ void InitCurrent() {
 	currentStage = NULL; //当前场景状态
 	current_new_monsters = NULL;
 	current_buttons = &void_buttons;
-	buttons_before = &void_buttons;
+	buttons_before.clear();
 	
 	//清空物品栏
 	for (int i = 0; i < items.size(); i++) {
@@ -244,6 +246,8 @@ void InitCurrent() {
 	in_stop = false;
 	in_help = false;
 	in_failed = false;
+	in_bed = false;
+	is_last_time_in_bed = false;
 	converstaion_content = nullptr;	//当前对话的内容
 }
 
@@ -311,7 +315,6 @@ void KeyUp(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		else {
 			HandleStopEvents(hWnd);
 		}
-
 		break;
 	default:
 		break;
@@ -336,49 +339,61 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	for (int i = 0; i < current_buttons->size(); i++)
 	{
 		Button* button = current_buttons->at(i);
-		if (button->visible)
+
+		if (button->x <= mouseX
+			&& button->x + button->width >= mouseX
+			&& button->y <= mouseY
+			&& button->y + button->height >= mouseY)
 		{
-			if (button->x <= mouseX
-				&& button->x + button->width >= mouseX
-				&& button->y <= mouseY
-				&& button->y + button->height >= mouseY)
+			switch (button->buttonID) {
+			case BUTTON_STOP_CONTINUE:
 			{
-				switch (button->buttonID) {
-				case BUTTON_STOP_CONTINUE:
-				{
-					HandleStopEvents(hWnd);
-					break;
-				}
-				case BUTTON_STOP_HELP:
-				{
-					HandleHelpEvents(hWnd);
-					break;
-				}
-				case BUTTON_STOP_HOME:
-				{
-					in_stop = false;
-					InitStage(hWnd, STAGE_STARTMENU); //内部有invalidate
-					break;
-				}
-				case BUTTON_STARTGAME:
-				{
-					AllInit();
-					InitStage(hWnd, STAGE_MAIN);
-					break;
-				}
-				case BUTTON_HELP:
-				{
-					HandleHelpEvents(hWnd);
-					break;
-				}
-				case BUTTON_FAILED_RESTART:
-				{
-					AllInit();
-					InitStage(hWnd, STAGE_MAIN);
-					break;
-				}
+				HandleStopEvents(hWnd);
 				break;
-				}
+			}
+			case BUTTON_STOP_HELP:
+			{
+				HandleHelpEvents(hWnd);
+				break;
+			}
+			case BUTTON_STOP_HOME:
+			{
+				InitStage(hWnd, STAGE_STARTMENU); //内部有invalidate
+				break;
+			}
+			case BUTTON_STARTGAME:
+			{
+				AllInit();
+				InitStage(hWnd, STAGE_MAIN);
+				break;
+			}
+			case BUTTON_HELP:
+			{
+				HandleHelpEvents(hWnd);
+				break;
+			}
+			case BUTTON_FAILED_RESTART:
+			{
+				AllInit();
+				InitStage(hWnd, STAGE_MAIN);
+				break;
+			}
+			case BUTTON_BED_CONTINUE:
+			{
+				HandleBedEvents(hWnd);
+				break;
+			}
+			case BUTTON_BED_END:
+			{
+				InitStage(hWnd, STAGE_END);
+				break;
+			}
+			case BUTTON_END_BACK:
+			{
+				InitStage(hWnd, STAGE_STARTMENU); //内部有invalidate
+				break;
+			}
+			break;
 			}
 		}
 	}
@@ -387,68 +402,13 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	if(in_help){
 
 	} else if (in_stop) {
-		/*for (int i = 0; i < stop_buttons.size(); i++)
-		{
-			Button* button = stop_buttons[i];
-			if (button->visible)
-			{
-				if (button->x <= mouseX
-					&& button->x + button->width >= mouseX
-					&& button->y <= mouseY
-					&& button->y + button->height >= mouseY)
-				{
-					switch (button->buttonID) {
-					case BUTTON_STOP_CONTINUE:
-					{
-						HandleStopEvents(hWnd);
-						break;
-					}
-					case BUTTON_STOP_HELP:
-					{
-						HandleHelpEvents(hWnd);
-						break;
-					}
-					case BUTTON_STOP_HOME:
-					{	
-						in_stop = false;
-						InitStage(hWnd, STAGE_STARTMENU); //内部有invalidate
-						break;
-					}
-					break;
-					}
-				}
-			}
-		}*/
+
 
 	}else if (currentStage->stageID == STAGE_STARTMENU) {
 
-		/*for (int i = 0; i < menu_buttons.size(); i++)
-		{
-			Button* button = menu_buttons[i];
-			if (button->visible)
-			{
-				if (button->x <= mouseX
-					&& button->x + button->width >= mouseX
-					&& button->y <= mouseY
-					&& button->y + button->height >= mouseY)
-				{
-					switch (button->buttonID) {
-					case BUTTON_STARTGAME:
-					{
-						//TODO：判断进入哪个关卡
-						InitStage(hWnd, STAGE_1);
-						break;
-					}
-					case BUTTON_HELP:
-					{
-						HandleHelpEvents(hWnd);
-						break;
-					}
-					break;
-					}
-				}
-			}
-		}*/
+	}
+	else if (currentStage->stageID == STAGE_END) {
+
 	}
 	else {
 		//点到了任务栏
@@ -583,10 +543,12 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	UpdateNPCs(hWnd);
 	UpdateMonsters(hWnd);
 	UpdateMaps(hWnd);
-	ScanTasks();
+	ScanTasks(hWnd);
 	UpdateFailed(hWnd);
 	UpdateHolding(hWnd);
 	UpdateProgress();
+
+
 	//刷新显示
 	InvalidateRect(hWnd, NULL, FALSE);
 }
@@ -1108,7 +1070,7 @@ void UpdateMaps(HWND hWnd)
 
 }
 
-void ScanTasks() {//顺便判断胜利和结束
+void ScanTasks(HWND hWnd) {//顺便判断胜利和结束
 
 	if (currentStage->stageID == STAGE_MAIN) {
 
@@ -1170,6 +1132,26 @@ void ScanTasks() {//顺便判断胜利和结束
 		}
 
 		progress_list.push_back(PRO_DUCK_HOMED);
+	}
+	else if (currentStage->stageID == STAGE_HOUSE_2) {
+
+		std::set<pair<int,int>> bed_block = {
+			{23, 9},
+			{22, 9},
+			{21, 9},
+			{21, 8},
+			{21, 7},
+		};
+
+		if (bed_block.count({ player->x / BLOCK_SIZE_X, player->y / BLOCK_SIZE_Y }) > 0) {
+			if (is_last_time_in_bed == false) {
+				is_last_time_in_bed = true;
+				HandleBedEvents(hWnd);
+			}
+		}
+		else {
+			is_last_time_in_bed = false;
+		}
 	}
 
 };
@@ -1247,13 +1229,14 @@ void HandleStopEvents(HWND hWnd)
 
 		if (in_stop == false) {
 			in_stop = true;
-			buttons_before = current_buttons;
+			buttons_before.push_back(current_buttons);
 			current_buttons = &stop_buttons;
 			currentStage->timerOn = false;
 		}
 		else {
 			in_stop = false;
-			current_buttons = buttons_before;
+			current_buttons = buttons_before.back();
+			buttons_before.pop_back();
 			currentStage->timerOn = true;
 		}
 
@@ -1277,14 +1260,36 @@ void HandleFailedEvents(HWND hWnd, std::wstring str)
 void HandleHelpEvents(HWND hWnd)
 {
 
+
 	if (in_help == false) {
 		in_help = true;
-		buttons_before = current_buttons;
+		buttons_before.push_back(current_buttons);
 		current_buttons = &void_buttons;
+		currentStage->timerOn = false;
 	}
 	else {
 		in_help = false;
-		current_buttons = buttons_before;
+		current_buttons = buttons_before.back();
+		buttons_before.pop_back();
+	}
+
+	InvalidateRect(hWnd, NULL, FALSE);
+}
+
+void HandleBedEvents(HWND hWnd)
+{
+
+	if (in_bed == false) {
+		in_bed = true;
+		buttons_before.push_back(current_buttons);
+		current_buttons = &bed_buttons;
+		currentStage->timerOn = false;
+	}
+	else {
+		in_bed = false;
+		current_buttons = buttons_before.back();
+		buttons_before.pop_back();
+		currentStage->timerOn = true;
 	}
 
 	InvalidateRect(hWnd, NULL, FALSE);
@@ -1299,12 +1304,26 @@ void InitStage(HWND hWnd, int stageID)
 	currentStage = new Stage();
 	currentStage->stageID = stageID;
 
-	if (stageID == STAGE_STARTMENU) {
-		currentStage->timerOn = false;
 
+
+	if (stageID == STAGE_STARTMENU) {
+		in_stop = false;
+		in_help = false;
+		in_bed = false;
+		in_failed = false;
+
+		currentStage->timerOn = false;
 		current_buttons = &menu_buttons;
 	}
-	//TODO：添加多个游戏场景
+	else if (stageID == STAGE_END) {
+		in_stop = false;
+		in_help = false;
+		in_bed = false;
+		in_failed = false;
+
+		currentStage->timerOn = false;
+		current_buttons = &end_buttons;
+	}
 	else if (stageID == STAGE_MAIN)
 	{
 
@@ -1405,21 +1424,6 @@ void Paint(HWND hWnd)
 	HBITMAP	blankBmp = CreateCompatibleBitmap(hdc_window, WINDOW_WIDTH, WINDOW_HEIGHT);
 	SelectObject(hdc_memBuffer, blankBmp);
 
-
-	char buff[256];
-
-	/*if (current_reachable != nullptr) {
-		sprintf(buff, "16 %d %d %d\n", (*current_reachable)[16][27], sizeof((*current_bg)) / sizeof((*current_bg)[0]), sizeof((*current_bg)[0]) / sizeof((*current_bg)[0][0]));
-		OutputDebugStringA(buff);
-
-		sprintf(buff, "15 %d\n", (*current_reachable)[15][27]);
-		OutputDebugStringA(buff);
-
-		sprintf(buff, "14 %d\n", (*current_reachable)[14][27]);
-		OutputDebugStringA(buff);
-	}*/
-
-	// 先分为开始菜单和游戏内部
 	if (currentStage->stageID == STAGE_STARTMENU) {
 		SelectObject(hdc_loadBmp, bmp_background);
 		TransparentBlt(
@@ -1427,425 +1431,426 @@ void Paint(HWND hWnd)
 			hdc_loadBmp, 0, 0, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT,
 			RGB(255, 255, 255));
 
-		//TODO有问题
+
+		HFONT hFont = CreateFontW(
+			20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+			L"SimSun");		//创建字体
+		SelectObject(hdc_memBuffer, hFont);
+		SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+		SetBkMode(hdc_memBuffer, TRANSPARENT);
+		RECT rect;
+		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
+		rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4;
+		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
+		DrawTextW(hdc_memBuffer, L"开始菜单", -1, &rect, DT_CENTER | DT_VCENTER);
+
+	} else if(currentStage->stageID == STAGE_END) {
+		SelectObject(hdc_loadBmp, bmp_background);
+		TransparentBlt(
+			hdc_memBuffer, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+			hdc_loadBmp, 0, 0, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT,
+			RGB(255, 255, 255));
+
+		//TODO 写字
+
+		HFONT hFont = CreateFontW(
+			20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+			L"SimSun");		//创建字体
+		SelectObject(hdc_memBuffer, hFont);
+		SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+		SetBkMode(hdc_memBuffer, TRANSPARENT);
+		RECT rect;
+		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
+		rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4;
+		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
+		DrawTextW(hdc_memBuffer, L"结束啦，这里会显示成就", -1, &rect, DT_CENTER | DT_VCENTER);
 	} else {
-		if (currentStage->stageID >= STAGE_MAIN) //TODO：添加多个游戏场景
-		{
 
-			//首先绘制背景，背景只有一个块
-			for (int i = 0; i < sizeof((*current_bg)) / sizeof((*current_bg)[0]); i++) {
-				for (int j = 0; j < sizeof((*current_bg)[0]) / sizeof((*current_bg)[0][0]); j++) {
+		//首先绘制背景，背景只有一个块
+		for (int i = 0; i < sizeof((*current_bg)) / sizeof((*current_bg)[0]); i++) {
+			for (int j = 0; j < sizeof((*current_bg)[0]) / sizeof((*current_bg)[0][0]); j++) {
 
-					//根据bg的值绘制不同的背景
-					SelectObject(hdc_loadBmp, bg_hitmap[(*current_bg)[i][j]].bitmap);
+				//根据bg的值绘制不同的背景
+				SelectObject(hdc_loadBmp, bg_hitmap[(*current_bg)[i][j]].bitmap);
 
-					TransparentBlt(
-						hdc_memBuffer,
-						j * BLOCK_SIZE_X, i * BLOCK_SIZE_Y,							// 界面上起始绘制点
-						BLOCK_SIZE_X, BLOCK_SIZE_Y,									// 界面上绘制宽度高度
-						hdc_loadBmp,
-						0,						// 位图上起始绘制点
-						0,
-						bg_hitmap[(*current_bg)[i][j]].bitmap_size_x, bg_hitmap[(*current_bg)[i][j]].bitmap_size_y,					// 位图上绘制宽度高度
-						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
-				}
-			}
-
-			vector<Drawable*> drawables;
-
-
-			for (int i = 0; i < sizeof((*current_obj)) / sizeof((*current_obj)[0]); i++) {
-				for (int j = 0; j < sizeof((*current_obj)[0]) / sizeof((*current_obj)[0][0]); j++) {
-
-					if ((*current_obj)[i][j] == 0) {
-						continue;
-					}
-
-					int num_x = obj_hitmap[(*current_obj)[i][j]].num_x;
-					int num_y = obj_hitmap[(*current_obj)[i][j]].num_y;
-
-					Drawable* obj = new Drawable();
-					obj->img = obj_hitmap[(*current_obj)[i][j]].bitmap;
-					obj->x = j * BLOCK_SIZE_X;
-					obj->y = i * BLOCK_SIZE_Y;
-					obj->size_x = BLOCK_SIZE_X * num_x;
-					obj->size_y = BLOCK_SIZE_Y * num_y;
-					obj->bmp_x = 0;
-					obj->bmp_y = 0;
-					obj->bmp_size_x = obj_hitmap[(*current_obj)[i][j]].bitmap_size_x * num_x;
-					obj->bmp_size_y = obj_hitmap[(*current_obj)[i][j]].bitmap_size_y * num_y;
-					obj->transparentColor = RGB(255, 255, 255);
-					obj->weight_x = obj->x + obj_hitmap[(*current_obj)[i][j]].weight_offset_num_x * BLOCK_SIZE_X;
-					obj->weight_y = obj->y + obj_hitmap[(*current_obj)[i][j]].weight_offset_num_y * BLOCK_SIZE_Y;
-					drawables.push_back(obj);
-				}
-			}
-
-
-
-			// 绘制玩家
-
-			Drawable* p = new Drawable();
-			p->img = player->img;
-			p->x = player->x - 0.5 * HUMAN_SIZE_X;
-			p->y = player->y - 0.5 * HUMAN_SIZE_Y;
-			p->size_x = HUMAN_SIZE_X;
-			p->size_y = HUMAN_SIZE_Y;
-			p->bmp_x = HUMAN_BITMAP_SIZE_X * player->frame_column;
-			p->bmp_y = HUMAN_BITMAP_SIZE_Y * player->frame_row;
-			p->bmp_size_x = HUMAN_BITMAP_SIZE_X;
-			p->bmp_size_y = HUMAN_BITMAP_SIZE_Y;
-			p->transparentColor = RGB(255, 255, 255);
-
-			p->weight_x = p->x;
-			p->weight_y = p->y + HUMAN_SIZE_Y; //TODO
-
-
-			if (current_item != NULL) {
-				Drawable* item = new Drawable();
-				item->img = current_item->img;
-				item->x = player->x - 0.5 * ITEM_SIZE_X;
-				item->y = player->y - 0.5 * HUMAN_SIZE_Y - 0.5 * ITEM_SIZE_Y;
-				item->size_x = ITEM_SIZE_X;
-				item->size_y = ITEM_SIZE_Y;
-				item->bmp_x = 0;
-				item->bmp_y = 0;
-				item->bmp_size_x = current_item->bitmap_size_x;
-				item->bmp_size_y = current_item->bitmap_size_x;
-				item->transparentColor = RGB(255, 255, 255);
-				p->subdrawables.push_back(item);
-			}
-			drawables.push_back(p);
-
-
-			for (int i = 0; i < current_npcs->size(); i++) {
-				if ((*current_npcs)[i]->visible) {
-
-					Drawable* n = new Drawable();
-
-					n->img = (*current_npcs)[i]->img;
-					n->x = (*current_npcs)[i]->x - 0.5 * HUMAN_SIZE_X;
-					n->y = (*current_npcs)[i]->y - 0.5 * HUMAN_SIZE_Y;
-					n->size_x = HUMAN_SIZE_X;
-					n->size_y = HUMAN_SIZE_Y;
-					n->bmp_x = HUMAN_BITMAP_SIZE_X * (*current_npcs)[i]->frame_column;
-					n->bmp_y = HUMAN_BITMAP_SIZE_Y * (*current_npcs)[i]->frame_row;
-					n->bmp_size_x = HUMAN_BITMAP_SIZE_X;
-					n->bmp_size_y = HUMAN_BITMAP_SIZE_Y;
-					n->transparentColor = RGB(255, 255, 255);
-
-					n->weight_x = n->x;
-					n->weight_y = n->y + HUMAN_SIZE_Y;
-
-					for (int j = 0; j < (*current_npcs)[i]->fig_particles.size(); j++) {
-						Drawable* animation = new Drawable();
-
-						FigParticle* particle = (*current_npcs)[i]->fig_particles[j];
-
-						animation->img = particle->img;
-						animation->x = ((*current_npcs)[i]->x - 0.5 * particle->size_x) + particle->offset_x; //前半部分保证画在人物中心
-						animation->y = n->y + particle->offset_y; //n->y是人物头顶
-						animation->size_x = particle->size_x;
-						animation->size_y = particle->size_y;
-						animation->bmp_x = particle->frame_sequence->at(particle->frame_id) * particle->bitmap_size_x;
-						animation->bmp_y = 0;
-						animation->bmp_size_x = particle->bitmap_size_x;
-						animation->bmp_size_y = particle->bitmap_size_y;
-						animation->transparentColor = RGB(255, 255, 255);
-						n->subdrawables.push_back(animation);
-					}
-					
-					drawables.push_back(n);
-				}
-			}
-
-
-
-			for (int i = 0; i < current_new_monsters->size(); i++) {
-				if ((*current_new_monsters)[i]->visible || ((*current_new_monsters)[i]->visible==false && (*current_new_monsters)[i]->fig_particles.size()!=0)) {
-
-					NewMonster* monster = (*current_new_monsters)[i];
-
-					Drawable* m = new Drawable();
-
-					m->visible = (*current_new_monsters)[i]->visible;
-					m->img = monster->img;
-					m->x = monster->x - 0.5 * monster->size_x;
-					m->y = monster->y - 0.5 * monster->size_y;
-					m->size_x = monster->size_x;
-					m->size_y = monster->size_y;
-					m->bmp_x = monster->bmp_size_x * monster->frame_column;
-					m->bmp_y = monster->bmp_size_y * monster->frame_row;
-					m->bmp_size_x = monster->bmp_size_x;
-					m->bmp_size_y = monster->bmp_size_y;
-					m->transparentColor = RGB(255, 255, 255);
-					//受伤动画 粒子效果 血条在外面画？
-
-					m->weight_x = m->x;
-					m->weight_y = m->y + monster->size_y;
-
-					for (int j = 0; j < monster->fig_particles.size(); j++) {
-						Drawable* animation = new Drawable();
-
-						FigParticle* particle = monster->fig_particles[j];
-
-						animation->img = particle->img;
-						animation->x = (monster->x - 0.5 * particle->size_x) + particle->offset_x;
-						animation->y = m->y + particle->offset_y;
-						animation->size_x = particle->size_x;
-						animation->size_y = particle->size_y;
-						animation->bmp_x = particle->frame_sequence->at(particle->frame_id) * particle->bitmap_size_x;
-						animation->bmp_y = 0;
-						animation->bmp_size_x = particle->bitmap_size_x;
-						animation->bmp_size_y = particle->bitmap_size_y;
-						animation->transparentColor = RGB(255, 255, 255);
-						m->subdrawables.push_back(animation);
-					}
-
-					drawables.push_back(m);
-				}
-			}
-
-
-			//绘制drawable
-			std::sort(drawables.begin(), drawables.end(), [](const Drawable* a, const Drawable* b) {
-				//return (a->y + (BLOCK_SIZE_Y * 0.5)) < (b->y + (BLOCK_SIZE_Y * 0.5));
-				return a->weight_y < b->weight_y;
-			});
-
-			for (const auto drawable : drawables) {
-
-				if (drawable->visible == true) {
-					SelectObject(hdc_loadBmp, drawable->img);
-					TransparentBlt(
-						hdc_memBuffer,
-						drawable->x, drawable->y, // 界面上起始绘制点
-						drawable->size_x, drawable->size_y,                                    // 绘制宽度高度
-						hdc_loadBmp,
-						drawable->bmp_x, drawable->bmp_y, // 位图起始点
-						drawable->bmp_size_x, drawable->bmp_size_y,                                    // 位图宽度高度
-						drawable->transparentColor                                            // 透明色
-					);
-				}
-
-				for (const auto subdrawable : drawable->subdrawables) { //只能一层
-					SelectObject(hdc_loadBmp, subdrawable->img);
-					TransparentBlt(
-						hdc_memBuffer,
-						subdrawable->x, subdrawable->y, // 界面上起始绘制点
-						subdrawable->size_x, subdrawable->size_y,                                    // 绘制宽度高度
-						hdc_loadBmp,
-						subdrawable->bmp_x, subdrawable->bmp_y, // 位图起始点
-						subdrawable->bmp_size_x, subdrawable->bmp_size_y,                                    // 位图宽度高度
-						subdrawable->transparentColor                                            // 透明色
-					);
-
-					delete subdrawable;
-				}
-
-				delete drawable;
-			}
-
-
-
-
-
-			//上层动画
-
-			for (int i = 0; i < current_new_monsters->size(); i++) {
-				if ((*current_new_monsters)[i]->visible || 
-					((*current_new_monsters)[i]->visible==false && ((*current_new_monsters)[i]->particles.size()!=0))) {
-
-					NewMonster* monster = (*current_new_monsters)[i];
-
-					//受伤动画
-					if (current_new_monsters->at(i)->hurt) {
-
-						SelectObject(hdc_loadBmp, monster->img);
-
-						char buff[256];
-						sprintf(buff, "hurt %d\n", i);
-						OutputDebugStringA(buff);
-
-						// 创建怪物图像的副本
-						HDC hdc_monsterCopy = CreateCompatibleDC(hdc_memBuffer);
-						HBITMAP hbm_monsterCopy = CreateCompatibleBitmap(hdc_memBuffer, monster->bmp_size_x, monster->bmp_size_y);
-						SelectObject(hdc_monsterCopy, hbm_monsterCopy);
-
-						// 将原始怪物图像拷贝到副本
-						BitBlt(hdc_monsterCopy, 0, 0, monster->bmp_size_x, monster->bmp_size_y, hdc_loadBmp,
-							monster->bmp_size_x * monster->frame_column, monster->bmp_size_y * monster->frame_row, SRCCOPY);
-
-
-						// 将所有非透明像素替换为红色
-						for (int y = 0; y < monster->bmp_size_y; y++) {
-							for (int x = 0; x < monster->bmp_size_x; x++) {
-								COLORREF pixelColor = GetPixel(hdc_monsterCopy, x, y);
-								if (pixelColor != RGB(255, 255, 255)) { // 忽略透明背景
-									SetPixel(hdc_monsterCopy, x, y, RGB(255, 0, 0)); // 将像素设置为红色
-								}
-							}
-						}
-
-
-						// 绘制纯红色的怪物图像
-						TransparentBlt(
-							hdc_memBuffer,
-							monster->x - 0.5 * monster->size_x, monster->y - 0.5 * monster->size_y,
-							monster->size_x, monster->size_y,
-							hdc_monsterCopy,
-							0, 0,
-							monster->bmp_size_x, monster->bmp_size_y,
-							RGB(255, 255, 255)
-						);
-
-						// 清理资源
-						DeleteObject(hbm_monsterCopy);
-						DeleteDC(hdc_monsterCopy);
-
-						current_new_monsters->at(i)->hurt = false;
-					}
-
-
-					//粒子动画
-					//NewMonster* monster = (*current_new_monsters)[i];
-					for (int j = 0; j < monster->particles.size(); j++) {
-						char buff[256];
-						sprintf(buff, "text: %d\n", j);
-						OutputDebugStringA(buff);
-						Particle* particle = monster->particles[j];
-
-						RECT textRect;
-						textRect.left = monster->x - monster->size_x * 2;
-						textRect.top = monster->y - monster->size_y - 16 + particle->offset_y; //?
-						textRect.right = monster->x + monster->size_x * 2;
-						textRect.bottom = monster->y - monster->size_y * 0.5 + particle->offset_y;
-
-						// 绘制文本在按钮的中心
-						SetBkMode(hdc_memBuffer, TRANSPARENT);
-						SetTextColor(hdc_memBuffer, RGB(255, 0, 0));
-						DrawText(hdc_memBuffer, particle->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-						SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
-						//DrawCenteredText(hdc_loadBmp, particle->text, monster->x, monster->y - monster->size_y, 16, RGB(255, 0, 0));
-					}
-
-					if (monster->hp_visible) {
-						RECT hpRect_bg;
-						hpRect_bg.left = monster->x - HP_WIDTH * 0.5;
-						hpRect_bg.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
-						hpRect_bg.right = monster->x + HP_WIDTH * 0.5;
-						hpRect_bg.bottom = monster->y - monster->size_y * 0.5;
-
-						if (monster->hp <= 0) {
-							monster->hp = 0;
-						}
-
-						RECT hpRect_hp;
-						hpRect_hp.left = monster->x - HP_WIDTH * 0.5;
-						hpRect_hp.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
-						hpRect_hp.right = monster->x - HP_WIDTH * 0.5 + (monster->hp / monster->hp_max) * HP_WIDTH;
-						hpRect_hp.bottom = monster->y - monster->size_y * 0.5;
-
-
-						// 黑色背景矩形
-						HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));  // 创建黑色画刷
-						FillRect(hdc_memBuffer, &hpRect_bg, blackBrush);               // 填充背景矩形
-						DeleteObject(blackBrush);                            // 释放黑色画刷
-
-						// 红色血量矩形
-						HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));  // 创建红色画刷
-						FillRect(hdc_memBuffer, &hpRect_hp, redBrush);                 // 填充血量矩形
-						DeleteObject(redBrush);                              // 释放红色画刷
-
-					}
-				}
-			}
-
-			//画物品栏
-
-			//画背景
-			int width = ITEM_BAR_SIZE_X;    // 绘制在画布上的宽度（缩小为 40px）
-			int height = ITEM_BAR_SIZE_Y;   // 绘制在画布上的高度（缩小为 40px）
-			int margin = ITEM_BAR_MARGIN;      // 每个图像之间的间距
-
-			SelectObject(hdc_loadBmp, bmp_item_bg);
-			int startX = (WINDOW_WIDTH - (width * 3 + margin * 2)) / 2; // 水平居中
-			for (int i = 0; i < 3; i++) {
-				int xPos = startX + i * (width + margin);  // 计算水平位置
-				int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
-
-				// 使用 TransparentBlt 绘制图像，透明色为 RGB(255, 255, 255)（白色）
-				TransparentBlt(
-					hdc_memBuffer,         // 目标 HDC
-					xPos, yPos,           // 目标绘制位置
-					width, height,  // 绘制尺寸
-					hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
-					0, 0,                 // 源位置
-					width, height,  // 源尺寸
-					RGB(255, 255, 255)    // 透明色（假设白色为透明）
-				);
-			}
-
-			int item_width = ITEM_SIZE_X;
-			int item_height = ITEM_SIZE_Y;
-
-			//画物品
-			for (int i = 0; i < items.size(); i++) {
-				SelectObject(hdc_loadBmp, items[i]->img);
-				int xPos = startX + i * (width + margin);  // 计算水平位置
-				int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
-
-				TransparentBlt(
-					hdc_memBuffer,         // 目标 HDC
-					xPos + 0.5 * (width - item_width), yPos + 0.5 * (height - item_height),           // 目标绘制位置
-					item_width, item_height,  // 绘制尺寸
-					hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
-					0, 0,                 // 源位置
-					items[i]->bitmap_size_x, items[i]->bitmap_size_y,  // 源尺寸
-					RGB(255, 255, 255)    // 透明色（假设白色为透明）
-				);
-
-				if (show_name_item == items[i] && item_name_fading_time > 0) {
-					SelectObject(hdc_loadBmp, bmp_item_name_bg);
-					TransparentBlt(
-						hdc_memBuffer,
-						xPos - 0.5 * (ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X), yPos - ITEM_NAME_SIZE_Y - 10, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,					// 界面上绘制位置
-						hdc_loadBmp,
-						0, 0, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,	// 位图上绘制位置
-						RGB(255, 255, 255)
-					);
-					//绘制文字
-					HFONT hFont = CreateFontW(
-						20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-						OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
-						L"SimSun");		//创建字体
-					SelectObject(hdc_memBuffer, hFont);
-					SetTextColor(hdc_memBuffer, RGB(0, 0, 0));	// 设置颜色:黑色字体白色背景
-					SetBkMode(hdc_memBuffer, TRANSPARENT);
-					RECT rect;
-					rect.left = xPos - 0.5 * (ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X);
-					rect.top = yPos - ITEM_NAME_SIZE_Y + 3;
-					rect.right = rect.left + ITEM_NAME_SIZE_X;
-					rect.bottom = rect.top + ITEM_NAME_SIZE_Y;
-					DrawTextW(hdc_memBuffer, show_name_item->description.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
-
-					item_name_fading_time--;
-					char buff[256];
-
-				}
-
-			}
-
-
-			//如果正处在对话状态：绘制对话框
-			if (in_conversation) {
-				SelectObject(hdc_loadBmp, bmp_dialog);
 				TransparentBlt(
 					hdc_memBuffer,
-					0, WINDOW_HEIGHT - DIALOG_SIZE_Y - 38, WINDOW_WIDTH - 16, DIALOG_SIZE_Y,					// 界面上绘制位置
+					j * BLOCK_SIZE_X, i * BLOCK_SIZE_Y,							// 界面上起始绘制点
+					BLOCK_SIZE_X, BLOCK_SIZE_Y,									// 界面上绘制宽度高度
 					hdc_loadBmp,
-					0, 0, DIALOG_BITMAP_SIZE_X, DIALOG_BITMAP_SIZE_Y,	// 位图上绘制位置
+					0,						// 位图上起始绘制点
+					0,
+					bg_hitmap[(*current_bg)[i][j]].bitmap_size_x, bg_hitmap[(*current_bg)[i][j]].bitmap_size_y,					// 位图上绘制宽度高度
+					RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
+			}
+		}
+
+		vector<Drawable*> drawables;
+
+
+		for (int i = 0; i < sizeof((*current_obj)) / sizeof((*current_obj)[0]); i++) {
+			for (int j = 0; j < sizeof((*current_obj)[0]) / sizeof((*current_obj)[0][0]); j++) {
+
+				if ((*current_obj)[i][j] == 0) {
+					continue;
+				}
+
+				int num_x = obj_hitmap[(*current_obj)[i][j]].num_x;
+				int num_y = obj_hitmap[(*current_obj)[i][j]].num_y;
+
+				Drawable* obj = new Drawable();
+				obj->img = obj_hitmap[(*current_obj)[i][j]].bitmap;
+				obj->x = j * BLOCK_SIZE_X;
+				obj->y = i * BLOCK_SIZE_Y;
+				obj->size_x = BLOCK_SIZE_X * num_x;
+				obj->size_y = BLOCK_SIZE_Y * num_y;
+				obj->bmp_x = 0;
+				obj->bmp_y = 0;
+				obj->bmp_size_x = obj_hitmap[(*current_obj)[i][j]].bitmap_size_x * num_x;
+				obj->bmp_size_y = obj_hitmap[(*current_obj)[i][j]].bitmap_size_y * num_y;
+				obj->transparentColor = RGB(255, 255, 255);
+				obj->weight_x = obj->x + obj_hitmap[(*current_obj)[i][j]].weight_offset_num_x * BLOCK_SIZE_X;
+				obj->weight_y = obj->y + obj_hitmap[(*current_obj)[i][j]].weight_offset_num_y * BLOCK_SIZE_Y;
+				drawables.push_back(obj);
+			}
+		}
+
+
+
+		// 绘制玩家
+
+		Drawable* p = new Drawable();
+		p->img = player->img;
+		p->x = player->x - 0.5 * HUMAN_SIZE_X;
+		p->y = player->y - 0.5 * HUMAN_SIZE_Y;
+		p->size_x = HUMAN_SIZE_X;
+		p->size_y = HUMAN_SIZE_Y;
+		p->bmp_x = HUMAN_BITMAP_SIZE_X * player->frame_column;
+		p->bmp_y = HUMAN_BITMAP_SIZE_Y * player->frame_row;
+		p->bmp_size_x = HUMAN_BITMAP_SIZE_X;
+		p->bmp_size_y = HUMAN_BITMAP_SIZE_Y;
+		p->transparentColor = RGB(255, 255, 255);
+
+		p->weight_x = p->x;
+		p->weight_y = p->y + HUMAN_SIZE_Y; //TODO
+
+
+		if (current_item != NULL) {
+			Drawable* item = new Drawable();
+			item->img = current_item->img;
+			item->x = player->x - 0.5 * ITEM_SIZE_X;
+			item->y = player->y - 0.5 * HUMAN_SIZE_Y - 0.5 * ITEM_SIZE_Y;
+			item->size_x = ITEM_SIZE_X;
+			item->size_y = ITEM_SIZE_Y;
+			item->bmp_x = 0;
+			item->bmp_y = 0;
+			item->bmp_size_x = current_item->bitmap_size_x;
+			item->bmp_size_y = current_item->bitmap_size_x;
+			item->transparentColor = RGB(255, 255, 255);
+			p->subdrawables.push_back(item);
+		}
+		drawables.push_back(p);
+
+
+		for (int i = 0; i < current_npcs->size(); i++) {
+			if ((*current_npcs)[i]->visible) {
+
+				Drawable* n = new Drawable();
+
+				n->img = (*current_npcs)[i]->img;
+				n->x = (*current_npcs)[i]->x - 0.5 * HUMAN_SIZE_X;
+				n->y = (*current_npcs)[i]->y - 0.5 * HUMAN_SIZE_Y;
+				n->size_x = HUMAN_SIZE_X;
+				n->size_y = HUMAN_SIZE_Y;
+				n->bmp_x = HUMAN_BITMAP_SIZE_X * (*current_npcs)[i]->frame_column;
+				n->bmp_y = HUMAN_BITMAP_SIZE_Y * (*current_npcs)[i]->frame_row;
+				n->bmp_size_x = HUMAN_BITMAP_SIZE_X;
+				n->bmp_size_y = HUMAN_BITMAP_SIZE_Y;
+				n->transparentColor = RGB(255, 255, 255);
+
+				n->weight_x = n->x;
+				n->weight_y = n->y + HUMAN_SIZE_Y;
+
+				for (int j = 0; j < (*current_npcs)[i]->fig_particles.size(); j++) {
+					Drawable* animation = new Drawable();
+
+					FigParticle* particle = (*current_npcs)[i]->fig_particles[j];
+
+					animation->img = particle->img;
+					animation->x = ((*current_npcs)[i]->x - 0.5 * particle->size_x) + particle->offset_x; //前半部分保证画在人物中心
+					animation->y = n->y + particle->offset_y; //n->y是人物头顶
+					animation->size_x = particle->size_x;
+					animation->size_y = particle->size_y;
+					animation->bmp_x = particle->frame_sequence->at(particle->frame_id) * particle->bitmap_size_x;
+					animation->bmp_y = 0;
+					animation->bmp_size_x = particle->bitmap_size_x;
+					animation->bmp_size_y = particle->bitmap_size_y;
+					animation->transparentColor = RGB(255, 255, 255);
+					n->subdrawables.push_back(animation);
+				}
+					
+				drawables.push_back(n);
+			}
+		}
+
+
+
+		for (int i = 0; i < current_new_monsters->size(); i++) {
+			if ((*current_new_monsters)[i]->visible || ((*current_new_monsters)[i]->visible==false && (*current_new_monsters)[i]->fig_particles.size()!=0)) {
+
+				NewMonster* monster = (*current_new_monsters)[i];
+
+				Drawable* m = new Drawable();
+
+				m->visible = (*current_new_monsters)[i]->visible;
+				m->img = monster->img;
+				m->x = monster->x - 0.5 * monster->size_x;
+				m->y = monster->y - 0.5 * monster->size_y;
+				m->size_x = monster->size_x;
+				m->size_y = monster->size_y;
+				m->bmp_x = monster->bmp_size_x * monster->frame_column;
+				m->bmp_y = monster->bmp_size_y * monster->frame_row;
+				m->bmp_size_x = monster->bmp_size_x;
+				m->bmp_size_y = monster->bmp_size_y;
+				m->transparentColor = RGB(255, 255, 255);
+				//受伤动画 粒子效果 血条在外面画？
+
+				m->weight_x = m->x;
+				m->weight_y = m->y + monster->size_y;
+
+				for (int j = 0; j < monster->fig_particles.size(); j++) {
+					Drawable* animation = new Drawable();
+
+					FigParticle* particle = monster->fig_particles[j];
+
+					animation->img = particle->img;
+					animation->x = (monster->x - 0.5 * particle->size_x) + particle->offset_x;
+					animation->y = m->y + particle->offset_y;
+					animation->size_x = particle->size_x;
+					animation->size_y = particle->size_y;
+					animation->bmp_x = particle->frame_sequence->at(particle->frame_id) * particle->bitmap_size_x;
+					animation->bmp_y = 0;
+					animation->bmp_size_x = particle->bitmap_size_x;
+					animation->bmp_size_y = particle->bitmap_size_y;
+					animation->transparentColor = RGB(255, 255, 255);
+					m->subdrawables.push_back(animation);
+				}
+
+				drawables.push_back(m);
+			}
+		}
+
+
+		//绘制drawable
+		std::sort(drawables.begin(), drawables.end(), [](const Drawable* a, const Drawable* b) {
+			//return (a->y + (BLOCK_SIZE_Y * 0.5)) < (b->y + (BLOCK_SIZE_Y * 0.5));
+			return a->weight_y < b->weight_y;
+		});
+
+		for (const auto drawable : drawables) {
+
+			if (drawable->visible == true) {
+				SelectObject(hdc_loadBmp, drawable->img);
+				TransparentBlt(
+					hdc_memBuffer,
+					drawable->x, drawable->y, // 界面上起始绘制点
+					drawable->size_x, drawable->size_y,                                    // 绘制宽度高度
+					hdc_loadBmp,
+					drawable->bmp_x, drawable->bmp_y, // 位图起始点
+					drawable->bmp_size_x, drawable->bmp_size_y,                                    // 位图宽度高度
+					drawable->transparentColor                                            // 透明色
+				);
+			}
+
+			for (const auto subdrawable : drawable->subdrawables) { //只能一层
+				SelectObject(hdc_loadBmp, subdrawable->img);
+				TransparentBlt(
+					hdc_memBuffer,
+					subdrawable->x, subdrawable->y, // 界面上起始绘制点
+					subdrawable->size_x, subdrawable->size_y,                                    // 绘制宽度高度
+					hdc_loadBmp,
+					subdrawable->bmp_x, subdrawable->bmp_y, // 位图起始点
+					subdrawable->bmp_size_x, subdrawable->bmp_size_y,                                    // 位图宽度高度
+					subdrawable->transparentColor                                            // 透明色
+				);
+
+				delete subdrawable;
+			}
+
+			delete drawable;
+		}
+
+
+
+
+
+		//上层动画
+
+		for (int i = 0; i < current_new_monsters->size(); i++) {
+			if ((*current_new_monsters)[i]->visible || 
+				((*current_new_monsters)[i]->visible==false && ((*current_new_monsters)[i]->particles.size()!=0))) {
+
+				NewMonster* monster = (*current_new_monsters)[i];
+
+				//受伤动画
+				if (current_new_monsters->at(i)->hurt) {
+
+					SelectObject(hdc_loadBmp, monster->img);
+
+					char buff[256];
+					sprintf(buff, "hurt %d\n", i);
+					OutputDebugStringA(buff);
+
+					// 创建怪物图像的副本
+					HDC hdc_monsterCopy = CreateCompatibleDC(hdc_memBuffer);
+					HBITMAP hbm_monsterCopy = CreateCompatibleBitmap(hdc_memBuffer, monster->bmp_size_x, monster->bmp_size_y);
+					SelectObject(hdc_monsterCopy, hbm_monsterCopy);
+
+					// 将原始怪物图像拷贝到副本
+					BitBlt(hdc_monsterCopy, 0, 0, monster->bmp_size_x, monster->bmp_size_y, hdc_loadBmp,
+						monster->bmp_size_x * monster->frame_column, monster->bmp_size_y * monster->frame_row, SRCCOPY);
+
+
+					// 将所有非透明像素替换为红色
+					for (int y = 0; y < monster->bmp_size_y; y++) {
+						for (int x = 0; x < monster->bmp_size_x; x++) {
+							COLORREF pixelColor = GetPixel(hdc_monsterCopy, x, y);
+							if (pixelColor != RGB(255, 255, 255)) { // 忽略透明背景
+								SetPixel(hdc_monsterCopy, x, y, RGB(255, 0, 0)); // 将像素设置为红色
+							}
+						}
+					}
+
+
+					// 绘制纯红色的怪物图像
+					TransparentBlt(
+						hdc_memBuffer,
+						monster->x - 0.5 * monster->size_x, monster->y - 0.5 * monster->size_y,
+						monster->size_x, monster->size_y,
+						hdc_monsterCopy,
+						0, 0,
+						monster->bmp_size_x, monster->bmp_size_y,
+						RGB(255, 255, 255)
+					);
+
+					// 清理资源
+					DeleteObject(hbm_monsterCopy);
+					DeleteDC(hdc_monsterCopy);
+
+					current_new_monsters->at(i)->hurt = false;
+				}
+
+
+				//粒子动画
+				//NewMonster* monster = (*current_new_monsters)[i];
+				for (int j = 0; j < monster->particles.size(); j++) {
+					char buff[256];
+					sprintf(buff, "text: %d\n", j);
+					OutputDebugStringA(buff);
+					Particle* particle = monster->particles[j];
+
+					RECT textRect;
+					textRect.left = monster->x - monster->size_x * 2;
+					textRect.top = monster->y - monster->size_y - 16 + particle->offset_y; //?
+					textRect.right = monster->x + monster->size_x * 2;
+					textRect.bottom = monster->y - monster->size_y * 0.5 + particle->offset_y;
+
+					// 绘制文本在按钮的中心
+					SetBkMode(hdc_memBuffer, TRANSPARENT);
+					SetTextColor(hdc_memBuffer, RGB(255, 0, 0));
+					DrawText(hdc_memBuffer, particle->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+					SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+					//DrawCenteredText(hdc_loadBmp, particle->text, monster->x, monster->y - monster->size_y, 16, RGB(255, 0, 0));
+				}
+
+				if (monster->hp_visible) {
+					RECT hpRect_bg;
+					hpRect_bg.left = monster->x - HP_WIDTH * 0.5;
+					hpRect_bg.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
+					hpRect_bg.right = monster->x + HP_WIDTH * 0.5;
+					hpRect_bg.bottom = monster->y - monster->size_y * 0.5;
+
+					if (monster->hp <= 0) {
+						monster->hp = 0;
+					}
+
+					RECT hpRect_hp;
+					hpRect_hp.left = monster->x - HP_WIDTH * 0.5;
+					hpRect_hp.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
+					hpRect_hp.right = monster->x - HP_WIDTH * 0.5 + (monster->hp / monster->hp_max) * HP_WIDTH;
+					hpRect_hp.bottom = monster->y - monster->size_y * 0.5;
+
+
+					// 黑色背景矩形
+					HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));  // 创建黑色画刷
+					FillRect(hdc_memBuffer, &hpRect_bg, blackBrush);               // 填充背景矩形
+					DeleteObject(blackBrush);                            // 释放黑色画刷
+
+					// 红色血量矩形
+					HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));  // 创建红色画刷
+					FillRect(hdc_memBuffer, &hpRect_hp, redBrush);                 // 填充血量矩形
+					DeleteObject(redBrush);                              // 释放红色画刷
+
+				}
+			}
+		}
+
+		//画物品栏
+
+		//画背景
+		int width = ITEM_BAR_SIZE_X;    // 绘制在画布上的宽度（缩小为 40px）
+		int height = ITEM_BAR_SIZE_Y;   // 绘制在画布上的高度（缩小为 40px）
+		int margin = ITEM_BAR_MARGIN;      // 每个图像之间的间距
+
+		SelectObject(hdc_loadBmp, bmp_item_bg);
+		int startX = (WINDOW_WIDTH - (width * 3 + margin * 2)) / 2; // 水平居中
+		for (int i = 0; i < 3; i++) {
+			int xPos = startX + i * (width + margin);  // 计算水平位置
+			int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
+
+			// 使用 TransparentBlt 绘制图像，透明色为 RGB(255, 255, 255)（白色）
+			TransparentBlt(
+				hdc_memBuffer,         // 目标 HDC
+				xPos, yPos,           // 目标绘制位置
+				width, height,  // 绘制尺寸
+				hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
+				0, 0,                 // 源位置
+				width, height,  // 源尺寸
+				RGB(255, 255, 255)    // 透明色（假设白色为透明）
+			);
+		}
+
+		int item_width = ITEM_SIZE_X;
+		int item_height = ITEM_SIZE_Y;
+
+		//画物品
+		for (int i = 0; i < items.size(); i++) {
+			SelectObject(hdc_loadBmp, items[i]->img);
+			int xPos = startX + i * (width + margin);  // 计算水平位置
+			int yPos = WINDOW_HEIGHT - height - 45;    // 设置垂直位置
+
+			TransparentBlt(
+				hdc_memBuffer,         // 目标 HDC
+				xPos + 0.5 * (width - item_width), yPos + 0.5 * (height - item_height),           // 目标绘制位置
+				item_width, item_height,  // 绘制尺寸
+				hdc_loadBmp,        // 源 HDC（包含缩放后的图像）
+				0, 0,                 // 源位置
+				items[i]->bitmap_size_x, items[i]->bitmap_size_y,  // 源尺寸
+				RGB(255, 255, 255)    // 透明色（假设白色为透明）
+			);
+
+			if (show_name_item == items[i] && item_name_fading_time > 0) {
+				SelectObject(hdc_loadBmp, bmp_item_name_bg);
+				TransparentBlt(
+					hdc_memBuffer,
+					xPos - 0.5 * (ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X), yPos - ITEM_NAME_SIZE_Y - 10, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,					// 界面上绘制位置
+					hdc_loadBmp,
+					0, 0, ITEM_NAME_SIZE_X, ITEM_NAME_SIZE_Y,	// 位图上绘制位置
 					RGB(255, 255, 255)
 				);
 				//绘制文字
@@ -1855,14 +1860,46 @@ void Paint(HWND hWnd)
 					L"SimSun");		//创建字体
 				SelectObject(hdc_memBuffer, hFont);
 				SetTextColor(hdc_memBuffer, RGB(0, 0, 0));	// 设置颜色:黑色字体白色背景
-				SetBkColor(hdc_memBuffer, RGB(255, 255, 255));
+				SetBkMode(hdc_memBuffer, TRANSPARENT);
 				RECT rect;
-				rect.left = 50;
-				rect.top = WINDOW_HEIGHT - DIALOG_SIZE_Y - 18;
-				rect.right = WINDOW_WIDTH - 110;
-				rect.bottom = WINDOW_HEIGHT - 50;
-				DrawTextW(hdc_memBuffer, converstaion_content, -1, &rect, DT_WORDBREAK);
+				rect.left = xPos - 0.5 * (ITEM_NAME_SIZE_X - ITEM_BAR_SIZE_X);
+				rect.top = yPos - ITEM_NAME_SIZE_Y + 3;
+				rect.right = rect.left + ITEM_NAME_SIZE_X;
+				rect.bottom = rect.top + ITEM_NAME_SIZE_Y;
+				DrawTextW(hdc_memBuffer, show_name_item->description.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
+
+				item_name_fading_time--;
+				char buff[256];
+
 			}
+
+		}
+
+
+		//如果正处在对话状态：绘制对话框
+		if (in_conversation) {
+			SelectObject(hdc_loadBmp, bmp_dialog);
+			TransparentBlt(
+				hdc_memBuffer,
+				0, WINDOW_HEIGHT - DIALOG_SIZE_Y - 38, WINDOW_WIDTH - 16, DIALOG_SIZE_Y,					// 界面上绘制位置
+				hdc_loadBmp,
+				0, 0, DIALOG_BITMAP_SIZE_X, DIALOG_BITMAP_SIZE_Y,	// 位图上绘制位置
+				RGB(255, 255, 255)
+			);
+			//绘制文字
+			HFONT hFont = CreateFontW(
+				20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+				OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+				L"SimSun");		//创建字体
+			SelectObject(hdc_memBuffer, hFont);
+			SetTextColor(hdc_memBuffer, RGB(0, 0, 0));	// 设置颜色:黑色字体白色背景
+			SetBkColor(hdc_memBuffer, RGB(255, 255, 255));
+			RECT rect;
+			rect.left = 50;
+			rect.top = WINDOW_HEIGHT - DIALOG_SIZE_Y - 18;
+			rect.right = WINDOW_WIDTH - 110;
+			rect.bottom = WINDOW_HEIGHT - 50;
+			DrawTextW(hdc_memBuffer, converstaion_content, -1, &rect, DT_WORDBREAK);
 		}
 
 	}
@@ -1901,36 +1938,56 @@ void Paint(HWND hWnd)
 		DrawTextW(hdc_memBuffer, failed_message.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
 	}
 
+	if (in_bed) {
+		SelectObject(hdc_loadBmp, bmp_background);
+		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
+
+		HFONT hFont = CreateFontW(
+			20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+			L"SimSun");		//创建字体
+		SelectObject(hdc_memBuffer, hFont);
+		SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+		SetBkMode(hdc_memBuffer, TRANSPARENT);
+		RECT rect;
+		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
+		rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4;
+		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
+		DrawTextW(hdc_memBuffer, L"要结束游戏吗", -1, &rect, DT_CENTER | DT_VCENTER);
+	}
+
+	char buff[256];
+	sprintf(buff, "here %d %d %d %d\n", in_stop, in_help, in_failed, in_bed);
+	OutputDebugStringA(buff);
+
 	//画按钮，最上层
 	for (int i = 0; i < current_buttons->size(); i++)
 	{
 		Button* button = current_buttons->at(i);
-		if (button->visible)
-		{
-			SelectObject(hdc_loadBmp, button->img);
-			TransparentBlt(
-				hdc_memBuffer, button->x, button->y,
-				button->width, button->height,
-				hdc_loadBmp, 0, 0, button->width, button->height,
-				RGB(255, 255, 255)
-			);
+		SelectObject(hdc_loadBmp, button->img);
+		TransparentBlt(
+			hdc_memBuffer, button->x, button->y,
+			button->width, button->height,
+			hdc_loadBmp, 0, 0, button->width, button->height,
+			RGB(255, 255, 255)
+		);
 
-			// 设置文本背景透明
-			SetBkMode(hdc_memBuffer, TRANSPARENT);
+		// 设置文本背景透明
+		SetBkMode(hdc_memBuffer, TRANSPARENT);
 
-			// 设置字体颜色（例如白色）
-			SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
+		// 设置字体颜色（例如白色）
+		SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
 
-			// 定义文本绘制区域
-			RECT textRect;
-			textRect.left = button->x;
-			textRect.top = button->y;
-			textRect.right = button->x + button->width;
-			textRect.bottom = button->y + button->height;
+		// 定义文本绘制区域
+		RECT textRect;
+		textRect.left = button->x;
+		textRect.top = button->y;
+		textRect.right = button->x + button->width;
+		textRect.bottom = button->y + button->height;
 
-			// 绘制文本在按钮的中心
-			DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-		}
+		// 绘制文本在按钮的中心
+		DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	}
 
 

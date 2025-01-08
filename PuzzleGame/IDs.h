@@ -8,8 +8,8 @@
 #define STAGE_MAIN				1		//第一个游戏场景的ID
 #define STAGE_HOUSE_1			2
 #define STAGE_MEADOW			3
-#define STAGE_FAILED			4
 #define STAGE_HOUSE_2			5
+#define STAGE_END				6
 
 
 //尺寸
@@ -53,16 +53,18 @@
 #define UNIT_DIRECT_DOWN		0		//向下
 
 //其它定义
-#define BUTTON_STARTGAME			1001	//开始游戏按钮ID
 #define BUTTON_WIDTH		212		//开始游戏按钮宽度
 #define BUTTON_HEIGHT		76		//开始游戏按钮高度
 
-
+#define BUTTON_STARTGAME			1001	//开始游戏按钮ID
 #define BUTTON_HELP			1002	//开始游戏按钮ID
 #define BUTTON_STOP_CONTINUE 1003
 #define BUTTON_STOP_HELP	1004
 #define BUTTON_STOP_HOME	1005
 #define BUTTON_FAILED_RESTART 1006
+#define BUTTON_BED_END 1007
+#define BUTTON_BED_CONTINUE 1008
+#define BUTTON_END_BACK 1009
 
 #define TIMER_GAMETIMER				1		//游戏的默认计时器ID
 #define TIMER_GAMETIMER_ELAPSE		30		//默认计时器刷新间隔的毫秒数
@@ -111,6 +113,7 @@
 #define OBJ_CHERRY 20018
 #define OBJ_TENT 20019
 #define OBJ_GRASS_BLOCK 20020
+#define OBJ_BED 20021
 
 
 #define MAP_MAIN 30001

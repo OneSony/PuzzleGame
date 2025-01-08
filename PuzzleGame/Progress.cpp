@@ -97,6 +97,8 @@ void UpdateProgress() {
 				}
 
 				npcs_house_1.at(0)->ToConversation(2);
+				
+				npcs_main.at(0)->ToConversation(1);
 			}
 			else {
 
