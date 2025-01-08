@@ -139,15 +139,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Buttons.h" />
     <ClInclude Include="Items.h" />
     <ClInclude Include="Maps.h" />
+    <ClInclude Include="Monsters.h" />
     <ClInclude Include="NPCs.h" />
     <ClInclude Include="PuzzleGame.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Buttons.cpp" />
     <ClCompile Include="Maps.cpp" />
+    <ClCompile Include="Monsters.cpp" />
     <ClCompile Include="NPCs.cpp" />
     <ClCompile Include="PuzzleGame.cpp" />
   </ItemGroup>

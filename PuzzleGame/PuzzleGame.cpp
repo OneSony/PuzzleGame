@@ -5,6 +5,8 @@
 #include "Maps.h"
 #include "NPCs.h"
 #include "Items.h"
+#include "Monsters.h"
+#include "Buttons.h"
 #include <string.h>
 #include <set>
 #define MAX_LOADSTRING 100
@@ -14,39 +16,26 @@ HINSTANCE hInst;                                // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
 
-HBITMAP bmp_Button;	//按钮图像资源
-HBITMAP bmp_Player;			//玩家图像
-HBITMAP bmp_Background;		//生成的背景图像
-HBITMAP bmp_dialog;			//对话框背景图像
-HBITMAP bmp_monster1;		//怪物1图像
-HBITMAP bmp_crow;		//怪物1图像
-HBITMAP bmp_duck;		//怪物1图像
-HBITMAP bmp_chiken;		//怪物1图像
-HBITMAP bmp_weapon;		//怪物1图像
-HBITMAP bmp_item_bg;
-HBITMAP bmp_item_name_bg;
+HBITMAP bmp_Background = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_BACKGROUND));
+HBITMAP bmp_Player = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_PLAYER));
+HBITMAP bmp_dialog = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_DIALOG));
+HBITMAP bmp_item_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_BG));
+HBITMAP bmp_item_name_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_NAME_BG));
 
 std::wstring failed_message;
-
-Stage* currentStage = NULL; //当前场景状态
-vector<Monster*> monsters;	//怪物列表
-//vector<NewMonster*> new_monsters;	//怪物列表
-
-vector<NewMonster*> new_monsters_main;
-vector<NewMonster*> new_monsters_house_1;
-vector<NewMonster*> new_monsters_meadow;
+Stage* currentStage; //当前场景状态
 vector<NewMonster*>* current_new_monsters;
-
+vector<Button*>* current_buttons;
+vector<Button*>* buttons_before;
 vector<Item*> items;		//物品列表
-Item* current_item = NULL;	//当前物品
-Item* show_name_item = NULL;
+Item* current_item;	//当前物品
+Item* show_name_item;
 int item_name_fading_time;
-
-Player* player = NULL;		//玩家
-vector<Button*> game_buttons;	//按钮	
-vector<Button*> menu_buttons;	//按钮	
-vector<Button*> stop_buttons;	//按钮	
-vector<Button*> failed_buttons;
+Player* player;		//玩家
+int current_reachable[20][28] = { 0 };
+int current_bg[20][28] = { 0 };
+int current_obj[20][28] = { 0 };
+std::vector<NPC*>* current_npcs;
 
 int mouseX = 0;
 int mouseY = 0;
@@ -75,17 +64,6 @@ int FRAMES_WALK_COUNT = sizeof(FRAMES_WALK) / sizeof(int);
 int MONSTER_FRAMES[] = { 0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4 };
 int MONSTER_FRAMES_COUNT = sizeof(MONSTER_FRAMES) / sizeof(int);
 
-
-//地图
-//0空地 1草 2红花 3+7树 4/5/6/8/9/10/12/13/14土地 11蓝花 15路牌
-
-
-int current_reachable[20][28] = { 0 };
-int current_bg[20][28] = { 0 };
-int current_obj[20][28] = { 0 };
-std::vector<NPC*>* current_npcs;
-
-// TODO: 在此添加其它全局变量
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -243,51 +221,54 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+
+void AllInit() {
+	InitNPCs();
+	InitMaps();
+	InitMonsters();
+	InitButtons();
+	InitCurrent();
+}
+
+void InitCurrent() {
+
+	failed_message = L"";
+	currentStage = NULL; //当前场景状态
+	current_new_monsters = NULL;
+	current_buttons = &void_buttons;
+	buttons_before = &void_buttons;
+	
+	//清空物品栏
+	for (int i = 0; i < items.size(); i++) {
+		delete items[i];
+	}
+	items.clear();
+
+	current_item = NULL;	//当前物品
+	show_name_item = NULL;
+	item_name_fading_time = 0;
+	player = NULL;		//玩家
+
+	memset(current_reachable, 0, sizeof(current_reachable));
+	memset(current_bg, 0, sizeof(current_bg));
+	memset(current_obj, 0, sizeof(current_obj));
+
+	current_npcs = NULL;
+
+	in_conversation = false;	//当前游戏处在对话状态
+	in_stop = false;
+	in_help = false;
+	in_failed = false;
+	converstaion_content = nullptr;	//当前对话的内容
+}
+
 // 初始化游戏窗体函数
 void InitGame(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
-	//加载图像资源
-	bmp_Background = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_BACKGROUND));
-	bmp_Button = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_BTN_BG));
-	bmp_Player = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_PLAYER));
-	bmp_dialog = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_DIALOG));
-	bmp_monster1 = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_MONSTER1));
-	bmp_crow = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_CROW));
-	bmp_duck = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_DUCK));
-	bmp_chiken = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_CHIKEN));
-	bmp_weapon = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_WEAPON));
-	bmp_item_bg = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_ITEM_BG));
-	bmp_item_name_bg = LoadBitmap(((LPCREATESTRUCT)lParam)->hInstance, MAKEINTRESOURCE(IDB_ITEM_NAME_BG));
 
-	//添加按钮
-	Button* startButton = CreateButton(BUTTON_STARTGAME, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT)*2 / 4, L"START");
-	menu_buttons.push_back(startButton);
+	AllInit();
 
-	Button* helpButton = CreateButton(BUTTON_HELP, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT)*3 / 4, L"HELP");
-	menu_buttons.push_back(helpButton);
-
-
-	Button* continueButton_stop = CreateButton(BUTTON_STOP_CONTINUE, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4, L"CONTINUE");
-	stop_buttons.push_back(continueButton_stop);
-	Button* helpButton_stop = CreateButton(BUTTON_STOP_HELP, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 2 / 4, L"HELP");
-	stop_buttons.push_back(helpButton_stop);
-	Button* homeButton_stop = CreateButton(BUTTON_STOP_HOME, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"HOME");
-	stop_buttons.push_back(homeButton_stop);
-
-	Button* restartButton = CreateButton(BUTTON_FAILED_RESTART, bmp_Button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"RESTART");
-	failed_buttons.push_back(restartButton);
-
-
-	//初始化开始场景
 	InitStage(hWnd, STAGE_STARTMENU);
-
-	InitNPCs();
 
 	//初始化主计时器
 	SetTimer(hWnd, TIMER_GAMETIMER, TIMER_GAMETIMER_ELAPSE, NULL);
@@ -367,11 +348,61 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	mouseY = HIWORD(lParam);
 	mouseDown = true;
 
+	for (int i = 0; i < current_buttons->size(); i++)
+	{
+		Button* button = current_buttons->at(i);
+		if (button->visible)
+		{
+			if (button->x <= mouseX
+				&& button->x + button->width >= mouseX
+				&& button->y <= mouseY
+				&& button->y + button->height >= mouseY)
+			{
+				switch (button->buttonID) {
+				case BUTTON_STOP_CONTINUE:
+				{
+					HandleStopEvents(hWnd);
+					break;
+				}
+				case BUTTON_STOP_HELP:
+				{
+					HandleHelpEvents(hWnd);
+					break;
+				}
+				case BUTTON_STOP_HOME:
+				{
+					in_stop = false;
+					InitStage(hWnd, STAGE_STARTMENU); //内部有invalidate
+					break;
+				}
+				case BUTTON_STARTGAME:
+				{
+					AllInit();
+					InitStage(hWnd, STAGE_1);
+					break;
+				}
+				case BUTTON_HELP:
+				{
+					HandleHelpEvents(hWnd);
+					break;
+				}
+				case BUTTON_FAILED_RESTART:
+				{
+					AllInit();
+					InitStage(hWnd, STAGE_1);
+					break;
+				}
+				break;
+				}
+			}
+		}
+	}
+
+
 	if(in_help){
 
-
 	} else if (in_stop) {
-		for (int i = 0; i < stop_buttons.size(); i++)
+		/*for (int i = 0; i < stop_buttons.size(); i++)
 		{
 			Button* button = stop_buttons[i];
 			if (button->visible)
@@ -402,11 +433,11 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 					}
 				}
 			}
-		}
+		}*/
 
 	}else if (currentStage->stageID == STAGE_STARTMENU) {
 
-		for (int i = 0; i < menu_buttons.size(); i++)
+		/*for (int i = 0; i < menu_buttons.size(); i++)
 		{
 			Button* button = menu_buttons[i];
 			if (button->visible)
@@ -432,7 +463,7 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 					}
 				}
 			}
-		}
+		}*/
 	}
 	else {
 		//点到了任务栏
@@ -549,17 +580,6 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		}
 	}
 
-}
-
-void AddEffect(NewMonster* monster, int effect_id) {
-	for (auto it = monster->effects.begin(); it != monster->effects.end(); it++) {
-		if ((*it)->effectID == effect_id) {
-			(*it)->life_count = 0;
-			return;
-		}
-	}
-
-	monster->effects.push_back(CreateEffect(EFFECT_SPEED_UP_ID));
 }
 
 // 鼠标左键松开事件处理函数
@@ -1174,11 +1194,19 @@ void UpdateFailed(HWND hWnd) {
 void HandleStopEvents(HWND hWnd)
 {
 	if (currentStage->stageID != STAGE_STARTMENU) {
-		in_stop = !in_stop;
-		currentStage->timerOn = !currentStage->timerOn;
-		char buff[256];
-		sprintf(buff, "stop: %d\n", in_stop);
-		OutputDebugStringA(buff);
+
+		if (in_stop == false) {
+			in_stop = true;
+			buttons_before = current_buttons;
+			current_buttons = &stop_buttons;
+			currentStage->timerOn = false;
+		}
+		else {
+			in_stop = false;
+			current_buttons = buttons_before;
+			currentStage->timerOn = true;
+		}
+
 		InvalidateRect(hWnd, NULL, FALSE);
 	}
 
@@ -1189,72 +1217,27 @@ void HandleFailedEvents(HWND hWnd, std::wstring str)
 	failed_message = str;
 	in_failed = !in_failed;
 	currentStage->timerOn = !currentStage->timerOn;
-	char buff[256];
-	sprintf(buff, "failed: %d\n", in_failed);
-	OutputDebugStringA(buff);
+	
+	current_buttons = &failed_buttons;
+
 	InvalidateRect(hWnd, NULL, FALSE);
 }
 
 
 void HandleHelpEvents(HWND hWnd)
 {
-	in_help = !in_help;
-	char buff[256];
-	sprintf(buff, "help: %d\n", in_help);
-	OutputDebugStringA(buff);
+
+	if (in_help == false) {
+		in_help = true;
+		buttons_before = current_buttons;
+		current_buttons = &void_buttons;
+	}
+	else {
+		in_help = false;
+		current_buttons = buttons_before;
+	}
+
 	InvalidateRect(hWnd, NULL, FALSE);
-}
-
-
-
-//TODO: 添加游戏需要的更多函数
-
-// 添加按钮函数
-Button* CreateButton(int buttonID, HBITMAP img, int width, int height, int x, int y, wstring text)
-{
-	Button* button = new Button();
-	button->buttonID = buttonID;
-	button->img = img;
-	button->width = width;
-	button->height = height;
-	button->x = x;
-	button->y = y;
-	button->text = text;
-
-	button->visible = true;
-	return button;
-}
-
-Particle* CreateParticle(wstring text) {
-	Particle* particle = new Particle();
-	particle->text = text;
-	particle->offset_x=0;
-	particle->offset_y=0;
-	particle->vx=0;
-	particle->vy=2;
-	particle->life_max=15;
-	particle->life_count=0;
-
-	return particle;
-}
-
-Effect* CreateEffect(int effect_id) {
-	Effect* effect = new Effect();
-	effect->effectID = effect_id;
-	effect->life_count = 0;
-
-	switch (effect_id)
-	{
-	case EFFECT_SPEED_UP_ID:
-	{
-		effect->life_max = 100;
-		break;
-	}
-	default:
-		break;
-	}
-
-	return effect;
 }
 
 
@@ -1276,150 +1259,8 @@ Player* CreatePlayer(int x, int y)
 	player->frame_count = PLAYER_FRAMES_HOLD_COUNT;
 	player->frame_id = 0;
 
-	player->weapon = CreateWeapon(WEAPON_SWORD_ID);
-
 	return player;
 }
-
-
-Weapon* CreateWeapon(int weapon_id)
-{
-	Weapon* weapon = new Weapon();
-	weapon->weaponID = weapon_id;
-	weapon->img = bmp_weapon;
-	weapon->move = false;
-
-	switch (weapon_id)
-	{
-	case WEAPON_SWORD_ID:
-	{
-		weapon->size_x=30;
-		weapon->size_y=30;
-		weapon->bmp_size_x=16;
-		weapon->bmp_size_y=16;
-		weapon->bmp_col = 1;
-		weapon->bmp_row = 0;
-		weapon->damage = 10;
-		break;
-	}
-	default:
-		break;
-	}
-
-	return weapon;
-}
-
-
-Monster* CreateMonster(int x, int y, int monster_id)
-{
-	Monster* monster = new Monster();
-	monster->monsterID = monster_id;
-	monster->visible = true;
-	monster->task_complete = false;
-	monster->move = true;
-	monster->x = x;
-	monster->y = y;
-	monster->direction = UNIT_DIRECT_DOWN;
-	monster->vx = 10;
-	monster->vy = 10;
-	monster->state = UNIT_STATE_HOLD;
-	monster->frame_row = monster->direction;
-	monster->frame_column = 0;
-	monster->frame_sequence = NPC_FRAMES_HOLD;
-	monster->frame_count = NPC_FRAMES_HOLD_COUNT;
-	monster->frame_id = 0;
-	monster->next_conversation_id = 0;
-	//根据不同ID初始化不同的图像和对话
-	switch (monster_id)
-	{
-	case MONSTER_CAT_ID:
-	{
-		monster->img = bmp_monster1;
-		monster->conversations_before.push_back(L"喵喵喵。");
-		break;
-	}
-	default:
-		break;
-	}
-
-	return monster;
-}
-
-NewMonster* NewCreateMonster(int x, int y, int monster_id)
-{
-	NewMonster* monster = new NewMonster();
-	monster->monsterID = monster_id;
-	monster->visible = true;
-	monster->move = true;
-	monster->x = x;
-	monster->y = y;
-	monster->direction = UNIT_DIRECT_DOWN;
-	monster->vx = 1;
-	monster->vy = 1;
-	monster->state = MONSTER_STATE_MOVE;
-	monster->frame_row = monster->direction;
-	monster->frame_column = 0;
-	monster->frame_sequence = FRAMES_WALK;
-	monster->frame_count = FRAMES_WALK_COUNT;
-	monster->frame_id = 0;
-	monster->time_count = -1;
-	monster->time_max = 10; //强制初始化
-	monster->hp_visible = false;
-
-	switch (monster_id)
-	{
-	case MONSTER_CAT_ID:
-	{
-		monster->img = bmp_monster1;
-		break;
-	}
-	case MONSTER_CROW_ID:
-	{
-		monster->img = bmp_crow;
-		monster->bmp_size_x = 64;
-		monster->bmp_size_y = 64;
-		monster->size_x = 30;
-		monster->size_y = 30;
-		monster->time_stop = 50;
-		monster->time_max = 100;
-		monster->hp_max = 200;
-		monster->hp = monster->hp_max;
-		break;
-	}
-	case MONSTER_DUCK_ID:
-	{
-		monster->img = bmp_duck;
-		monster->bmp_size_x = 16;
-		monster->bmp_size_y = 16;
-		monster->size_x = 30;
-		monster->size_y = 30;
-		monster->time_stop = 50;
-		monster->time_max = 100;
-		monster->hp_max = 200;
-		monster->hp = monster->hp_max;
-		break;
-	}
-	case MONSTER_CHIKEN_ID:
-	{
-		monster->img = bmp_chiken;
-		monster->bmp_size_x = 16;
-		monster->bmp_size_y = 16;
-		monster->size_x = 30;
-		monster->size_y = 30;
-		monster->time_stop = 50;
-		monster->time_max = 100;
-		monster->hp_max = 50;
-		monster->hp = monster->hp_max;
-		break;
-	}
-	default:
-		break;
-	}
-
-
-	return monster;
-}
-
 
 // 初始化游戏场景函数
 void InitStage(HWND hWnd, int stageID)
@@ -1433,15 +1274,8 @@ void InitStage(HWND hWnd, int stageID)
 	if (stageID == STAGE_STARTMENU) {
 		currentStage->bg = bmp_Background;
 		currentStage->timerOn = false;
-		//显示开始界面的按钮
-		for (int i = 0; i < menu_buttons.size(); i++)
-		{
-			Button* button = menu_buttons[i];
-			if (button->buttonID == BUTTON_STARTGAME || button->buttonID == BUTTON_HELP)
-				button->visible = true;
-			else
-				button->visible = false;
-		}
+
+		current_buttons = &menu_buttons;
 	}
 	//TODO：添加多个游戏场景
 	else if (stageID == STAGE_1)
@@ -1453,27 +1287,11 @@ void InitStage(HWND hWnd, int stageID)
 		current_new_monsters = &new_monsters_main;
 		currentStage->timerOn = true;
 
-		//memcpy(new_map, new_map_stage1, sizeof(new_map));
-		//显示游戏界面的按钮
-		for (int i = 0; i < game_buttons.size(); i++)
-		{
-			if (false) //TODO：加载游戏界面需要的按钮
-				game_buttons[i]->visible = true;
-			else
-				game_buttons[i]->visible = false;
-		}
+		current_buttons = &void_buttons;
+
 		if (player == NULL)
 			player = CreatePlayer(400, 200);					//第一次调用：初始化player
 
-		//Monster的可见性
-		for (int i = 0; i < monsters.size(); i++)
-		{
-			Monster* monster = monsters[i];
-			if (false) //TODO：加载游戏界面需要的按钮
-				monster->visible = true;
-			else
-				monster->visible = false;
-		}
 	}
 	else if (stageID == STAGE_HOUSE_1)
 	{
@@ -1485,33 +1303,12 @@ void InitStage(HWND hWnd, int stageID)
 		current_new_monsters = &new_monsters_house_1;
 		currentStage->timerOn = true;
 
-		for (int i = 0; i < game_buttons.size(); i++)
-		{
-			Button* button = game_buttons[i];
-			if (false)
-				button->visible = true;
-			else
-				button->visible = false;
-		}
+		current_buttons = &void_buttons;
+
 		if (player == NULL)
 			player = CreatePlayer(200, 200);
 
-		if (current_new_monsters->size() == 0) {
-			//current_new_monsters->push_back(NewCreateMonster(495, 205, MONSTER_CROW_ID));
-			current_new_monsters->push_back(NewCreateMonster(350, 350, MONSTER_CHIKEN_ID));
-			current_new_monsters->push_back(NewCreateMonster(300, 300, MONSTER_CHIKEN_ID));
-		}
 
-		//Monster的可见性
-
-		/*for (int i = 0; i < current_new_monsters->size(); i++)
-		{
-			NewMonster* monster = (*current_new_monsters)[i];
-			if (true) //TODO：加载游戏界面需要的按钮
-				monster->visible = true;
-			else
-				monster->visible = false;
-		}*/
 	}
 	else if (stageID == STAGE_MEADOW) {
 		memcpy(current_bg, bg_meadow, sizeof(current_bg));
@@ -1521,24 +1318,11 @@ void InitStage(HWND hWnd, int stageID)
 		current_new_monsters = &new_monsters_meadow;
 		currentStage->timerOn = true;
 
-		for (int i = 0; i < game_buttons.size(); i++)
-		{
-			Button* button = game_buttons[i];
-			if (false)
-				button->visible = true;
-			else
-				button->visible = false;
-		}
+		current_buttons = &void_buttons;
+
 		if (player == NULL)
 			player = CreatePlayer(200, 200);
 
-		if (current_new_monsters->size() == 0) {
-			current_new_monsters->push_back(NewCreateMonster(495, 205, MONSTER_CROW_ID));
-			current_new_monsters->push_back(NewCreateMonster(350, 350, MONSTER_DUCK_ID));
-			current_new_monsters->push_back(NewCreateMonster(300, 300, MONSTER_DUCK_ID));
-			current_new_monsters->push_back(NewCreateMonster(300, 300, MONSTER_DUCK_ID));
-			current_new_monsters->push_back(NewCreateMonster(300, 300, MONSTER_DUCK_ID));
-		}
 	}
 
 	//刷新显示
@@ -1588,7 +1372,7 @@ void Paint(HWND hWnd)
 			RGB(255, 255, 255));
 
 		//button
-		for (int i = 0; i < menu_buttons.size(); i++)
+		/*for (int i = 0; i < menu_buttons.size(); i++)
 		{
 			Button* button = menu_buttons[i];
 			if (button->visible)
@@ -1617,7 +1401,7 @@ void Paint(HWND hWnd)
 				// 绘制文本在按钮的中心
 				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 			}
-		}
+		}*/
 	} else {
 		if (currentStage->stageID >= STAGE_1) //TODO：添加多个游戏场景
 		{
@@ -2337,7 +2121,7 @@ void Paint(HWND hWnd)
 
 
 		// 绘制按钮到缓存
-		for (int i = 0; i < game_buttons.size(); i++)
+		/*for (int i = 0; i < game_buttons.size(); i++)
 		{
 			Button* button = game_buttons[i];
 			if (button->visible)
@@ -2366,7 +2150,7 @@ void Paint(HWND hWnd)
 				// 绘制文本在按钮的中心
 				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 			}
-		}
+		}*/
 
 
 	}
@@ -2378,7 +2162,7 @@ void Paint(HWND hWnd)
 		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
 
 		//TODO button
-		for (int i = 0; i < stop_buttons.size(); i++)
+		/*for (int i = 0; i < stop_buttons.size(); i++)
 		{
 			Button* button = stop_buttons[i];
 			if (button->visible)
@@ -2407,7 +2191,7 @@ void Paint(HWND hWnd)
 				// 绘制文本在按钮的中心
 				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 			}
-		}
+		}*/
 	}
 
 	if (in_help) {
@@ -2437,7 +2221,7 @@ void Paint(HWND hWnd)
 		DrawTextW(hdc_memBuffer, failed_message.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
 
 		//TODO button
-		for (int i = 0; i < failed_buttons.size(); i++)
+		/*for (int i = 0; i < failed_buttons.size(); i++)
 		{
 			Button* button = failed_buttons[i];
 			if (button->visible)
@@ -2466,6 +2250,38 @@ void Paint(HWND hWnd)
 				// 绘制文本在按钮的中心
 				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 			}
+		}*/
+	}
+
+	//画按钮，最上层
+	for (int i = 0; i < current_buttons->size(); i++)
+	{
+		Button* button = current_buttons->at(i);
+		if (button->visible)
+		{
+			SelectObject(hdc_loadBmp, button->img);
+			TransparentBlt(
+				hdc_memBuffer, button->x, button->y,
+				button->width, button->height,
+				hdc_loadBmp, 0, 0, button->width, button->height,
+				RGB(255, 255, 255)
+			);
+
+			// 设置文本背景透明
+			SetBkMode(hdc_memBuffer, TRANSPARENT);
+
+			// 设置字体颜色（例如白色）
+			SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
+
+			// 定义文本绘制区域
+			RECT textRect;
+			textRect.left = button->x;
+			textRect.top = button->y;
+			textRect.right = button->x + button->width;
+			textRect.bottom = button->y + button->height;
+
+			// 绘制文本在按钮的中心
+			DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 		}
 	}
 

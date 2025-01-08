@@ -46,3 +46,5 @@ extern int reachable_house_1[20][28];
 extern int bg_meadow[20][28];
 extern int obj_meadow[20][28];
 extern int reachable_meadow[20][28];
+
+void InitMaps();

@@ -115,6 +115,22 @@ std::vector<NPC*> npcs_meadow;
 
 void InitNPCs()
 {
+
+	for (int i = 0; i < npcs_main.size(); i++) {
+		delete npcs_main[i];
+	}
+	npcs_main.clear();
+
+	for (int i = 0; i < npcs_main.size(); i++) {
+		delete npcs_house_1[i];
+	}
+	npcs_house_1.clear();
+
+	for (int i = 0; i < npcs_main.size(); i++) {
+		delete npcs_meadow[i];
+	}
+	npcs_meadow.clear();
+
 	npcs_main.push_back(CreateNPC(BLOCK_SIZE_X * 10, BLOCK_SIZE_Y * 18, NPC_MAN1_ID));
 
 	npcs_house_1.push_back(CreateNPC(BLOCK_SIZE_X * 10, BLOCK_SIZE_Y * 15, NPC_MAN2_ID));

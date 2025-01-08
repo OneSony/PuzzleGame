@@ -33,6 +33,12 @@
     <ClInclude Include="Items.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Monsters.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Buttons.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PuzzleGame.cpp">
@@ -42,6 +48,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="NPCs.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Monsters.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Buttons.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

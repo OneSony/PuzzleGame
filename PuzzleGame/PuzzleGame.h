@@ -231,42 +231,6 @@ struct Land
 	int frame_id;
 };
 
-struct Particle
-{
-
-	int offset_x;
-	int offset_y;
-	int vx;
-	int vy;
-	int life_max;
-	int life_count;
-
-	wstring text;
-};
-
-struct Effect {
-	int effectID;
-	int life_count;
-	int life_max;
-};
-
-struct Weapon
-{
-	int weaponID;	//武器编号
-	HBITMAP img;	//图片
-	bool move;
-
-	int bmp_size_x;
-	int bmp_size_y;
-
-	int size_x;
-	int size_y;
-
-	int bmp_row;
-	int bmp_col;
-
-	int damage;		//伤害值
-};
 
 // 玩家结构体
 struct Player
@@ -289,7 +253,6 @@ struct Player
 	double vy;		//速度y
 	int health;		//生命值
 
-	Weapon* weapon;	//武器
 };
 // 怪物结构体
 struct Monster
@@ -322,52 +285,6 @@ struct Monster
 	int next_conversation_id;						//下一次要说第几句台词
 };
 
-
-// 怪物结构体
-struct NewMonster
-{
-	int monsterID;			//怪物编号
-	HBITMAP img;			//图片
-	bool visible;			//是否可见
-	bool move;				//是否可以移动
-	bool hurt;
-
-	int frame_row;			//当前显示的是图像的第几行
-	int frame_column;		//当前显示的是图像的第几列
-
-	int* frame_sequence;	//当前的帧序列
-	int frame_count;		//帧序列的长度
-	int frame_id;			//当前显示的是帧序列的第几帧
-
-	double hp;
-	double hp_max;
-	bool hp_visible;
-
-	int state;		//单位状态
-	int direction;	//单位方向
-
-	int x;			//坐标x
-	int y;			//坐标y
-	double vx;		//速度x
-	double vy;		//速度y
-	int health;		//生命值
-
-	int bmp_size_x;
-	int bmp_size_y;
-
-	int size_x;
-	int size_y;
-
-	//动画相关
-	int time_count;
-	int time_stop;
-	int time_max;
-
-	vector<Particle*> particles;
-
-	vector<Effect*> effects;
-
-};
 
 
 struct Drawable {
@@ -407,8 +324,6 @@ void MouseMove(HWND hWnd, WPARAM wParam, LPARAM lParam);
 // 鼠标左键按下事件处理函数
 void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
-void AddEffect(NewMonster* monster, int effect_id);
-
 // 鼠标左键松开事件处理函数
 void LButtonUp(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
@@ -420,23 +335,14 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
 #pragma region 其它游戏状态处理函数声明
 
-// 添加按钮函数
-Button* CreateButton(int buttonID, HBITMAP img, int width, int height, int x, int y, wstring text);
-
-Particle* CreateParticle(wstring text);
-
-Effect* CreateEffect(int effect_id);
-
 // 添加单位函数
 Player* CreatePlayer(int x, int y);
-Weapon* CreateWeapon(int weapon_id);
-Monster* CreateMonster(int x, int y, int monster_id);
-
-Land* CreateLand(int land_id);
 
 
 // 初始化场景函数
 void InitStage(HWND hWnd, int stageID);
+void InitCurrent();
+void AllInit();
 
 
 //行为和交互函数：update***在定时器事件中以固定频率调用；handle***在发生键盘/鼠标事件时触发
