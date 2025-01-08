@@ -1,7 +1,7 @@
-#include "PuzzleGame.h"
 #include "Maps.h"
+#include "IDs.h"
 #include "Resource.h"
-#include<map>
+#include <map>
 
 
 //reachable 1都不可以走，2人不可以走，3 monster不可以走

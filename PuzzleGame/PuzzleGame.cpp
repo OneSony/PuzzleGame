@@ -2,40 +2,18 @@
 //
 #define _CRT_SECURE_NO_WARNINGS
 #include "PuzzleGame.h"
-#include "Maps.h"
-#include "NPCs.h"
-#include "Items.h"
-#include "Monsters.h"
-#include "Buttons.h"
-#include <string.h>
+#include <string>
 #include <set>
 #define MAX_LOADSTRING 100
 
-// 全局变量:
 HINSTANCE hInst;                                // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
 
-HBITMAP bmp_Background = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_BACKGROUND));
-HBITMAP bmp_Player = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_PLAYER));
+HBITMAP bmp_background = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_BACKGROUND));
 HBITMAP bmp_dialog = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_DIALOG));
 HBITMAP bmp_item_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_BG));
 HBITMAP bmp_item_name_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_NAME_BG));
-
-std::wstring failed_message;
-Stage* currentStage; //当前场景状态
-vector<NewMonster*>* current_new_monsters;
-vector<Button*>* current_buttons;
-vector<Button*>* buttons_before;
-vector<Item*> items;		//物品列表
-Item* current_item;	//当前物品
-Item* show_name_item;
-int item_name_fading_time;
-Player* player;		//玩家
-int current_reachable[20][28] = { 0 };
-int current_bg[20][28] = { 0 };
-int current_obj[20][28] = { 0 };
-std::vector<NPC*>* current_npcs;
 
 int mouseX = 0;
 int mouseY = 0;
@@ -49,20 +27,6 @@ bool in_stop = false;
 bool in_help = false;
 bool in_failed = false;
 const wchar_t* converstaion_content = nullptr;	//当前对话的内容
-
-//TODO 更多的全局变量
-int PLAYER_FRAMES_HOLD[] = { 0 };
-int PLAYER_FRAMES_HOLD_COUNT = sizeof(PLAYER_FRAMES_HOLD) / sizeof(int);
-int NPC_FRAMES_HOLD[] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3 };
-int NPC_FRAMES_HOLD_COUNT = sizeof(NPC_FRAMES_HOLD) / sizeof(int);
-int FRAMES_WALK[] = { 0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3, };
-int FRAMES_HOLD[] = { 0,0,0,0,0, };
-int FRAMES_HOLD_COUNT = sizeof(FRAMES_HOLD) / sizeof(int);
-int FRAMES_HOME[] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3 };
-int FRAMES_HOME_COUNT = sizeof(FRAMES_HOME) / sizeof(int);
-int FRAMES_WALK_COUNT = sizeof(FRAMES_WALK) / sizeof(int);
-int MONSTER_FRAMES[] = { 0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4 };
-int MONSTER_FRAMES_COUNT = sizeof(MONSTER_FRAMES) / sizeof(int);
 
 
 // 此代码模块中包含的函数的前向声明:
@@ -598,7 +562,7 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	UpdateNPCs(hWnd);
 	UpdateMonsters(hWnd);
 	UpdateMaps(hWnd);
-	UpdateTasks(hWnd);
+	UpdateTasks();
 	UpdateFailed(hWnd);
 	//刷新显示
 	InvalidateRect(hWnd, NULL, FALSE);
@@ -648,72 +612,6 @@ bool CanMove(int x_before, int y_before, int x_after, int y_after, int size_x, i
 	}
 	return true;
 }
-
-void UpdateTasks(HWND hWnd) {//顺便判断胜利和结束
-	
-	if (currentStage->stageID == STAGE_1) {
-
-	}
-	else if (currentStage->stageID == STAGE_HOUSE_1) {
-		for (int i = 0; i < current_new_monsters->size(); i++) {
-			if ((*current_new_monsters)[i]->visible == false) {
-				continue;
-			}
-
-			if ((*current_new_monsters)[i]->state != MONSTER_STATE_HOME) {
-				if (npcs_house_1.at(0)->task_state == 1 || npcs_house_1.at(0)->task_state == 3) {
-					npcs_house_1.at(0)->ToConversation(2);
-				}
-				return;
-			}
-		}
-		//完成任务
-
-		if (npcs_house_1.at(0)->task_state == 0) {
-			npcs_house_1.at(0)->ToConversation(1);
-		}
-		else if (npcs_house_1.at(0)->task_state == 2) {
-			npcs_house_1.at(0)->ToConversation(3);
-		}
-
-		
-		//如果没有item certificate再添加
-		bool has_certificate = false;
-		for (const auto& item : items) {
-			if (item->item_id == ITEM_CERTIFICATE) {
-				has_certificate = true;
-				break;
-			}
-		}
-		if (!has_certificate) {
-			items.push_back(new Item(ITEM_CERTIFICATE));
-			show_name_item = items.back();
-			item_name_fading_time = ITEM_NAME_FADING;
-		}
-
-
-		reachable_main[16][27] = 3;
-		reachable_main[15][27] = 3;
-		reachable_main[14][27] = 3;
-	}
-	else if (currentStage->stageID == STAGE_MEADOW) {
-		for (int i = 0; i < current_new_monsters->size(); i++) {
-			if ((*current_new_monsters)[i]->visible == false) {
-				continue;
-			}
-			if (((*current_new_monsters)[i]->monsterID == MONSTER_DUCK_ID && (*current_new_monsters)[i]->state != MONSTER_STATE_HOME) || ((*current_new_monsters)[i]->monsterID == MONSTER_CROW_ID && (*current_new_monsters)[i]->state == MONSTER_STATE_HOME)) {
-				//没完成任务
-				return;
-			}
-		}
-
-		if (npcs_main.at(1)->task_state != 2) {
-			npcs_main.at(1)->task_state = 2;
-			npcs_main.at(1)->next_conversation_id = 0;
-		}
-	}
-	
-};
 
 //更新玩家状态
 void UpdatePlayer(HWND hWnd) {
@@ -1155,13 +1053,6 @@ void UpdateMaps(HWND hWnd)
 
 }
 
-//
-//处理各种交互事件
-void UpdateEvents(HWND hWnd) 
-{
-
-}
-
 
 //抬起空格时触发，开启对话
 void HandleConversationEvents(HWND hWnd) 
@@ -1305,28 +1196,6 @@ void HandleHelpEvents(HWND hWnd)
 	InvalidateRect(hWnd, NULL, FALSE);
 }
 
-
-// 添加主角函数
-Player* CreatePlayer(int x, int y)
-{
-	Player* player = new Player();
-	player->img = bmp_Player;
-	player->x = x;
-	player->y = y;
-	player->direction = UNIT_DIRECT_RIGHT;
-	player->vx = 5;
-	player->vy = 5;
-
-	player->state = UNIT_STATE_HOLD;
-	player->frame_row = player->direction;
-	player->frame_column = 0;
-	player->frame_sequence = PLAYER_FRAMES_HOLD;
-	player->frame_count = PLAYER_FRAMES_HOLD_COUNT;
-	player->frame_id = 0;
-
-	return player;
-}
-
 // 初始化游戏场景函数
 void InitStage(HWND hWnd, int stageID)
 {
@@ -1337,7 +1206,6 @@ void InitStage(HWND hWnd, int stageID)
 	currentStage->stageID = stageID;
 
 	if (stageID == STAGE_STARTMENU) {
-		currentStage->bg = bmp_Background;
 		currentStage->timerOn = false;
 
 		current_buttons = &menu_buttons;
@@ -1429,76 +1297,16 @@ void Paint(HWND hWnd)
 
 	// 先分为开始菜单和游戏内部
 	if (currentStage->stageID == STAGE_STARTMENU) {
-		// 绘制背景到缓存
-		SelectObject(hdc_loadBmp, currentStage->bg);
+		SelectObject(hdc_loadBmp, bmp_background);
 		TransparentBlt(
 			hdc_memBuffer, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
 			hdc_loadBmp, 0, 0, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT,
 			RGB(255, 255, 255));
-
-		//button
-		/*for (int i = 0; i < menu_buttons.size(); i++)
-		{
-			Button* button = menu_buttons[i];
-			if (button->visible)
-			{
-				SelectObject(hdc_loadBmp, button->img);
-				TransparentBlt(
-					hdc_memBuffer, button->x, button->y,
-					button->width, button->height,
-					hdc_loadBmp, 0, 0, button->width, button->height,
-					RGB(255, 255, 255)
-				);
-
-				// 设置文本背景透明	
-				SetBkMode(hdc_memBuffer, TRANSPARENT);
-
-				// 设置字体颜色（例如白色）
-				SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
-
-				// 定义文本绘制区域
-				RECT textRect;
-				textRect.left = button->x;
-				textRect.top = button->y;
-				textRect.right = button->x + button->width;
-				textRect.bottom = button->y + button->height;
-
-				// 绘制文本在按钮的中心
-				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-			}
-		}*/
 	} else {
 		if (currentStage->stageID >= STAGE_1) //TODO：添加多个游戏场景
 		{
 
-
-
-			
-			/*
-
-			SelectObject(hdc_loadBmp, bmp_summer_land);
-			for (int i = 0; i < sizeof(new_map) / sizeof(new_map[0]); i++) {
-				for (int j = 0; j < sizeof(new_map[0]) / sizeof(new_map[0][0]); j++) {
-					
-					Land* land = new_map[i][j];
-
-					TransparentBlt(
-						hdc_memBuffer,
-						j * BLOCK_SIZE_X, i * BLOCK_SIZE_Y,							// 界面上起始绘制点
-						BLOCK_SIZE_X, BLOCK_SIZE_Y,									// 界面上绘制宽度高度
-						hdc_loadBmp,
-						land->bmp_col * land->bmp_size_x,						// 位图上起始绘制点
-						land->bmp_row * land->bmp_size_y,
-						land->bmp_size_x, land->bmp_size_y,					// 位图上绘制宽度高度
-						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
-				}
-			}
-
-
-			*/
-
 			//首先绘制背景，背景只有一个块
-			//需要一个ID->draw的映射
 			for (int i = 0; i < sizeof(current_bg) / sizeof(current_bg[0]); i++) {
 				for (int j = 0; j < sizeof(current_bg[0]) / sizeof(current_bg[0][0]); j++) {
 
@@ -1516,39 +1324,6 @@ void Paint(HWND hWnd)
 						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
 				}
 			}
-
-			
-			//绘制地图
-			/*SelectObject(hdc_loadBmp, bmp_map);
-			for (int i = 0; i < sizeof(current_map) / sizeof(current_map[0]); i++) {
-				for (int j = 0; j < sizeof(current_map[0]) / sizeof(current_map[0][0]); j++) {
-
-					int bmp_x = (0 % 4) * BLOCK_BITMAP_SIZE_X;
-					int bmp_y = (0 / 4) * BLOCK_BITMAP_SIZE_Y;
-
-					if (landValues.count(current_map[i][j]) == 0) { //不是沙子默认画0
-						bmp_x = (0 % 4) * BLOCK_BITMAP_SIZE_X;
-						bmp_y = (0 / 4) * BLOCK_BITMAP_SIZE_Y;
-					}
-					else
-					{
-						bmp_x = (current_map[i][j] % 4) * BLOCK_BITMAP_SIZE_X;
-						bmp_y = (current_map[i][j] / 4) * BLOCK_BITMAP_SIZE_Y;
-					}
-
-					TransparentBlt(
-						hdc_memBuffer,
-						j * BLOCK_SIZE_X, i * BLOCK_SIZE_Y,							// 界面上起始绘制点
-						BLOCK_SIZE_X, BLOCK_SIZE_Y,									// 界面上绘制宽度高度
-						hdc_loadBmp,
-						bmp_x,						// 位图上起始绘制点
-						bmp_y,
-						BLOCK_BITMAP_SIZE_X, BLOCK_BITMAP_SIZE_Y,					// 位图上绘制宽度高度
-						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
-				}
-			}*/
-
-			
 
 			vector<Drawable*> drawables;
 
@@ -1580,30 +1355,6 @@ void Paint(HWND hWnd)
 				}
 			}
 
-			
-			/*for (int i = 0; i < sizeof(current_map) / sizeof(current_map[0]); i++) {
-				for (int j = 0; j < sizeof(current_map[0]) / sizeof(current_map[0][0]); j++) {
-
-					if (landValues.count(current_map[i][j]) != 0) {
-						continue;
-					}else{
-
-						Drawable* tile = new Drawable();
-						tile->img = bmp_map;
-						tile->x = j * BLOCK_SIZE_X;
-						tile->y = i * BLOCK_SIZE_Y;
-						tile->size_x = BLOCK_SIZE_X;
-						tile->size_y = BLOCK_SIZE_Y;
-						tile->bmp_x = (current_map[i][j] % 4) * BLOCK_BITMAP_SIZE_X;
-						tile->bmp_y = (current_map[i][j] / 4) * BLOCK_BITMAP_SIZE_Y;
-						tile->bmp_size_x = BLOCK_BITMAP_SIZE_X;
-						tile->bmp_size_y = BLOCK_BITMAP_SIZE_Y;
-						tile->transparentColor = RGB(91, 179, 142);
-						drawables.push_back(tile);
-					}
-				}
-			}*/
-			
 
 
 			// 绘制玩家
@@ -1885,219 +1636,6 @@ void Paint(HWND hWnd)
 				}
 			}
 
-
-
-
-
-
-
-
-			/*
-
-			//绘制地图
-			SelectObject(hdc_loadBmp, bmp_map);
-			for (int i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
-				for (int j = 0; j < sizeof(map[0]) / sizeof(map[0][0]); j++) {
-					TransparentBlt(
-						hdc_memBuffer,
-						j * BLOCK_SIZE_X, i * BLOCK_SIZE_Y,							// 界面上起始绘制点
-						BLOCK_SIZE_X, BLOCK_SIZE_Y,									// 界面上绘制宽度高度
-						hdc_loadBmp,
-						(map[i][j] % 4) * BLOCK_BITMAP_SIZE_X,						// 位图上起始绘制点
-						(map[i][j] / 4) * BLOCK_BITMAP_SIZE_Y,
-						BLOCK_BITMAP_SIZE_X, BLOCK_BITMAP_SIZE_Y,					// 位图上绘制宽度高度
-						RGB(255, 255, 255));										// 位图上的哪个颜色会被视为背景
-				}
-			}
-
-			// 绘制玩家
-			// 图像坐标是中心
-			SelectObject(hdc_loadBmp, player->img);
-			TransparentBlt(
-				hdc_memBuffer,
-				player->x - 0.5 * HUMAN_SIZE_X, player->y - 0.5 * HUMAN_SIZE_Y,			// 界面上起始绘制点
-				HUMAN_SIZE_X, HUMAN_SIZE_Y,											// 界面上绘制宽度高度
-				hdc_loadBmp,
-				HUMAN_BITMAP_SIZE_X * player->frame_column, HUMAN_BITMAP_SIZE_Y * player->frame_row,	// 位图上起始绘制点
-				HUMAN_BITMAP_SIZE_X, HUMAN_BITMAP_SIZE_Y,											// 位图上绘制宽度高度
-				RGB(255, 255, 255)
-			);
-
-			if (player->weapon != NULL) {
-
-				Weapon* weapon = player->weapon;
-				SelectObject(hdc_loadBmp, weapon->img);*/
-
-				//TODO
-
-				/*
-				TransparentBlt(
-					hdc_memBuffer,
-					player->x - 0.5 * weapon->size_x, player->y - 0.5 * HUMAN_SIZE_Y - 0.5* weapon->size_y,			// 界面上起始绘制点
-					weapon->size_x, weapon->size_y,											// 界面上绘制宽度高度
-					hdc_loadBmp,
-					weapon->bmp_size_x * weapon->bmp_col, weapon->bmp_size_y * weapon->bmp_row,	// 位图上起始绘制点
-					weapon->bmp_size_x, weapon->bmp_size_y,											// 位图上绘制宽度高度
-					RGB(255, 255, 255)
-				);
-				*/
-
-			/*
-
-			}
-
-
-			//绘制npc
-			for (int i = 0; i < npcs.size(); i++) {
-				if (npcs[i]->visible) {
-					SelectObject(hdc_loadBmp, npcs[i]->img);
-					TransparentBlt(
-						hdc_memBuffer,
-						npcs[i]->x - 0.5 * HUMAN_SIZE_X, npcs[i]->y - 0.5 * HUMAN_SIZE_Y,			// 界面上起始绘制点
-						HUMAN_SIZE_X, HUMAN_SIZE_Y,											// 界面上绘制宽度高度
-						hdc_loadBmp,
-						HUMAN_BITMAP_SIZE_X * npcs[i]->frame_column, HUMAN_BITMAP_SIZE_Y * npcs[i]->frame_row,	// 位图上起始绘制点
-						HUMAN_BITMAP_SIZE_X, HUMAN_BITMAP_SIZE_Y,											// 位图上绘制宽度高度
-						RGB(255, 255, 255)
-					);
-				}
-			}
-			//绘制怪物
-			for (int i = 0; i < monsters.size(); i++) {
-				if (monsters[i]->visible) {
-					SelectObject(hdc_loadBmp, monsters[i]->img);
-					TransparentBlt(
-						hdc_memBuffer,
-						monsters[i]->x - 0.5 * MOSTER_SIZE_X, monsters[i]->y - 0.5 * MOSTER_SIZE_Y,		// 界面上起始绘制点
-						MOSTER_SIZE_X, MOSTER_SIZE_Y,											// 界面上绘制宽度高度
-						hdc_loadBmp,
-						MOSTER_BITMAP_SIZE_X * monsters[i]->frame_column, MOSTER_BITMAP_SIZE_Y * monsters[i]->frame_row,	// 位图上起始绘制点
-						MOSTER_BITMAP_SIZE_X, MOSTER_BITMAP_SIZE_Y,											// 位图上绘制宽度高度
-						RGB(255, 255, 255)
-					);
-
-				}
-			}
-
-			for (int i = 0; i < current_new_monsters->size(); i++) {
-				if ((*current_new_monsters)[i]->visible) {
-
-					NewMonster* monster = (*current_new_monsters)[i];
-					SelectObject(hdc_loadBmp, monster->img);
-					TransparentBlt(
-						hdc_memBuffer,
-						monster->x - 0.5 * monster->size_x, monster->y - 0.5 * monster->size_y,		// 界面上起始绘制点
-						monster->size_x, monster->size_y,											// 界面上绘制宽度高度
-						hdc_loadBmp,
-						monster->bmp_size_x* monster->frame_column, monster->bmp_size_y* monster->frame_row,	// 位图上起始绘制点
-						monster->bmp_size_x, monster->bmp_size_y,											// 位图上绘制宽度高度
-						RGB(255, 255, 255)
-					);
-
-					//受伤动画
-					if (current_new_monsters->at(i)->hurt) {
-
-						char buff[256];
-						sprintf(buff, "hurt %d\n",i);
-						OutputDebugStringA(buff);
-
-						// 创建怪物图像的副本
-						HDC hdc_monsterCopy = CreateCompatibleDC(hdc_memBuffer);
-						HBITMAP hbm_monsterCopy = CreateCompatibleBitmap(hdc_memBuffer, monster->bmp_size_x, monster->bmp_size_y);
-						SelectObject(hdc_monsterCopy, hbm_monsterCopy);
-
-						// 将原始怪物图像拷贝到副本
-						BitBlt(hdc_monsterCopy, 0, 0, monster->bmp_size_x, monster->bmp_size_y, hdc_loadBmp,
-							monster->bmp_size_x* monster->frame_column, monster->bmp_size_y* monster->frame_row, SRCCOPY);
-
-						
-						// 将所有非透明像素替换为红色
-						for (int y = 0; y < monster->bmp_size_y; y++) {
-							for (int x = 0; x < monster->bmp_size_x; x++) {
-								COLORREF pixelColor = GetPixel(hdc_monsterCopy, x, y);
-								if (pixelColor != RGB(255, 255, 255)) { // 忽略透明背景
-									SetPixel(hdc_monsterCopy, x, y, RGB(255, 0, 0)); // 将像素设置为红色
-								}
-							}
-						}
-						
-
-						// 绘制纯红色的怪物图像
-						TransparentBlt(
-							hdc_memBuffer,
-							monster->x - 0.5 * monster->size_x, monster->y - 0.5 * monster->size_y,
-							monster->size_x, monster->size_y,
-							hdc_monsterCopy,
-							0, 0,
-							monster->bmp_size_x, monster->bmp_size_y,
-							RGB(255, 255, 255)
-						);
-
-						// 清理资源
-						DeleteObject(hbm_monsterCopy);
-						DeleteDC(hdc_monsterCopy);
-
-						current_new_monsters->at(i)->hurt = false;
-					}
-
-
-					//粒子动画
-					//NewMonster* monster = (*current_new_monsters)[i];
-					for (int j = 0; j < monster->particles.size(); j++) {
-						char buff[256];
-						sprintf(buff, "text: %d\n", j);
-						OutputDebugStringA(buff);
-						Particle* particle = monster->particles[j];
-
-						RECT textRect;
-						textRect.left = monster->x - monster->size_x * 2;
-						textRect.top = monster->y - monster->size_y - 16 + particle->offset_y; //?
-						textRect.right = monster->x + monster->size_x * 2;
-						textRect.bottom = monster->y - monster->size_y*0.5 + particle->offset_y;
-
-						// 绘制文本在按钮的中心
-						SetBkMode(hdc_memBuffer, TRANSPARENT);
-						SetTextColor(hdc_memBuffer, RGB(255, 0, 0));
-						DrawText(hdc_memBuffer, particle->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-						SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
-						//DrawCenteredText(hdc_loadBmp, particle->text, monster->x, monster->y - monster->size_y, 16, RGB(255, 0, 0));
-					}
-
-					if (monster->hp_visible) {
-						RECT hpRect_bg;
-						hpRect_bg.left = monster->x - HP_WIDTH * 0.5;
-						hpRect_bg.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
-						hpRect_bg.right = monster->x + HP_WIDTH * 0.5;
-						hpRect_bg.bottom = monster->y - monster->size_y * 0.5;
-
-						if (monster->hp <= 0) {
-							monster->hp = 0;
-						}
-
-						RECT hpRect_hp;
-						hpRect_hp.left = monster->x - HP_WIDTH * 0.5;
-						hpRect_hp.top = monster->y - monster->size_y * 0.5 - HP_HEIGHT;
-						hpRect_hp.right = monster->x - HP_WIDTH * 0.5 + (monster->hp / monster->hp_max) * HP_WIDTH;
-						hpRect_hp.bottom = monster->y - monster->size_y * 0.5;
-
-
-						// 黑色背景矩形
-						HBRUSH blackBrush = CreateSolidBrush(RGB(0, 0, 0));  // 创建黑色画刷
-						FillRect(hdc_memBuffer, &hpRect_bg, blackBrush);               // 填充背景矩形
-						DeleteObject(blackBrush);                            // 释放黑色画刷
-
-						// 红色血量矩形
-						HBRUSH redBrush = CreateSolidBrush(RGB(255, 0, 0));  // 创建红色画刷
-						FillRect(hdc_memBuffer, &hpRect_hp, redBrush);                 // 填充血量矩形
-						DeleteObject(redBrush);                              // 释放红色画刷
-
-					}
-				}
-			}
-
-			*/
-
 			//画物品栏
 
 			//画背景
@@ -2126,7 +1664,7 @@ void Paint(HWND hWnd)
 			int item_width = ITEM_SIZE_X;
 			int item_height = ITEM_SIZE_Y;
 
-			//画物品！！TODO
+			//画物品
 			for (int i = 0; i < items.size(); i++) {
 				SelectObject(hdc_loadBmp, items[i]->img);
 				int xPos = startX + i * (width + margin);  // 计算水平位置
@@ -2201,91 +1739,25 @@ void Paint(HWND hWnd)
 			}
 		}
 
-
-		// 绘制按钮到缓存
-		/*for (int i = 0; i < game_buttons.size(); i++)
-		{
-			Button* button = game_buttons[i];
-			if (button->visible)
-			{
-				SelectObject(hdc_loadBmp, button->img);
-				TransparentBlt(
-					hdc_memBuffer, button->x, button->y,
-					button->width, button->height,
-					hdc_loadBmp, 0, 0, button->width, button->height,
-					RGB(255, 255, 255)
-				);
-
-				// 设置文本背景透明
-				SetBkMode(hdc_memBuffer, TRANSPARENT);
-
-				// 设置字体颜色（例如白色）
-				SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
-
-				// 定义文本绘制区域
-				RECT textRect;
-				textRect.left = button->x;
-				textRect.top = button->y;
-				textRect.right = button->x + button->width;
-				textRect.bottom = button->y + button->height;
-
-				// 绘制文本在按钮的中心
-				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-			}
-		}*/
-
-
 	}
 
 
 	//最后加上透明度
 	if (in_stop) {
-		SelectObject(hdc_loadBmp, bmp_Background);
+		SelectObject(hdc_loadBmp, bmp_background);
 		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
-
-		//TODO button
-		/*for (int i = 0; i < stop_buttons.size(); i++)
-		{
-			Button* button = stop_buttons[i];
-			if (button->visible)
-			{
-				SelectObject(hdc_loadBmp, button->img);
-				TransparentBlt(
-					hdc_memBuffer, button->x, button->y,
-					button->width, button->height,
-					hdc_loadBmp, 0, 0, button->width, button->height,
-					RGB(255, 255, 255)
-				);
-
-				// 设置文本背景透明
-				SetBkMode(hdc_memBuffer, TRANSPARENT);
-
-				// 设置字体颜色（例如白色）
-				SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
-
-				// 定义文本绘制区域
-				RECT textRect;
-				textRect.left = button->x;
-				textRect.top = button->y;
-				textRect.right = button->x + button->width;
-				textRect.bottom = button->y + button->height;
-
-				// 绘制文本在按钮的中心
-				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-			}
-		}*/
 	}
 
 	if (in_help) {
 		//TODO
 
-		SelectObject(hdc_loadBmp, bmp_Background);
+		SelectObject(hdc_loadBmp, bmp_background);
 		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
 
 	}
 
 	if (in_failed) {
-		SelectObject(hdc_loadBmp, bmp_Background);
+		SelectObject(hdc_loadBmp, bmp_background);
 		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
 
 		HFONT hFont = CreateFontW(
@@ -2301,38 +1773,6 @@ void Paint(HWND hWnd)
 		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
 		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
 		DrawTextW(hdc_memBuffer, failed_message.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
-
-		//TODO button
-		/*for (int i = 0; i < failed_buttons.size(); i++)
-		{
-			Button* button = failed_buttons[i];
-			if (button->visible)
-			{
-				SelectObject(hdc_loadBmp, button->img);
-				TransparentBlt(
-					hdc_memBuffer, button->x, button->y,
-					button->width, button->height,
-					hdc_loadBmp, 0, 0, button->width, button->height,
-					RGB(255, 255, 255)
-				);
-
-				// 设置文本背景透明
-				SetBkMode(hdc_memBuffer, TRANSPARENT);
-
-				// 设置字体颜色（例如白色）
-				SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
-
-				// 定义文本绘制区域
-				RECT textRect;
-				textRect.left = button->x;
-				textRect.top = button->y;
-				textRect.right = button->x + button->width;
-				textRect.bottom = button->y + button->height;
-
-				// 绘制文本在按钮的中心
-				DrawText(hdc_memBuffer, button->text.c_str(), -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-			}
-		}*/
 	}
 
 	//画按钮，最上层

@@ -1,7 +1,17 @@
-#pragma once Monsters
-#define _CRT_SECURE_NO_WARNINGS
-#include "PuzzleGame.h"
+#pragma once
 #include "Particles.h"
+#include <vector>
+#include <windows.h>
+
+extern int FRAMES_WALK[];
+extern int FRAMES_WALK_COUNT;
+
+extern int FRAMES_HOLD[];
+extern int FRAMES_HOLD_COUNT;
+
+extern int FRAMES_HOME[];
+extern int FRAMES_HOME_COUNT;
+
 
 struct Effect {
 	int effectID;
@@ -50,18 +60,18 @@ struct NewMonster
 	int time_stop;
 	int time_max;
 
-	vector<Particle*> particles;
-	vector<FigParticle*> fig_particles;
+	std::vector<Particle*> particles;
+	std::vector<FigParticle*> fig_particles;
 
-	vector<Effect*> effects;
+	std::vector<Effect*> effects;
 
 };
 
 
 
-extern vector<NewMonster*> new_monsters_main;
-extern vector<NewMonster*> new_monsters_house_1;
-extern vector<NewMonster*> new_monsters_meadow;
+extern std::vector<NewMonster*> new_monsters_main;
+extern std::vector<NewMonster*> new_monsters_house_1;
+extern std::vector<NewMonster*> new_monsters_meadow;
 
 Effect* CreateEffect(int effect_id);
 NewMonster* NewCreateMonster(int x, int y, int monster_id);

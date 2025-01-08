@@ -1,5 +1,7 @@
-#pragma once Items
-#include "PuzzleGame.h"
+#pragma once
+#include <vector>
+#include <string>
+#include <windows.h>
 
 #define ITEM_SIZE_X 32
 #define ITEM_SIZE_Y 32

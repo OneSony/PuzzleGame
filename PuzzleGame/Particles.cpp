@@ -1,5 +1,6 @@
-#include "PuzzleGame.h"
 #include "Particles.h"
+#include "IDs.h"
+#include "Resource.h"
 #include <map>
 
 std::map<int, HBITMAP> fig_particle_hitmap = {

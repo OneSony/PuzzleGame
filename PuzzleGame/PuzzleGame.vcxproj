@@ -140,11 +140,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Buttons.h" />
+    <ClInclude Include="IDs.h" />
     <ClInclude Include="Items.h" />
     <ClInclude Include="Maps.h" />
     <ClInclude Include="Monsters.h" />
     <ClInclude Include="NPCs.h" />
     <ClInclude Include="Particles.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Progress.h" />
     <ClInclude Include="PuzzleGame.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
@@ -156,6 +159,8 @@
     <ClCompile Include="Monsters.cpp" />
     <ClCompile Include="NPCs.cpp" />
     <ClCompile Include="Particles.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Progress.cpp" />
     <ClCompile Include="PuzzleGame.cpp" />
   </ItemGroup>
   <ItemGroup>

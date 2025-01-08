@@ -1,6 +1,10 @@
-#include "PuzzleGame.h"
 #include "NPCs.h"
-#include "Maps.h"
+#include "IDs.h"
+#include "Resource.h"
+#include <map>
+
+int NPC_FRAMES_HOLD[] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3 };
+int NPC_FRAMES_HOLD_COUNT = sizeof(NPC_FRAMES_HOLD) / sizeof(int);
 
 std::map<int, HBITMAP> npc_hitmap = {
 	{ NPC_MAN1_ID, LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_NPC_MAN1))},
@@ -35,7 +39,7 @@ NPC::NPC(int x, int y, int npc_id)
 		this->size_x = 19;
 		this->size_y = 26;
 
-		vector<const wchar_t*> conversations_1;
+		std::vector<const wchar_t*> conversations_1;
 		conversations_1.push_back(L"你是新来的村长吗？");
 		conversations_1.push_back(L"你去探望一下绿色房子里的人吧");
 		this->conversations.push_back(conversations_1);
@@ -48,19 +52,19 @@ NPC::NPC(int x, int y, int npc_id)
 		this->size_x = 19;
 		this->size_y = 26;
 
-		vector<const wchar_t*> conversations_1;
+		std::vector<const wchar_t*> conversations_1;
 		conversations_1.push_back(L"可以帮我把鸡赶回到地毯上吗");
 		this->conversations.push_back(conversations_1);
 
-		vector<const wchar_t*> conversations_2;
+		std::vector<const wchar_t*> conversations_2;
 		conversations_2.push_back(L"谢谢你！");
 		this->conversations.push_back(conversations_2);
 
-		vector<const wchar_t*> conversations_3;
+		std::vector<const wchar_t*> conversations_3;
 		conversations_3.push_back(L"你又把它们赶下来干嘛！");
 		this->conversations.push_back(conversations_3);
 
-		vector<const wchar_t*> conversations_4;
+		std::vector<const wchar_t*> conversations_4;
 		conversations_4.push_back(L"它们还是在地毯上比较好");
 		this->conversations.push_back(conversations_4);
 
@@ -72,18 +76,18 @@ NPC::NPC(int x, int y, int npc_id)
 		this->size_x = 19;
 		this->size_y = 26;
 
-		vector<const wchar_t*> conversations_1;
+		std::vector<const wchar_t*> conversations_1;
 		conversations_1.push_back(L"你是谁？");
 		conversations_1.push_back(L"我不认识你，你不可以过去！");
 		this->conversations.push_back(conversations_1);
 
-		vector<const wchar_t*> conversations_2;
+		std::vector<const wchar_t*> conversations_2;
 		conversations_2.push_back(L"原来你是新来的村长");
 		conversations_2.push_back(L"这边是牧场，但是出了点问题");
 		conversations_2.push_back(L"你去看看吧");
 		this->conversations.push_back(conversations_2);
 
-		vector<const wchar_t*> conversations_3;
+		std::vector<const wchar_t*> conversations_3;
 		conversations_3.push_back(L"谢谢你！");
 		this->conversations.push_back(conversations_3);
 
@@ -95,7 +99,7 @@ NPC::NPC(int x, int y, int npc_id)
 		this->size_x = 19;
 		this->size_y = 26;
 
-		vector<const wchar_t*> conversations_1;
+		std::vector<const wchar_t*> conversations_1;
 		conversations_1.push_back(L"快来帮帮我吧，鸭圈里面进了乌鸦");
 		conversations_1.push_back(L"帮我把乌鸦赶出来");
 		conversations_1.push_back(L"这个弹弓你试试");
@@ -103,7 +107,7 @@ NPC::NPC(int x, int y, int npc_id)
 		this->conversations.push_back(conversations_1);
 
 
-		vector<const wchar_t*> conversations_2;
+		std::vector<const wchar_t*> conversations_2;
 		conversations_2.push_back(L"谢谢你把乌鸦赶走");
 		this->conversations.push_back(conversations_2);
 

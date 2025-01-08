@@ -1,5 +1,7 @@
-#pragma once Particles
-#include "PuzzleGame.h"
+#pragma once
+#include <vector>
+#include <string>
+#include <windows.h>
 
 class Particle
 {
@@ -11,9 +13,9 @@ public:
 	int life_max;
 	int life_count;
 
-	wstring text;
+	std::wstring text;
 
-	Particle(wstring text) {
+	Particle(std::wstring text) {
 		this->text = text;
 		this->offset_x = 0;
 		this->offset_y = 0;
@@ -39,7 +41,7 @@ public:
 	int size_x;
 	int size_y;
 
-	vector<int>* frame_sequence = nullptr;	//当前的帧序列
+	std::vector<int>* frame_sequence = nullptr;	//当前的帧序列
 	int frame_count;		//帧序列的长度
 	int frame_id;			//当前显示的是帧序列的第几帧
 

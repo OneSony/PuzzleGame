@@ -1,14 +1,16 @@
-#include "PuzzleGame.h"
+#include "Buttons.h"
+#include "IDs.h"
+#include "Resource.h"
 #include <map>
 
-vector<Button*> menu_buttons;
-vector<Button*> stop_buttons;
-vector<Button*> failed_buttons;
-vector<Button*> void_buttons;
+std::vector<Button*> menu_buttons;
+std::vector<Button*> stop_buttons;
+std::vector<Button*> failed_buttons;
+std::vector<Button*> void_buttons;
 
 HBITMAP bmp_button = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_BTN_BG));
 
-Button* CreateButton(int buttonID, HBITMAP img, int width, int height, int x, int y, wstring text)
+Button* CreateButton(int buttonID, HBITMAP img, int width, int height, int x, int y, std::wstring text)
 {
 	Button* button = new Button();
 	button->buttonID = buttonID;

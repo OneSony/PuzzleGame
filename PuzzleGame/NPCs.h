@@ -1,6 +1,8 @@
-#pragma once NPCs
-#include "PuzzleGame.h"
+#pragma once
 #include "Particles.h"
+#include <vector>
+#include <string>
+#include <windows.h>
 // NPC结构体
 class NPC
 {
@@ -30,13 +32,13 @@ public:
 	int size_x;
 	int size_y;
 
-	vector<vector<const wchar_t*>> conversations;
+	std::vector<std::vector<const wchar_t*>> conversations;
 
-	vector<const wchar_t*> conversations_before;	//任务完成前NPC的台词
-	vector<const wchar_t*> conversations_after;		//任务完成后NPC的台词
+	std::vector<const wchar_t*> conversations_before;	//任务完成前NPC的台词
+	std::vector<const wchar_t*> conversations_after;		//任务完成后NPC的台词
 	int next_conversation_id;				//NPC下一次要说第几句台词
 
-	vector<FigParticle*> fig_particles;
+	std::vector<FigParticle*> fig_particles;
 
 	NPC(int x, int y, int npc_id);
 	void AddFigParticle(int particle_id);

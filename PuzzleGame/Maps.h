@@ -1,6 +1,6 @@
-#pragma once Maps
-
+#pragma once
 #include <map>
+#include <windows.h>
 class Obj_info
 {
 public:

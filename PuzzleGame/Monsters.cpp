@@ -1,5 +1,18 @@
 #include "Monsters.h"
+#include "IDs.h"
+#include "Resource.h"
+#include "Windows.h"
 #include <map>
+
+
+int FRAMES_WALK[] = { 0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3, };
+int FRAMES_WALK_COUNT = sizeof(FRAMES_WALK) / sizeof(int);
+
+int FRAMES_HOLD[] = { 0,0,0,0,0, };
+int FRAMES_HOLD_COUNT = sizeof(FRAMES_HOLD) / sizeof(int);
+
+int FRAMES_HOME[] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3 };
+int FRAMES_HOME_COUNT = sizeof(FRAMES_HOME) / sizeof(int);
 
 
 std::map<int, HBITMAP> monster_hitmap = {
@@ -109,9 +122,9 @@ void AddEffect(NewMonster* monster, int effect_id) {
 }
 
 
-vector<NewMonster*> new_monsters_main;
-vector<NewMonster*> new_monsters_house_1;
-vector<NewMonster*> new_monsters_meadow;
+std::vector<NewMonster*> new_monsters_main;
+std::vector<NewMonster*> new_monsters_house_1;
+std::vector<NewMonster*> new_monsters_meadow;
 
 void InitMonsters() {
 

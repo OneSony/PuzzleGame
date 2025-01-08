@@ -1,5 +1,6 @@
-#include "PuzzleGame.h"
 #include "Items.h"
+#include "IDs.h"
+#include "Resource.h"
 #include <map>
 
 std::map<int, HBITMAP> item_hitmap = {
