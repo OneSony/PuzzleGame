@@ -2001,7 +2001,7 @@ void Paint(HWND hWnd)
 				0, WINDOW_HEIGHT - DIALOG_SIZE_Y - 38, WINDOW_WIDTH - 16, DIALOG_SIZE_Y,					// 界面上绘制位置
 				hdc_loadBmp,
 				0, 0, DIALOG_BITMAP_SIZE_X, DIALOG_BITMAP_SIZE_Y,	// 位图上绘制位置
-				RGB(255, 255, 255)
+				RGB(255, 0, 0)
 			);
 			//绘制文字
 			HFONT hFont = CreateFontW(
