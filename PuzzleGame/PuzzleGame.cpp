@@ -544,7 +544,6 @@ void TimerUpdate(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	UpdateMonsters(hWnd);
 	UpdateMaps(hWnd);
 	ScanTasks(hWnd);
-	UpdateFailed(hWnd);
 	UpdateHolding(hWnd);
 	UpdateProgress();
 
@@ -1082,20 +1081,22 @@ void ScanTasks(HWND hWnd) {//顺便判断胜利和结束
 
 	}
 	else if (currentStage->stageID == STAGE_HOUSE_1) {
-		
+
+		bool homed_flag = true;
 		for (int i = 0; i < current_new_monsters->size(); i++) {
 			if ((*current_new_monsters)[i]->visible == false) {
 				continue;
 			}
 
 			if ((*current_new_monsters)[i]->state != MONSTER_STATE_HOME) {
-
 				progress_list.push_back(PRO_CHICKEN_UNHOMED);
-				return;
+				homed_flag = false;
 			}
 		}
 		//完成任务
-		progress_list.push_back(PRO_CHICKEN_HOMED);
+		if (homed_flag == true) {
+			progress_list.push_back(PRO_CHICKEN_HOMED);
+		}
 
 		if (current_npcs->at(0)->task_state == 1 &&
 			//current_npcs->at(0)->next_conversation_id == current_npcs->at(0)->conversations[current_npcs->at(0)->task_state].size() - 1) {
@@ -1109,6 +1110,23 @@ void ScanTasks(HWND hWnd) {//顺便判断胜利和结束
 			progress_list.push_back(PRO_GET_KEY);
 		}
 
+
+		//失败判定
+		for (int i = 0; i < current_new_monsters->size(); i++) {
+			NewMonster* monster = current_new_monsters->at(i);
+
+			if (monster->visible == false && monster->monsterID == MONSTER_CHIKEN_ID) {
+				//鸡死掉了
+				HandleFailedEvents(hWnd, L"不能把鸡杀了！");
+			}
+
+			if (monster->visible == true && (monster->x / BLOCK_SIZE_X == 6 || monster->x / BLOCK_SIZE_X == 7) && monster->y / BLOCK_SIZE_Y == 16) {
+				//到门口了
+				HandleFailedEvents(hWnd, L"鸡跑出去了！");
+			}
+
+		}
+
 	}
 	else if (currentStage->stageID == STAGE_MEADOW) {
 
@@ -1119,19 +1137,39 @@ void ScanTasks(HWND hWnd) {//顺便判断胜利和结束
 			}
 		}
 
+		bool homed_flag = true;
 		for (int i = 0; i < current_new_monsters->size(); i++) {
 			if ((*current_new_monsters)[i]->visible == false) {
 				continue;
 			}
 			if (((*current_new_monsters)[i]->monsterID == MONSTER_DUCK_ID && (*current_new_monsters)[i]->state != MONSTER_STATE_HOME) || ((*current_new_monsters)[i]->monsterID == MONSTER_CROW_ID && (*current_new_monsters)[i]->state == MONSTER_STATE_HOME)) {
 				//没完成任务
-				
 				progress_list.push_back(PRO_DUCK_UNHOMED);
-				return;
+				homed_flag = false;
 			}
 		}
+		if (homed_flag == true) {
+			progress_list.push_back(PRO_DUCK_HOMED);
+		}
 
-		progress_list.push_back(PRO_DUCK_HOMED);
+		//失败判定
+		for (int i = 0; i < current_new_monsters->size(); i++) {
+			NewMonster* monster = current_new_monsters->at(i);
+
+			if (monster->visible == true && (monster->x / BLOCK_SIZE_X < 0 || monster->x / BLOCK_SIZE_X > 27 || monster->y / BLOCK_SIZE_Y < 0 || monster->y / BLOCK_SIZE_Y > 19)) {
+				if (monster->monsterID == MONSTER_DUCK_ID) {
+					HandleFailedEvents(hWnd, L"鸭子跑出去了！");
+				}
+				else {
+					monster->visible = false;
+				}
+			}
+
+
+			if (monster->visible == false && monster->monsterID == MONSTER_DUCK_ID) {
+				HandleFailedEvents(hWnd, L"不能把鸭子杀了！");
+			}
+		}
 	}
 	else if (currentStage->stageID == STAGE_HOUSE_2) {
 
@@ -1182,46 +1220,6 @@ void HandleConversationEvents(HWND hWnd)
 		}
 	}
 }
-
-
-void UpdateFailed(HWND hWnd) {
-	if (currentStage->stageID == STAGE_HOUSE_1) {
-		for (int i = 0; i < current_new_monsters->size(); i++) {
-			NewMonster* monster = current_new_monsters->at(i);
-
-			if (monster->visible == false && monster->monsterID == MONSTER_CHIKEN_ID) {
-				//鸡死掉了
-				HandleFailedEvents(hWnd, L"不能把鸡杀了！");
-			}
-
-			if ((monster->x / BLOCK_SIZE_X == 6 || monster->x / BLOCK_SIZE_X == 7) && monster->y / BLOCK_SIZE_Y == 16) {
-				//到门口了
-				HandleFailedEvents(hWnd, L"鸡跑出去了！");
-			}
-
-		}
-	}
-	else if (currentStage->stageID == STAGE_MEADOW) {
-		for (int i = 0; i < current_new_monsters->size(); i++) {
-			NewMonster* monster = current_new_monsters->at(i);
-
-			if (monster->x / BLOCK_SIZE_X < 0 || monster->x / BLOCK_SIZE_X > 27 || monster->y / BLOCK_SIZE_Y < 0 || monster->y / BLOCK_SIZE_Y > 19) {
-				if (monster->monsterID == MONSTER_DUCK_ID) {
-					HandleFailedEvents(hWnd, L"鸭子跑出去了！");
-				}
-				else {
-					monster->visible = false;
-				}
-			}
-
-
-			if (monster->visible == false && monster->monsterID == MONSTER_DUCK_ID) {
-				HandleFailedEvents(hWnd, L"不能把鸭子杀了！");
-			}
-		}
-	}
-}
-
 
 void HandleStopEvents(HWND hWnd)
 {
