@@ -53,7 +53,7 @@ NewMonster* NewCreateMonster(int x, int y, int monster_id)
 		monster->size_y = 30;
 		monster->time_stop = 50;
 		monster->time_max = 100;
-		monster->hp_max = 2;
+		monster->hp_max = 10;
 		monster->hp = monster->hp_max;
 		break;
 	}
@@ -154,14 +154,16 @@ void InitMonsters() {
 	new_monsters_main.push_back(NewCreateMonster(205, 405, MONSTER_CROW_ID));
 
 	new_monsters_house_1.push_back(NewCreateMonster(300, 300, MONSTER_CHIKEN_ID));
-	new_monsters_house_1.push_back(NewCreateMonster(350, 350, MONSTER_CHIKEN_ID));
+	new_monsters_house_1.push_back(NewCreateMonster(450, 350, MONSTER_CHIKEN_ID));
 
 	new_monsters_meadow.push_back(NewCreateMonster(405, 205, MONSTER_CROW_ID));
-	new_monsters_meadow.push_back(NewCreateMonster(405, 305, MONSTER_CROW_ID));
+	new_monsters_meadow.push_back(NewCreateMonster(465, 305, MONSTER_CROW_ID));
 	new_monsters_meadow.push_back(NewCreateMonster(505, 205, MONSTER_CROW_ID));
+	new_monsters_meadow.push_back(NewCreateMonster(605, 345, MONSTER_CROW_ID));
 	new_monsters_meadow.push_back(NewCreateMonster(290, 290, MONSTER_DUCK_ID));
-	new_monsters_meadow.push_back(NewCreateMonster(300, 300, MONSTER_DUCK_ID));
+	new_monsters_meadow.push_back(NewCreateMonster(405, 300, MONSTER_DUCK_ID));
 	new_monsters_meadow.push_back(NewCreateMonster(200, 200, MONSTER_DUCK_ID));
 	new_monsters_meadow.push_back(NewCreateMonster(250, 250, MONSTER_DUCK_ID));
+	new_monsters_meadow.push_back(NewCreateMonster(270, 225, MONSTER_CROW_ID));
 
 }

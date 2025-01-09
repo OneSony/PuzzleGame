@@ -279,9 +279,6 @@
     <Image Include="resources\achievement\helpful.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="resources\achievement\new_quick_sleep.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
     <Image Include="resources\achievement\achievement_bg.bmp">
       <Filter>资源文件</Filter>
     </Image>

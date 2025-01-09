@@ -33,6 +33,17 @@ int (*current_bg)[20][28];
 int (*current_obj)[20][28];
 std::vector<NPC*>* current_npcs;
 
+std::vector<std::wstring> help_text = {
+	L"方向键：移动玩家",
+	L"空格键：在NPC身边时发起对话",
+	L"鼠标左键：选择物品栏物品、攻击动物",
+	L"",
+	L"",
+	L"你是新来的村长",
+	L"你的目标是赶快回家睡觉，先拿到到钥匙吧",
+	L"小动物一会休息一会移动，打一下它们，它们会立刻起身",
+	L"但别把友好的小动物打死了"
+};
 
 
 int mouseX = 0;
@@ -1221,7 +1232,7 @@ void HandleConversationEvents(HWND hWnd)
 	for (int i = 0; i < current_npcs->size(); i++) {
 		NPC* npc = (*current_npcs)[i];
 		if (((player->x <= npc->x && npc->x <= player->x + HUMAN_SIZE_X) || (npc->x <= player->x && player->x <= npc->x + HUMAN_SIZE_X)) &&
-			((player->y <= npc->y && npc->y <= player->y + HUMAN_SIZE_Y) || (npc->y <= player->y && player->y <= npc->y + HUMAN_SIZE_X))) {
+			((player->y <= npc->y && npc->y <= player->y + HUMAN_SIZE_Y) || (npc->y <= player->y && player->y <= npc->y + HUMAN_SIZE_Y))) {
 			in_conversation = true;
 			npc->RemoveFigParticle(ANI_EXCLAMATION);
 
@@ -1355,19 +1366,6 @@ void InitStage(HWND hWnd, int stageID)
 
 		SummarizeAchievements();
 
-		/*char buff[256];
-		sprintf(buff, "ACHIEVEMENT_QUICK_SLEEP %d\n", achievement_record[ACHIEVEMENT_QUICK_SLEEP]);
-		OutputDebugStringA(buff);
-
-		sprintf(buff, "ACHIEVEMENT_FRIENDLY %d\n", achievement_record[ACHIEVEMENT_FRIENDLY]);
-		OutputDebugStringA(buff);
-
-		sprintf(buff, "ACHIEVEMENT_CROW_HUNTER %d\n", achievement_record[ACHIEVEMENT_CROW_HUNTER]);
-		OutputDebugStringA(buff);
-
-		sprintf(buff, "ACHIEVEMENT_HELPFUL %d\n", achievement_record[ACHIEVEMENT_HELPFUL]);
-		OutputDebugStringA(buff);*/
-
 		currentStage->timerOn = false;
 		current_buttons = &end_buttons;
 	}
@@ -1480,19 +1478,32 @@ void Paint(HWND hWnd)
 
 
 		HFONT hFont = CreateFontW(
-			20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+			80, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
 			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
-			L"SimSun");		//创建字体
+			L"Microsoft YaHei");		//创建字体
 		SelectObject(hdc_memBuffer, hFont);
-		SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+		SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
 		SetBkMode(hdc_memBuffer, TRANSPARENT);
 		RECT rect;
-		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
-		rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4;
-		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 - 200;
+		rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 0.6 / 4;
+		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH + 200;
 		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
-		DrawTextW(hdc_memBuffer, L"开始菜单", -1, &rect, DT_CENTER | DT_VCENTER);
+		DrawTextW(hdc_memBuffer, L"快去睡觉", -1, &rect, DT_CENTER | DT_VCENTER);
 
+		hFont = CreateFontW(
+			30, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+			L"Microsoft YaHei");		//创建字体
+		SelectObject(hdc_memBuffer, hFont);
+		SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
+		SetBkMode(hdc_memBuffer, TRANSPARENT);
+		RECT subrect;
+		subrect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
+		subrect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1.2 / 4;
+		subrect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+		subrect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
+		DrawTextW(hdc_memBuffer, L"有点像推箱子", -1, &subrect, DT_CENTER | DT_VCENTER);
 	}
 	else if (currentStage->stageID == STAGE_END) {
 		SelectObject(hdc_loadBmp, bmp_background);
@@ -1501,23 +1512,20 @@ void Paint(HWND hWnd)
 			hdc_loadBmp, 0, 0, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT,
 			RGB(255, 255, 255));
 
-		//TODO 写字
-
 		if (achievement_list.size() == 0) {
 			HFONT hFont = CreateFontW(
-				20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+				40, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
 				OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
-				L"SimSun");		//创建字体
+				L"Microsoft YaHei");		//创建字体
 			SelectObject(hdc_memBuffer, hFont);
-			SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+			SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
 			SetBkMode(hdc_memBuffer, TRANSPARENT);
 			RECT rect;
-			rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
+			rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 - 200;
 			rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1.7 / 4;
-			rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+			rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH + 200;
 			rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1.7 / 4 + BUTTON_HEIGHT;
 			DrawTextW(hdc_memBuffer, L"本次没有获得成就", -1, &rect, DT_CENTER | DT_VCENTER);
-
 		}
 		else {
 
@@ -2029,6 +2037,7 @@ void Paint(HWND hWnd)
 	}
 
 	if (in_help) {
+
 		int posX = 0.5 * (WINDOW_WIDTH - HELP_WIDTH);
 		int posY = 0.5 * (WINDOW_HEIGHT - 0.5 * BUTTON_HEIGHT - HELP_HEIGHT);
 		SelectObject(hdc_loadBmp, bmp_help_bg);
@@ -2038,24 +2047,64 @@ void Paint(HWND hWnd)
 			hdc_loadBmp, 0, 0, 200, 150,
 			RGB(255, 255, 255));
 
-		//TODO 写字
+		int text_height = 40;
+		int text_width = 750;
+		int content_margin = 8;
+
+		int content_height = help_text.size() * (text_height + content_margin) - content_margin;
+		int offsetX = 0.5 * (HELP_WIDTH - text_width);
+		int offsetY = 0.5 * (HELP_HEIGHT - content_height);
+
+		int textX = posX + offsetX;
+		int textY = posY + offsetY;
+
+		for (int i = 0; i < help_text.size(); i++) {
+
+			std::wstring text = help_text[i];
+
+			int content_left = textX;
+			int content_right = textX + text_width;
+			int content_top = textY;
+			int content_bottom = textY + text_height;
+
+			// 创建字体
+			HFONT hFont = CreateFontW(
+				25, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+				OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+				L"SimSun");		//创建字体
+			SelectObject(hdc_memBuffer, hFont);
+			SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
+			SetBkMode(hdc_memBuffer, TRANSPARENT);
+
+			// 设置标题和描述的位置
+			RECT rect_title;
+			rect_title.left = content_left;
+			rect_title.top = content_top;
+			rect_title.right = content_right;
+			rect_title.bottom = content_bottom;
+			DrawTextW(hdc_memBuffer, text.c_str(), -1, &rect_title, DT_CENTER | DT_VCENTER);
+
+			// 更新起始位置，向下移动下一个成就
+			textY = textY + text_height + content_margin;
+		}
+
 	}
 
 	if (in_failed) {
 		SelectObject(hdc_loadBmp, bmp_background);
 		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
-
+		
 		HFONT hFont = CreateFontW(
-			20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+			40, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
 			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
-			L"SimSun");		//创建字体
+			L"Microsoft YaHei");		//创建字体
 		SelectObject(hdc_memBuffer, hFont);
-		SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+		SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
 		SetBkMode(hdc_memBuffer, TRANSPARENT);
 		RECT rect;
-		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
+		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 - 200;
 		rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4;
-		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH + 200;
 		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
 		DrawTextW(hdc_memBuffer, failed_message.c_str(), -1, &rect, DT_CENTER | DT_VCENTER);
 	}
@@ -2065,16 +2114,16 @@ void Paint(HWND hWnd)
 		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
 
 		HFONT hFont = CreateFontW(
-			20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+			40, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
 			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
-			L"SimSun");		//创建字体
+			L"Microsoft YaHei");		//创建字体
 		SelectObject(hdc_memBuffer, hFont);
-		SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+		SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
 		SetBkMode(hdc_memBuffer, TRANSPARENT);
 		RECT rect;
-		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
+		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 - 200;
 		rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4;
-		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH + 200;
 		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
 		DrawTextW(hdc_memBuffer, L"要结束游戏吗", -1, &rect, DT_CENTER | DT_VCENTER);
 	}
@@ -2126,7 +2175,7 @@ void Paint(HWND hWnd)
 					OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
 					L"SimSun");		//创建字体
 				SelectObject(hdc_memBuffer, hFont);
-				SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+				SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
 				SetBkMode(hdc_memBuffer, TRANSPARENT);
 
 				// 设置标题和描述的位置
@@ -2153,13 +2202,13 @@ void Paint(HWND hWnd)
 					OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
 					L"SimSun");		//创建字体
 				SelectObject(hdc_memBuffer, hFont);
-				SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+				SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
 				SetBkMode(hdc_memBuffer, TRANSPARENT);
 
 				// 设置标题和描述的位置
 				RECT rect_title;
 				rect_title.left = content_left;
-				rect_title.top = content_top;
+				rect_title.top = content_top + (0.3 * achievement->size_y);
 				rect_title.right = content_right;
 				rect_title.bottom = content_bottom;
 				DrawTextW(hdc_memBuffer, L"???", -1, &rect_title, DT_CENTER | DT_VCENTER);
@@ -2172,9 +2221,6 @@ void Paint(HWND hWnd)
 
 	}
 
-	char buff[256];
-	sprintf(buff, "here %d %d %d %d\n", in_stop, in_help, in_failed, in_bed);
-	OutputDebugStringA(buff);
 
 	//画按钮，最上层
 	for (int i = 0; i < current_buttons->size(); i++)
@@ -2188,12 +2234,13 @@ void Paint(HWND hWnd)
 			RGB(255, 255, 255)
 		);
 
-		// 设置文本背景透明
-		SetBkMode(hdc_memBuffer, TRANSPARENT);
-
-		// 设置字体颜色（例如白色）
+		HFONT hFont = CreateFontW(
+			30, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+			L"Comic Sans MS");		//创建字体
+		SelectObject(hdc_memBuffer, hFont);
 		SetTextColor(hdc_memBuffer, RGB(255, 255, 255));
-
+		SetBkMode(hdc_memBuffer, TRANSPARENT);
 		// 定义文本绘制区域
 		RECT textRect;
 		textRect.left = button->x;

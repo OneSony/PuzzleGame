@@ -140,10 +140,6 @@ void InitAchievements() {
 
 void SummarizeAchievements() {
 
-	//achievement_list.push_back(new Achievement(ACHIEVE_QUICK_SLEEP));
-	//achievement_list.push_back(new Achievement(ACHIEVE_FRIENDLY));
-	//achievement_list.push_back(new Achievement(ACHIEVE_CROW_HUNTER));
-	//achievement_list.push_back(new Achievement(ACHIEVE_HELPFUL));
 
 	if (progress_record[PRO_PEOPLE_KNOWN] == false) {
 		achievement_record[ACHIEVE_QUICK_SLEEP] = true;

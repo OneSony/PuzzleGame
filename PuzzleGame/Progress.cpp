@@ -35,10 +35,6 @@ void UpdateProgress() {
 		int current_progress = progress_list.back();  // 获取最后一个元素
 		progress_list.pop_back();  // 删除最后一个元素
 
-		char buff[256];
-		sprintf(buff, "in progress %d\n", current_progress);
-		OutputDebugStringA(buff);
-
 		if (current_progress == PRO_INIT) {
 			if (progress_record[PRO_INIT] == false) {
 				progress_record[PRO_INIT] = true;
@@ -137,6 +133,20 @@ void UpdateProgress() {
 				reachable_main[16][27] = 3;
 				reachable_main[15][27] = 3;
 				reachable_main[14][27] = 3;
+
+				if (player->x / BLOCK_SIZE_X == 26 && player->y / BLOCK_SIZE_Y == 13 ||
+					player->x / BLOCK_SIZE_X == 27 && player->y / BLOCK_SIZE_Y == 13 ||
+					player->x / BLOCK_SIZE_X == 25 && player->y / BLOCK_SIZE_Y == 13 ||
+					player->x / BLOCK_SIZE_X == 26 && player->y / BLOCK_SIZE_Y == 14 ||
+					player->x / BLOCK_SIZE_X == 27 && player->y / BLOCK_SIZE_Y == 14 ||
+					player->x / BLOCK_SIZE_X == 25 && player->y / BLOCK_SIZE_Y == 14 ||
+					player->x / BLOCK_SIZE_X == 26 && player->y / BLOCK_SIZE_Y == 12 ||
+					player->x / BLOCK_SIZE_X == 27 && player->y / BLOCK_SIZE_Y == 12 ||
+					player->x / BLOCK_SIZE_X == 25 && player->y / BLOCK_SIZE_Y == 12
+					) {
+					player->x = BLOCK_SIZE_X * 25;
+					player->y = BLOCK_SIZE_Y * 15;
+				}
 
 				npcs_main.at(1)->x = BLOCK_SIZE_X * 26;
 				npcs_main.at(1)->y = BLOCK_SIZE_Y * 13;
