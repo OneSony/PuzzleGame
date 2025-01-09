@@ -71,6 +71,9 @@ void InitButtons() {
 		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"HELP");
 	menu_buttons.push_back(helpButton);
 
+	menu_buttons.push_back(CreateButton(BUTTON_GLOBAL_ACHIEVEMENT, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 4 / 4, L"ACHIEVEMENT"));
+
 
 	Button* continueButton_stop = CreateButton(BUTTON_STOP_CONTINUE, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
 		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4, L"CONTINUE");
@@ -93,6 +96,6 @@ void InitButtons() {
 		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"NO"));
 
 	end_buttons.push_back(CreateButton(BUTTON_END_BACK, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3.5 / 4, L"BACK"));
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3.7 / 4, L"BACK"));
 
 }

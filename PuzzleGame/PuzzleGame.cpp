@@ -15,6 +15,7 @@ HBITMAP bmp_background = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_B
 HBITMAP bmp_dialog = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_DIALOG));
 HBITMAP bmp_item_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_BG));
 HBITMAP bmp_item_name_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_NAME_BG));
+HBITMAP bmp_achievement_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ACHIEVE_BG));
 
 
 std::wstring failed_message;
@@ -46,6 +47,7 @@ bool in_stop = false;
 bool in_help = false;
 bool in_failed = false;
 bool in_bed = false;
+bool in_global_achievement = false;
 bool is_last_time_in_bed = false;
 const wchar_t* converstaion_content = nullptr;	//当前对话的内容
 
@@ -213,6 +215,7 @@ void AllInit() {
 	InitMonsters();
 	InitButtons();
 	InitProgress();
+	InitAchievements();
 	InitCurrent();
 }
 
@@ -258,7 +261,7 @@ void InitGame(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	AllInit();
 
 	InitStage(hWnd, STAGE_STARTMENU);
-
+	
 	//初始化主计时器
 	SetTimer(hWnd, TIMER_GAMETIMER, TIMER_GAMETIMER_ELAPSE, NULL);
 }
@@ -311,6 +314,9 @@ void KeyUp(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	case VK_ESCAPE:
 		if (in_help) {
 			HandleHelpEvents(hWnd);
+		}
+		if (in_global_achievement) {
+			HandleGlobalAchievementEvents(hWnd);
 		}
 		else {
 			HandleStopEvents(hWnd);
@@ -370,6 +376,11 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			case BUTTON_HELP:
 			{
 				HandleHelpEvents(hWnd);
+				break;
+			}
+			case BUTTON_GLOBAL_ACHIEVEMENT:
+			{
+				HandleGlobalAchievementEvents(hWnd);
 				break;
 			}
 			case BUTTON_FAILED_RESTART:
@@ -508,6 +519,7 @@ void LButtonDown(HWND hWnd, WPARAM wParam, LPARAM lParam)
 					}
 
 					if (can_hurt == true) {
+						achievement_hurt_flag = true;
 						monster->hurt = true;
 						monster->hp -= damage;
 						monster->hp_visible = true;
@@ -1274,6 +1286,26 @@ void HandleHelpEvents(HWND hWnd)
 	InvalidateRect(hWnd, NULL, FALSE);
 }
 
+void HandleGlobalAchievementEvents(HWND hWnd)
+{
+
+
+	if (in_global_achievement == false) {
+		in_global_achievement = true;
+		buttons_before.push_back(current_buttons);
+		current_buttons = &void_buttons;
+		currentStage->timerOn = false;
+	}
+	else {
+		in_global_achievement = false;
+		current_buttons = buttons_before.back();
+		buttons_before.pop_back();
+	}
+
+	InvalidateRect(hWnd, NULL, FALSE);
+}
+
+
 void HandleBedEvents(HWND hWnd)
 {
 
@@ -1318,6 +1350,21 @@ void InitStage(HWND hWnd, int stageID)
 		in_help = false;
 		in_bed = false;
 		in_failed = false;
+
+		SummarizeAchievements();
+
+		/*char buff[256];
+		sprintf(buff, "ACHIEVEMENT_QUICK_SLEEP %d\n", achievement_record[ACHIEVEMENT_QUICK_SLEEP]);
+		OutputDebugStringA(buff);
+
+		sprintf(buff, "ACHIEVEMENT_FRIENDLY %d\n", achievement_record[ACHIEVEMENT_FRIENDLY]);
+		OutputDebugStringA(buff);
+
+		sprintf(buff, "ACHIEVEMENT_CROW_HUNTER %d\n", achievement_record[ACHIEVEMENT_CROW_HUNTER]);
+		OutputDebugStringA(buff);
+
+		sprintf(buff, "ACHIEVEMENT_HELPFUL %d\n", achievement_record[ACHIEVEMENT_HELPFUL]);
+		OutputDebugStringA(buff);*/
 
 		currentStage->timerOn = false;
 		current_buttons = &end_buttons;
@@ -1444,7 +1491,8 @@ void Paint(HWND hWnd)
 		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
 		DrawTextW(hdc_memBuffer, L"开始菜单", -1, &rect, DT_CENTER | DT_VCENTER);
 
-	} else if(currentStage->stageID == STAGE_END) {
+	}
+	else if (currentStage->stageID == STAGE_END) {
 		SelectObject(hdc_loadBmp, bmp_background);
 		TransparentBlt(
 			hdc_memBuffer, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
@@ -1453,19 +1501,88 @@ void Paint(HWND hWnd)
 
 		//TODO 写字
 
-		HFONT hFont = CreateFontW(
-			20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
-			OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
-			L"SimSun");		//创建字体
-		SelectObject(hdc_memBuffer, hFont);
-		SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
-		SetBkMode(hdc_memBuffer, TRANSPARENT);
-		RECT rect;
-		rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
-		rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4;
-		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
-		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
-		DrawTextW(hdc_memBuffer, L"结束啦，这里会显示成就", -1, &rect, DT_CENTER | DT_VCENTER);
+		if (achievement_list.size() == 0) {
+			HFONT hFont = CreateFontW(
+				20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+				OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+				L"SimSun");		//创建字体
+			SelectObject(hdc_memBuffer, hFont);
+			SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+			SetBkMode(hdc_memBuffer, TRANSPARENT);
+			RECT rect;
+			rect.left = (WINDOW_WIDTH - BUTTON_WIDTH) / 2;
+			rect.top = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1.7 / 4;
+			rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
+			rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1.7 / 4 + BUTTON_HEIGHT;
+			DrawTextW(hdc_memBuffer, L"本次没有获得成就", -1, &rect, DT_CENTER | DT_VCENTER);
+
+		}
+		else {
+
+			int content_margin = 5;
+
+			//计算posY
+			int content_height = achievement_list.size() * (ACHIEVE_HEIGHT + content_margin) - content_margin;
+			int posX = 0.5 * (WINDOW_WIDTH - ACHIEVE_WIDTH);
+			int posY = 0.5 * ((WINDOW_HEIGHT - BUTTON_HEIGHT) - content_height);
+
+			while (!achievement_list.empty()) {
+
+				Achievement* achievement = achievement_list.back();
+				achievement_list.pop_back();
+
+				//先画背景
+				SelectObject(hdc_loadBmp, bmp_achievement_bg);
+				TransparentBlt(
+					hdc_memBuffer,
+					posX, posY, ACHIEVE_WIDTH, ACHIEVE_HEIGHT, //TODO
+					hdc_loadBmp, 0, 0, 125, 32,
+					RGB(255, 255, 255));
+
+
+				int content_left = posX + (0.5 * (ACHIEVE_HEIGHT - achievement->size_y));
+				int content_right = posX + ACHIEVE_WIDTH - (0.5 * (ACHIEVE_HEIGHT - achievement->size_y));
+				int content_top = posY + (0.5 * (ACHIEVE_HEIGHT - achievement->size_y));
+				int content_bottom = posY + ACHIEVE_HEIGHT - (0.5 * (ACHIEVE_HEIGHT - achievement->size_y));
+
+				// 选择图片
+				SelectObject(hdc_loadBmp, achievement->img);
+				TransparentBlt(
+					hdc_memBuffer,
+					content_left, content_top, achievement->size_x, achievement->size_y, //TODO
+					hdc_loadBmp, 0, 0, achievement->bitmap_size_x, achievement->bitmap_size_y,
+					RGB(255, 255, 255));
+
+				// 创建字体
+				HFONT hFont = CreateFontW(
+					20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+					OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+					L"SimSun");		//创建字体
+				SelectObject(hdc_memBuffer, hFont);
+				SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+				SetBkMode(hdc_memBuffer, TRANSPARENT);
+
+				// 设置标题和描述的位置
+				RECT rect_title;
+				rect_title.left = content_left + achievement->size_x + 10;
+				rect_title.top = content_top;
+				rect_title.right = content_right;
+				rect_title.bottom = content_bottom - (0.5 * achievement->size_y);
+				DrawTextW(hdc_memBuffer, achievement->title.c_str(), -1, &rect_title, DT_CENTER | DT_VCENTER);
+
+				// 设置描述的位置
+				RECT rect_description;
+				rect_description.left = content_left + achievement->size_x + 10;
+				rect_description.top = content_top + (0.5 * achievement->size_y);
+				rect_description.right = content_right;
+				rect_description.bottom = content_bottom;
+				DrawTextW(hdc_memBuffer, achievement->description.c_str(), -1, &rect_description, DT_CENTER | DT_VCENTER);
+
+				// 更新起始位置，向下移动下一个成就
+				posY = posY + ACHIEVE_HEIGHT + content_margin;
+			}
+		}
+
 	} else {
 
 		//首先绘制背景，背景只有一个块
@@ -1953,6 +2070,99 @@ void Paint(HWND hWnd)
 		rect.right = (WINDOW_WIDTH - BUTTON_WIDTH) / 2 + BUTTON_WIDTH;
 		rect.bottom = (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4 + BUTTON_HEIGHT;
 		DrawTextW(hdc_memBuffer, L"要结束游戏吗", -1, &rect, DT_CENTER | DT_VCENTER);
+	}
+
+	if (in_global_achievement) {
+		SelectObject(hdc_loadBmp, bmp_background);
+		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
+
+		int content_margin = 5;
+
+		//计算posY
+		int content_height = global_achievements.size() * (ACHIEVE_HEIGHT + content_margin) - content_margin;
+		int posX = 0.5 * (WINDOW_WIDTH - ACHIEVE_WIDTH);
+		int posY = 0.5 * ((WINDOW_HEIGHT - BUTTON_HEIGHT) - content_height);
+
+		for(int i=0;i < global_achievements.size();i++){
+
+			Achievement* achievement = global_achievements[i];
+
+			//先画背景
+			SelectObject(hdc_loadBmp, bmp_achievement_bg);
+			TransparentBlt(
+				hdc_memBuffer,
+				posX, posY, ACHIEVE_WIDTH, ACHIEVE_HEIGHT, //TODO
+				hdc_loadBmp, 0, 0, 125, 32,
+				RGB(255, 255, 255));
+
+
+			int content_left = posX + (0.5 * (ACHIEVE_HEIGHT - achievement->size_y));
+			int content_right = posX + ACHIEVE_WIDTH - (0.5 * (ACHIEVE_HEIGHT - achievement->size_y));
+			int content_top = posY + (0.5 * (ACHIEVE_HEIGHT - achievement->size_y));
+			int content_bottom = posY + ACHIEVE_HEIGHT - (0.5 * (ACHIEVE_HEIGHT - achievement->size_y));
+
+
+			if (global_achievement_record[achievement->achieve_id] == true) {
+				//拿到了成就，正常显示
+				
+				// 选择图片
+				SelectObject(hdc_loadBmp, achievement->img);
+				TransparentBlt(
+					hdc_memBuffer,
+					content_left, content_top, achievement->size_x, achievement->size_y, //TODO
+					hdc_loadBmp, 0, 0, achievement->bitmap_size_x, achievement->bitmap_size_y,
+					RGB(255, 255, 255));
+
+				// 创建字体
+				HFONT hFont = CreateFontW(
+					20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+					OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+					L"SimSun");		//创建字体
+				SelectObject(hdc_memBuffer, hFont);
+				SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+				SetBkMode(hdc_memBuffer, TRANSPARENT);
+
+				// 设置标题和描述的位置
+				RECT rect_title;
+				rect_title.left = content_left + achievement->size_x + 10;
+				rect_title.top = content_top;
+				rect_title.right = content_right;
+				rect_title.bottom = content_bottom - (0.5 * achievement->size_y);
+				DrawTextW(hdc_memBuffer, achievement->title.c_str(), -1, &rect_title, DT_CENTER | DT_VCENTER);
+
+				// 设置描述的位置
+				RECT rect_description;
+				rect_description.left = content_left + achievement->size_x + 10;
+				rect_description.top = content_top + (0.5 * achievement->size_y);
+				rect_description.right = content_right;
+				rect_description.bottom = content_bottom;
+				DrawTextW(hdc_memBuffer, achievement->description.c_str(), -1, &rect_description, DT_CENTER | DT_VCENTER);
+			}
+			else {
+				//没拿到成就，显示问号
+
+				HFONT hFont = CreateFontW(
+					20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+					OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS,
+					L"SimSun");		//创建字体
+				SelectObject(hdc_memBuffer, hFont);
+				SetTextColor(hdc_memBuffer, RGB(0, 0, 0));
+				SetBkMode(hdc_memBuffer, TRANSPARENT);
+
+				// 设置标题和描述的位置
+				RECT rect_title;
+				rect_title.left = content_left;
+				rect_title.top = content_top;
+				rect_title.right = content_right;
+				rect_title.bottom = content_bottom;
+				DrawTextW(hdc_memBuffer, L"???", -1, &rect_title, DT_CENTER | DT_VCENTER);
+
+			}
+
+			// 更新起始位置，向下移动下一个成就
+			posY = posY + ACHIEVE_HEIGHT + content_margin;
+		}
+
 	}
 
 	char buff[256];

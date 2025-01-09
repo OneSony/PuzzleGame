@@ -31,3 +31,4 @@ struct Stage
 void UpdateProgress();
 void InitProgress();
 extern std::list<int> progress_list;
+extern std::map<int, bool> progress_record;

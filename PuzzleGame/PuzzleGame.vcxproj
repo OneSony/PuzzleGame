@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Achievements.h" />
     <ClInclude Include="Buttons.h" />
     <ClInclude Include="IDs.h" />
     <ClInclude Include="Items.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Achievements.cpp" />
     <ClCompile Include="Buttons.cpp" />
     <ClCompile Include="Items.cpp" />
     <ClCompile Include="Maps.cpp" />
@@ -181,6 +183,11 @@
     <Image Include="..\..\..\..\..\Desktop\未标题-1.bmp" />
     <Image Include="..\..\..\..\..\Desktop\美术资源_PS源文件\btn_bg.bmp" />
     <Image Include="PuzzleGame.ico" />
+    <Image Include="resources\achievement\achievement_bg.bmp" />
+    <Image Include="resources\achievement\crow_hunter.bmp" />
+    <Image Include="resources\achievement\friendly.bmp" />
+    <Image Include="resources\achievement\helpful.bmp" />
+    <Image Include="resources\achievement\quick_sleep.bmp" />
     <Image Include="resources\animation\death.bmp" />
     <Image Include="resources\animation\exclamation.bmp" />
     <Image Include="resources\background.bmp" />

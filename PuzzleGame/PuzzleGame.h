@@ -21,6 +21,7 @@
 #include "Maps.h"
 #include "Player.h"
 #include "Progress.h"
+#include "Achievements.h"
 #pragma comment(lib, "Msimg32.lib")			//图象处理的函数接口，例如：透明色的位图的绘制TransparentBlt函数
 using namespace std;
 #pragma endregion
@@ -99,6 +100,7 @@ void HandleStopEvents(HWND hWnd);
 void HandleHelpEvents(HWND hWnd);
 void HandleFailedEvents(HWND hWnd, std::wstring str);
 void HandleBedEvents(HWND hWnd);
+void HandleGlobalAchievementEvents(HWND hWnd);
 
 
 #pragma endregion 
