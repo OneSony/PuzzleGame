@@ -1167,7 +1167,12 @@ void ScanTasks(HWND hWnd) {//顺便判断胜利和结束
 			if ((*current_new_monsters)[i]->visible == false) {
 				continue;
 			}
-			if (((*current_new_monsters)[i]->monsterID == MONSTER_DUCK_ID && (*current_new_monsters)[i]->state != MONSTER_STATE_HOME) || ((*current_new_monsters)[i]->monsterID == MONSTER_CROW_ID && (*current_new_monsters)[i]->state == MONSTER_STATE_HOME)) {
+			if (((*current_new_monsters)[i]->monsterID == MONSTER_DUCK_ID && (*current_new_monsters)[i]->state != MONSTER_STATE_HOME) || 
+				//((*current_new_monsters)[i]->monsterID == MONSTER_CROW_ID && (*current_new_monsters)[i]->state == MONSTER_STATE_HOME)) {
+				((*current_new_monsters)[i]->monsterID == MONSTER_CROW_ID && ((*current_reachable)[(*current_new_monsters)[i]->y / BLOCK_SIZE_Y][(*current_new_monsters)[i]->x / BLOCK_SIZE_X] == 5))
+				) {
+
+				//注意乌鸦可能受惊！所以要用坐标
 				//没完成任务
 				progress_list.push_back(PRO_DUCK_UNHOMED);
 				homed_flag = false;

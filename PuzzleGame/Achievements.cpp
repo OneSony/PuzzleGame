@@ -163,7 +163,7 @@ void SummarizeAchievements() {
 	bool has_crow = false;
 	for (int i = 0; i < all_monsters.size(); i++) {
 		for (int j = 0; j < all_monsters[i]->size(); j++) {
-			if ((*all_monsters[i])[j]->monsterID == MONSTER_CROW_ID) {
+			if ((*all_monsters[i])[j]->visible == true && (*all_monsters[i])[j]->monsterID == MONSTER_CROW_ID) {
 				has_crow = true;
 				break;
 			}
