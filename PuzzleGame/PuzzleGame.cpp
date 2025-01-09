@@ -16,7 +16,7 @@ HBITMAP bmp_dialog = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_DIALO
 HBITMAP bmp_item_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_BG));
 HBITMAP bmp_item_name_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ITEM_NAME_BG));
 HBITMAP bmp_achievement_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_ACHIEVE_BG));
-
+HBITMAP bmp_help_bg = LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_HELP_BG));
 
 std::wstring failed_message;
 Stage* currentStage; //当前场景状态
@@ -2029,11 +2029,16 @@ void Paint(HWND hWnd)
 	}
 
 	if (in_help) {
-		//TODO
+		int posX = 0.5 * (WINDOW_WIDTH - HELP_WIDTH);
+		int posY = 0.5 * (WINDOW_HEIGHT - 0.5 * BUTTON_HEIGHT - HELP_HEIGHT);
+		SelectObject(hdc_loadBmp, bmp_help_bg);
+		TransparentBlt(
+			hdc_memBuffer,
+			posX, posY, HELP_WIDTH, HELP_HEIGHT,
+			hdc_loadBmp, 0, 0, 200, 150,
+			RGB(255, 255, 255));
 
-		SelectObject(hdc_loadBmp, bmp_background);
-		DrawTransparentBitmap(hdc_memBuffer, hdc_loadBmp, 0, 0, WINDOW_WIDTH*0.2, WINDOW_HEIGHT*0.2, BG_BITMAP_WIDTH, BG_BITMAP_HEIGHT, 200);
-
+		//TODO 写字
 	}
 
 	if (in_failed) {
@@ -2083,7 +2088,7 @@ void Paint(HWND hWnd)
 		//计算posY
 		int content_height = global_achievements.size() * (ACHIEVE_HEIGHT + content_margin) - content_margin;
 		int posX = 0.5 * (WINDOW_WIDTH - ACHIEVE_WIDTH);
-		int posY = 0.5 * ((WINDOW_HEIGHT - BUTTON_HEIGHT) - content_height);
+		int posY = 0.5 * ((WINDOW_HEIGHT - 0.5 * BUTTON_HEIGHT) - content_height);
 
 		for(int i=0;i < global_achievements.size();i++){
 

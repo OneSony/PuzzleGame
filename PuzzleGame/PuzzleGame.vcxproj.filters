@@ -279,13 +279,19 @@
     <Image Include="resources\achievement\helpful.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="resources\achievement\quick_sleep.bmp">
+    <Image Include="resources\achievement\new_quick_sleep.bmp">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\achievement\achievement_bg.bmp">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\bg\black.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\ui\help_bg.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\achievement\quick_sleep.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

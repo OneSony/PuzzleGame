@@ -13,6 +13,8 @@
 
 
 //尺寸
+#define HELP_WIDTH				800 
+#define HELP_HEIGHT				600
 #define BG_BITMAP_WIDTH			240		//背景图片的位图宽度
 #define BG_BITMAP_HEIGHT		160		//背景图片的位图高度
 #define BG_COLUMNS				28		//背景列数
@@ -37,8 +39,8 @@
 #define NEW_MOSTER_BITMAP_SIZE_Y	64
 #define NEW_MOSTER_SIZE_X			30		//怪物
 #define NEW_MOSTER_SIZE_Y			30
-#define HP_WIDTH					30		//背景行数
-#define HP_HEIGHT					5		//背景行数
+#define HP_WIDTH					30
+#define HP_HEIGHT					5
 
 
 //单位状态定义

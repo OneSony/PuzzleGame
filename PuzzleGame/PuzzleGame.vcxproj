@@ -169,6 +169,7 @@
     <ResourceCompile Include="PuzzleGame.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="resources\achievement\quick_sleep.bmp" />
     <Image Include="resources\bg\black.bmp" />
     <Image Include="resources\monster\blue_chicken.bmp" />
     <Image Include="resources\obj\house_1.bmp" />
@@ -183,7 +184,6 @@
     <Image Include="resources\achievement\crow_hunter.bmp" />
     <Image Include="resources\achievement\friendly.bmp" />
     <Image Include="resources\achievement\helpful.bmp" />
-    <Image Include="resources\achievement\quick_sleep.bmp" />
     <Image Include="resources\animation\death.bmp" />
     <Image Include="resources\animation\exclamation.bmp" />
     <Image Include="resources\ui\background.bmp" />
@@ -233,6 +233,7 @@
     <Image Include="resources\obj\tv_1.bmp" />
     <Image Include="resources\obj\wall_1.bmp" />
     <Image Include="resources\player.bmp" />
+    <Image Include="resources\ui\help_bg.bmp" />
     <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
