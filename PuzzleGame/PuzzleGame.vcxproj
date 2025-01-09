@@ -169,19 +169,15 @@
     <ResourceCompile Include="PuzzleGame.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\..\Desktop\bar_h.bmp" />
-    <Image Include="..\..\..\..\..\desktop\bitmap5.bmp" />
-    <Image Include="..\..\..\..\..\Desktop\Blue Chicken..bmp" />
-    <Image Include="..\..\..\..\..\Desktop\Coop_.bmp" />
-    <Image Include="..\..\..\..\..\Desktop\Crow..bmp" />
-    <Image Include="..\..\..\..\..\Desktop\Duck..bmp" />
-    <Image Include="..\..\..\..\..\Desktop\Goat..bmp" />
-    <Image Include="..\..\..\..\..\Desktop\grass.bmp" />
-    <Image Include="..\..\..\..\..\Desktop\sand.bmp" />
-    <Image Include="..\..\..\..\..\Desktop\weapons..bmp" />
-    <Image Include="..\..\..\..\..\Desktop\星露谷物语素材\Stardew valley\Characters\Monsters\Crow..png" />
-    <Image Include="..\..\..\..\..\Desktop\未标题-1.bmp" />
-    <Image Include="..\..\..\..\..\Desktop\美术资源_PS源文件\btn_bg.bmp" />
+    <Image Include="resources\bg\black.bmp" />
+    <Image Include="resources\monster\blue_chicken.bmp" />
+    <Image Include="resources\obj\house_1.bmp" />
+    <Image Include="resources\monster\crow.bmp" />
+    <Image Include="resources\monster\duck.bmp" />
+    <Image Include="resources\monster\goat.bmp" />
+    <Image Include="resources\bg\grass.bmp" />
+    <Image Include="resources\bg\sand.bmp" />
+    <Image Include="resources\ui\btn_bg.bmp" />
     <Image Include="PuzzleGame.ico" />
     <Image Include="resources\achievement\achievement_bg.bmp" />
     <Image Include="resources\achievement\crow_hunter.bmp" />
@@ -190,7 +186,7 @@
     <Image Include="resources\achievement\quick_sleep.bmp" />
     <Image Include="resources\animation\death.bmp" />
     <Image Include="resources\animation\exclamation.bmp" />
-    <Image Include="resources\background.bmp" />
+    <Image Include="resources\ui\background.bmp" />
     <Image Include="resources\bg\barrier_bottom.bmp" />
     <Image Include="resources\bg\barrier_left.bmp" />
     <Image Include="resources\bg\barrier_left_bottom.bmp" />
@@ -203,23 +199,19 @@
     <Image Include="resources\bg\barrier_right_top.bmp" />
     <Image Include="resources\bg\barrier_right_top_r.bmp" />
     <Image Include="resources\bg\barrier_top.bmp" />
-    <Image Include="resources\bg\bitmap5.bmp" />
     <Image Include="resources\bg\floor_1.bmp" />
     <Image Include="resources\bg\rock.bmp" />
     <Image Include="resources\bg\rock_1.bmp" />
     <Image Include="resources\bg\rock_2.bmp" />
     <Image Include="resources\bg\rock_3.bmp" />
     <Image Include="resources\bg\rock_4.bmp" />
-    <Image Include="resources\bitmap4.bmp" />
-    <Image Include="resources\dialog.bmp" />
+    <Image Include="resources\ui\dialog.bmp" />
     <Image Include="resources\item\certificate.bmp" />
     <Image Include="resources\item\item_bg.bmp" />
     <Image Include="resources\item\item_bow.bmp" />
     <Image Include="resources\item\item_name_bg.bmp" />
     <Image Include="resources\item\item_sword.bmp" />
     <Image Include="resources\item\key.bmp" />
-    <Image Include="resources\map.bmp" />
-    <Image Include="resources\monster1.bmp" />
     <Image Include="resources\npc_man1.bmp" />
     <Image Include="resources\obj\bar_h_left.bmp" />
     <Image Include="resources\obj\bar_h_mid.bmp" />
@@ -241,7 +233,6 @@
     <Image Include="resources\obj\tv_1.bmp" />
     <Image Include="resources\obj\wall_1.bmp" />
     <Image Include="resources\player.bmp" />
-    <Image Include="resources\startbutton.bmp" />
     <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

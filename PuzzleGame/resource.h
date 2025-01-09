@@ -12,23 +12,18 @@
 #define IDI_SMALL                       108
 #define IDC_PUZZLEGAME                  109
 #define IDR_MAINFRAME                   128
-#define IDB_MAP                         130
 #define IDB_BUTTON                      132
 #define IDB_NPC_MAN1                    132
 #define IDB_PLAYER                      133
 #define IDB_BACKGROUND                  134
 #define IDB_BITMAP1                     136
-#define IDB_STARTBUTTON                 136
 #define IDB_BITMAP2                     138
 #define IDB_DIALOG                      138
 #define IDB_BITMAP3                     139
-#define IDB_MONSTER1                    139
 #define IDB_BTN_BG                      141
 #define IDB_CROW                        145
 #define IDB_DUCK                        146
 #define IDB_CHIKEN                      150
-#define IDB_WEAPON                      152
-#define IDB_SUMMER_LAND                 155
 #define IDB_BITMAP4                     160
 #define IDB_HOUSE_1                     160
 #define IDB_OBJ_HOUSE_1                 160
@@ -85,7 +80,6 @@
 #define IDB_ACHIEVE_FRIENDLY            218
 #define IDB_ACHIEVE_HELPFUL             219
 #define IDB_ACHIEVE_QUICK_SLEEP         220
-#define IDB_BITMAP5                     222
 #define IDB_ACHIEVE_BG                  222
 #define IDC_STATIC                      -1
 

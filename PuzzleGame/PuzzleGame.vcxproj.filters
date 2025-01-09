@@ -99,61 +99,40 @@
     <Image Include="PuzzleGame.ico">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="resources\map.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
     <Image Include="resources\player.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="resources\background.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="resources\startbutton.bmp">
+    <Image Include="resources\ui\background.bmp">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\npc_man1.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="resources\dialog.bmp">
+    <Image Include="resources\ui\dialog.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="resources\monster1.bmp">
+    <Image Include="resources\ui\btn_bg.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Desktop\美术资源_PS源文件\btn_bg.bmp">
+    <Image Include="resources\monster\crow.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="resources\bitmap4.bmp">
+    <Image Include="resources\monster\duck.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Desktop\星露谷物语素材\Stardew valley\Characters\Monsters\Crow..png">
+    <Image Include="resources\monster\goat.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Desktop\Crow..bmp">
+    <Image Include="resources\monster\blue_chicken.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Desktop\Duck..bmp">
+    <Image Include="resources\obj\house_1.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Desktop\Goat..bmp">
+    <Image Include="resources\bg\grass.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Desktop\Blue Chicken..bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\Desktop\weapons..bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\Desktop\Coop_.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\Desktop\grass.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\Desktop\sand.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\Desktop\bar_h.bmp">
+    <Image Include="resources\bg\sand.bmp">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\obj\bar_h_left.bmp">
@@ -172,9 +151,6 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\bg\floor_1.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\..\..\..\desktop\bitmap5.bmp">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\obj\wall_1.bmp">
@@ -207,9 +183,6 @@
     <Image Include="resources\bg\barrier_top.bmp">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="..\..\..\..\..\Desktop\未标题-1.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
     <Image Include="resources\bg\barrier_bottom.bmp">
       <Filter>资源文件</Filter>
     </Image>
@@ -235,9 +208,6 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\item\certificate.bmp">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="resources\bg\bitmap5.bmp">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\item\item_bg.bmp">
@@ -313,6 +283,9 @@
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="resources\achievement\achievement_bg.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resources\bg\black.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
