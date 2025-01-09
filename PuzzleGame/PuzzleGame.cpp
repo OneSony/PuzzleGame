@@ -315,11 +315,13 @@ void KeyUp(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		if (in_help) {
 			HandleHelpEvents(hWnd);
 		}
-		if (in_global_achievement) {
-			HandleGlobalAchievementEvents(hWnd);
-		}
 		else {
-			HandleStopEvents(hWnd);
+			if (in_global_achievement) {
+				HandleGlobalAchievementEvents(hWnd);
+			}
+			else {
+				HandleStopEvents(hWnd);
+			}
 		}
 		break;
 	default:

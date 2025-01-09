@@ -63,31 +63,30 @@ void InitButtons() {
 
 
 
-	Button* startButton = CreateButton(BUTTON_STARTGAME, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 2 / 4, L"START");
-	menu_buttons.push_back(startButton);
+	menu_buttons.push_back(CreateButton(BUTTON_STARTGAME, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1.8 / 4, L"START"));
 
-	Button* helpButton = CreateButton(BUTTON_HELP, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"HELP");
-	menu_buttons.push_back(helpButton);
+	menu_buttons.push_back(CreateButton(BUTTON_HELP, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 2.4 / 4, L"HELP"));
 
 	menu_buttons.push_back(CreateButton(BUTTON_GLOBAL_ACHIEVEMENT, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 4 / 4, L"ACHIEVEMENT"));
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"ACHIEVEMENTS"));
 
 
-	Button* continueButton_stop = CreateButton(BUTTON_STOP_CONTINUE, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4, L"CONTINUE");
-	stop_buttons.push_back(continueButton_stop);
-	Button* helpButton_stop = CreateButton(BUTTON_STOP_HELP, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 2 / 4, L"HELP");
-	stop_buttons.push_back(helpButton_stop);
-	Button* homeButton_stop = CreateButton(BUTTON_STOP_HOME, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"HOME");
-	stop_buttons.push_back(homeButton_stop);
 
-	Button* restartButton = CreateButton(BUTTON_FAILED_RESTART, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
-		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"RESTART");
-	failed_buttons.push_back(restartButton);
+	stop_buttons.push_back(CreateButton(BUTTON_STOP_CONTINUE, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 1 / 4, L"CONTINUE"));
+
+	stop_buttons.push_back(CreateButton(BUTTON_STOP_HELP, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 2 / 4, L"HELP"));
+
+	stop_buttons.push_back(CreateButton(BUTTON_STOP_HOME, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"HOME"));
+
+
+	failed_buttons.push_back(CreateButton(BUTTON_FAILED_RESTART, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
+		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 3 / 4, L"RESTART"));
+
 
 	bed_buttons.push_back(CreateButton(BUTTON_BED_END, bmp_button, BUTTON_WIDTH, BUTTON_HEIGHT,
 		(WINDOW_WIDTH - BUTTON_WIDTH) / 2, (WINDOW_HEIGHT - BUTTON_HEIGHT) * 2 / 4, L"YES"));
